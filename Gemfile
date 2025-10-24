@@ -33,6 +33,7 @@ gem 'httparty'
 #gem 'africastalking'
 
 gem "paypal-checkout-sdk", "~> 1.0"
+gem "aws-sdk-s3", "~> 1.136"
 
 
 gem "sprockets-rails"
