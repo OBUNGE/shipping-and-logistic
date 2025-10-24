@@ -1,33 +1,38 @@
 Rails.application.configure do
-  # Settings specified here will take precedence over those in config/application.rb.
+  # Host for URL generation
+  config.action_controller.default_url_options = {
+    host: "shipping-and-logistic.onrender.com",
+    protocol: "https"
+  }
 
-  config.action_controller.default_url_options = { host: "localhost", port: 3000 }
-  config.action_mailer.default_url_options = { host: "localhost", port: 3000 }
+  # Allow this host
+  config.hosts << "shipping-and-logistic.onrender.com"
 
-  config.enable_reloading = true
-  config.eager_load = false
-  config.consider_all_requests_local = true
-  config.server_timing = true
+  # Mailer URLs (e.g. Devise links)
+  config.action_mailer.default_url_options = {
+    host: "shipping-and-logistic.onrender.com",
+    protocol: "https"
+  }
 
-  if Rails.root.join("tmp/caching-dev.txt").exist?
-    config.action_controller.perform_caching = true
-    config.action_controller.enable_fragment_cache_logging = true
-    config.public_file_server.headers = { "cache-control" => "public, max-age=#{2.days.to_i}" }
-  else
-    config.action_controller.perform_caching = false
-  end
+  # Production best practices
+  config.enable_reloading = false
+  config.eager_load = true
+  config.consider_all_requests_local = false
 
+  # Caching
+  config.action_controller.perform_caching = true
   config.cache_store = :memory_store
-  config.active_storage.service = :local
-  config.action_mailer.raise_delivery_errors = false
+
+  # Active Storage (use Supabase S3, not local)
+  config.active_storage.service = :supabase
+
+  # Mailer
+  config.action_mailer.raise_delivery_errors = true
   config.action_mailer.perform_caching = false
 
-  config.active_support.deprecation = :log
-  config.active_record.migration_error = :page_load
-  config.active_record.verbose_query_logs = true
+  # Logging
+  config.active_support.deprecation = :notify
+  config.active_record.verbose_query_logs = false
   config.active_record.query_log_tags_enabled = true
-  config.active_job.verbose_enqueue_logs = true
-
-  config.action_view.annotate_rendered_view_with_filenames = true
-  config.action_controller.raise_on_missing_callback_actions = true
+  config.active_job.verbose_enqueue_logs = false
 end
