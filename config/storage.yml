@@ -32,3 +32,10 @@ local:
 #   service: Mirror
 #   primary: local
 #   mirrors: [ amazon, google, microsoft ]
+supabase:
+  service: S3
+  access_key_id: <%= ENV["SUPABASE_ACCESS_KEY"] %>
+  secret_access_key: <%= ENV["SUPABASE_SECRET_KEY"] %>
+  region: us-east-1
+  bucket: product-images
+  endpoint: https://ioqmzsimocnwwecohlil.storage.supabase.co/storage/v1/s3

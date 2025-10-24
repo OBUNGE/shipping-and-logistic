@@ -11,16 +11,30 @@
 # It's strongly recommended that you check this file into your version control system.
 
 ActiveRecord::Schema[8.0].define(version: 2025_10_24_051844) do
+  create_schema "auth"
+  create_schema "extensions"
+  create_schema "graphql"
+  create_schema "graphql_public"
+  create_schema "pgbouncer"
+  create_schema "realtime"
+  create_schema "storage"
+  create_schema "vault"
+
   # These are extensions that must be enabled in order to support this database
+  enable_extension "extensions.pg_stat_statements"
+  enable_extension "extensions.pgcrypto"
+  enable_extension "extensions.uuid-ossp"
+  enable_extension "graphql.pg_graphql"
   enable_extension "pg_catalog.plpgsql"
+  enable_extension "vault.supabase_vault"
 
   create_table "active_admin_comments", force: :cascade do |t|
     t.string "namespace"
     t.text "body"
     t.string "resource_type"
-    t.integer "resource_id"
+    t.bigint "resource_id"
     t.string "author_type"
-    t.integer "author_id"
+    t.bigint "author_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["author_type", "author_id"], name: "index_active_admin_comments_on_author"
@@ -105,7 +119,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_24_051844) do
   end
 
   create_table "notifications", force: :cascade do |t|
-    t.integer "user_id", null: false
+    t.bigint "user_id", null: false
     t.string "message"
     t.boolean "read", default: false
     t.datetime "created_at", null: false
@@ -114,8 +128,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_24_051844) do
   end
 
   create_table "order_items", force: :cascade do |t|
-    t.integer "order_id", null: false
-    t.integer "product_id", null: false
+    t.bigint "order_id", null: false
+    t.bigint "product_id", null: false
     t.integer "quantity"
     t.decimal "unit_price"
     t.datetime "created_at", null: false
@@ -141,20 +155,21 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_24_051844) do
   end
 
   create_table "payments", force: :cascade do |t|
-    t.integer "order_id", null: false
-    t.decimal "amount"
+    t.bigint "order_id", null: false
+    t.bigint "user_id", null: false
+    t.decimal "amount", precision: 12, scale: 2
     t.string "provider"
-    t.string "status"
+    t.string "status", default: "pending"
     t.string "transaction_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.integer "user_id", null: false
     t.string "checkout_request_id"
     t.string "mpesa_receipt_number"
     t.string "currency", default: "USD", null: false
     t.index ["checkout_request_id"], name: "index_payments_on_checkout_request_id", unique: true
     t.index ["mpesa_receipt_number"], name: "index_payments_on_mpesa_receipt_number", unique: true
     t.index ["order_id"], name: "index_payments_on_order_id"
+    t.index ["transaction_id"], name: "index_payments_on_transaction_id"
     t.index ["user_id"], name: "index_payments_on_user_id"
   end
 
@@ -167,7 +182,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_24_051844) do
   end
 
   create_table "products", force: :cascade do |t|
-    t.integer "user_id", null: false
+    t.bigint "user_id", null: false
     t.string "title"
     t.text "description"
     t.decimal "price"
@@ -222,11 +237,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_24_051844) do
   end
 
   create_table "shipments", force: :cascade do |t|
-    t.integer "order_id", null: false
+    t.bigint "order_id", null: false
     t.string "carrier"
     t.string "tracking_number"
-    t.decimal "cost"
-    t.string "status"
+    t.decimal "cost", precision: 12, scale: 2
+    t.string "status", default: "pending"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "first_name"
