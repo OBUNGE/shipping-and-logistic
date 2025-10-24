@@ -1,0 +1,13 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  shipment: one
+  status: MyString
+  changed_by: one
+  changed_at: 2025-10-16 08:57:59
+
+two:
+  shipment: two
+  status: MyString
+  changed_by: two
+  changed_at: 2025-10-16 08:57:59

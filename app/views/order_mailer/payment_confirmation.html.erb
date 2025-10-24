@@ -1,0 +1,6 @@
+<h2>Hi <%= @order.buyer.first_name %>,</h2>
+
+<p>Thank you for your payment for Order ##<%= @order.id %>.</p>
+<p>We’ve notified the seller and will begin preparing your shipment.</p>
+
+<p><strong>Amount Paid:</strong> <%= number_to_currency(@order.total, unit: "#{@order.currency} ") %></p>

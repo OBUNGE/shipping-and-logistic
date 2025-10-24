@@ -1,0 +1,190 @@
+/*
+ * This is a manifest file that'll be compiled into application.css.
+ *
+ * With Propshaft, assets are served efficiently without preprocessing steps. You can still include
+ * application-wide styles in this file, but keep in mind that CSS precedence will follow the standard
+ * cascading order, meaning styles declared later in the document or manifest will override earlier ones,
+ * depending on specificity.
+ *
+ * Consider organizing styles into separate files for maintainability.
+ */
+
+.star-rating .star {
+  cursor: pointer;
+  color: #ccc;
+  transition: color 0.2s;
+}
+
+.star-rating input[type="radio"]:checked ~ .star {
+  color: gold;
+}
+.star {
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+
+.star-rating .star:hover,
+.star-rating .star:hover ~ .star {
+  color: gold;
+}
+.star-rating .star.selected {
+  color: gold;
+}
+.star {
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+.star:hover {
+  color: gold;
+}/* ===========================
+   Product Gallery & Thumbnails
+   =========================== */
+
+.image-gallery-wrapper {
+  display: flex;
+  flex-direction: column; /* stack carousel + thumbnails vertically */
+  gap: 1rem;
+  max-width: 100%;
+}
+
+/* Main Carousel */
+.product-carousel img,
+.carousel-item img {
+  border-radius: 0.5rem;
+  object-fit: contain;
+  max-height: 75vh;
+  width: 100%;
+}
+
+.rounded-shadow {
+  border-radius: 0.75rem;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.25);
+}
+
+/* Carousel arrows */
+.custom-arrow {
+  background-color: rgba(0, 0, 0, 0.6);
+  border-radius: 50%;
+  padding: 1rem;
+  filter: invert(1);
+  box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.3);
+  transition: background-color 0.2s ease;
+}
+.custom-arrow:hover {
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+/* Thumbnail Row */
+.thumb-row {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  overflow-x: auto;   /* scroll horizontally if too many */
+  padding: 0.5rem 0;
+}
+
+.thumb-row img,
+.img-thumbnail,
+.thumb-row .thumb-img {
+  width: 70px;
+  height: 70px;
+  object-fit: cover;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: transform 0.2s ease, border 0.2s ease;
+  box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.2);
+}
+
+.thumb-row img:hover,
+.img-thumbnail:hover {
+  transform: scale(1.05);
+  border: 2px solid #0d6efd;
+}
+@media (max-width: 767px) {
+  .thumb-row {
+    display: none !important;
+  }
+}
+
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .image-gallery-wrapper {
+    gap: 0.75rem;
+  }
+  .thumb-row img {
+    width: 55px;
+    height: 55px;
+  }
+}
+
+/* add new product style stRT HERE */
+
+/* Gallery preview styling */
+form .form-label {
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+form .form-control-sm {
+  font-size: 0.85rem;
+  padding: 0.4rem 0.6rem;
+}
+
+form h2 {
+  font-size: 1.25rem;
+}
+
+#gallery-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.preview-item img {
+  border-radius: 0.5rem;
+  box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease;
+}
+
+.preview-item img:hover {
+  transform: scale(1.05);
+}
+
+.border.p-2 {
+  background-color: #f8f9fa;
+  border-radius: 0.5rem;
+}
+
+/*all product*/
+.product-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.product-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+}
+.product-image-wrapper img {
+  object-fit: cover;
+  height: 220px;
+}
+.product-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  background: #fff;
+}
+
+.product-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+
+.product-image {
+  height: 220px;
+  object-fit: cover;
+}
+
+.product-info div {
+  margin-bottom: 0.25rem;
+}

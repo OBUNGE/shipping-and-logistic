@@ -1,0 +1,219 @@
+<div class="container mt-4">
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <h1 class="card-title mb-4">Checkout</h1>
+
+      <% if @product.present? %>
+        <!-- Single Product Checkout -->
+        <h4>Product Summary</h4>
+        <p><strong>Product:</strong> <%= @product.title %></p>
+        <p><strong>Price per unit:</strong> 
+          <%= display_price(@product.price, user: current_user) %>
+        </p>
+        <p><strong>Seller:</strong> 
+          <%= @product.seller.company_name.presence || @product.seller.name.presence || "Unknown Seller" %>
+        </p>
+        <p><strong>Delivery:</strong> <%= @product.estimated_delivery_range.presence || "2–5 business days" %></p>
+        <p><strong>Shipping:</strong> 
+          <%= display_price(@product.shipping_cost || 0, user: current_user) %>
+        </p>
+
+        <%= form_with url: product_orders_path(@product), method: :post, local: true do |f| %>
+          <% if @product.variants.any? %>
+            <div class="mb-3">
+              <%= f.label :variant_id, "Choose Variant", class: "form-label" %>
+              <%= f.select :variant_id,
+                    options_for_select(@product.variants.map { |v|
+                      label = "#{v.name}: #{v.value}"
+                      if v.price_modifier.present? && v.price_modifier != 0
+                        label += " (+" + display_price(v.price_modifier, user: current_user) + ")"
+                      end
+                      [label, v.id]
+                    }),
+                    { prompt: "Select a variant" },
+                    class: "form-select",
+                    required: true %>
+            </div>
+          <% end %>
+
+          <!-- Quantity -->
+          <div class="mb-3">
+            <%= f.label :quantity, "Quantity", class: "form-label" %>
+            <%= f.number_field :quantity, value: 1, min: 1, class: "form-control", required: true %>
+          </div>
+
+          <!-- Currency Selection -->
+          <div class="mb-3">
+            <%= f.label :currency, "Choose Currency" %>
+            <%= f.select :currency, options_for_select([["USD", "USD"], ["KES", "KES"]], selected: "USD"), {}, class: "form-select" %>
+          </div>
+
+          <!-- Delivery Info -->
+          <h4 class="mt-4">Delivery Information</h4>
+          <div class="mb-3">
+            <%= f.label :first_name, "First Name" %>
+            <%= f.text_field :first_name, class: "form-control", required: true %>
+          </div>
+          <div class="mb-3">
+            <%= f.label :last_name, "Last Name" %>
+            <%= f.text_field :last_name, class: "form-control", required: true %>
+          </div>
+          <div class="mb-3">
+            <%= f.label :delivery_address, "Delivery Address" %>
+            <%= f.text_area :delivery_address, class: "form-control", rows: 3, required: true %>
+          </div>
+
+          <!-- Payment Section -->
+          <h4 class="mt-4">Payment Method</h4>
+          <div class="form-check mb-3">
+            <%= f.radio_button :provider, "mpesa", checked: true, class: "form-check-input", id: "provider_mpesa" %>
+            <%= f.label :provider_mpesa, "M-PESA (STK Push)", class: "form-check-label" %>
+          </div>
+          <div class="mb-3" id="mpesa_phone_field">
+            <%= f.label :phone_number, "M-PESA Phone Number" %>
+            <%= f.telephone_field :phone_number, value: current_user.phone, class: "form-control", placeholder: "e.g. 2547XXXXXXXX" %>
+          </div>
+          <div class="form-check mb-3">
+            <%= f.radio_button :provider, "paypal", class: "form-check-input", id: "provider_paypal" %>
+            <%= f.label :provider_paypal, "PayPal", class: "form-check-label" %>
+          </div>
+          <div class="form-check mb-3">
+            <%= f.radio_button :provider, "paystack", class: "form-check-input", id: "provider_paystack" %>
+            <%= f.label :provider_paystack, "Credit/Debit Card", class: "form-check-label" %>
+          </div>
+
+          <%= f.submit "Confirm & Pay", class: "btn btn-success w-100 fw-bold" %>
+        <% end %>
+
+      <% elsif @cart_items.present? %>
+        <!-- Cart Checkout -->
+        <h4>Your Cart</h4>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Variant</th>
+              <th>Qty</th>
+              <th>Unit Price</th>
+              <th>Subtotal</th>
+              <th>Shipping</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @cart_items.each do |item| %>
+              <% product = item[:product] %>
+              <% variant = item[:variant] %>
+              <% shipping_cost = item[:shipping] || 0 %>
+              <tr>
+                <td><%= product.title %></td>
+                <td>
+                  <% if variant %>
+                    <span class="badge bg-info text-dark"><%= "#{variant.name}: #{variant.value}" %></span>
+                  <% else %>
+                    <span class="text-muted">—</span>
+                  <% end %>
+                </td>
+                <td><%= item[:quantity] %></td>
+                <td><%= display_price(item[:unit_price], user: current_user) %></td>
+                <td><%= display_price(item[:subtotal], user: current_user) %></td>
+                <td><%= display_price(shipping_cost, user: current_user) %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+
+        <% subtotal = @cart_items.sum { |i| i[:subtotal] } %>
+        <% shipping_total = @cart_items.sum { |i| i[:shipping] || 0 } %>
+        <% grand_total = subtotal + shipping_total %>
+
+        <h5>Subtotal (Products): <%= display_price(subtotal, user: current_user) %></h5>
+        <h5>Shipping: <%= display_price(shipping_total, user: current_user) %></h5>
+        <h4>Grand Total: <%= display_price(grand_total, user: current_user) %></h4>
+
+        <%= form_with url: orders_path, method: :post, local: true do |f| %>
+          <!-- Currency Selection -->
+          <div class="mb-3">
+            <%= f.label :currency, "Choose Currency" %>
+            <%= f.select :currency, options_for_select([["USD", "USD"], ["KES", "KES"]], selected: "USD"), {}, class: "form-select" %>
+          </div>
+
+          <!-- Delivery Info -->
+          <h4 class="mt-4">Delivery Information</h4>
+          <div class="mb-3">
+            <%= f.label :first_name, "First Name" %>
+            <%= f.text_field :first_name, class: "form-control", required: true %>
+          </div>
+          <div class="mb-3">
+            <%= f.label :last_name, "Last Name" %>
+            <%= f.text_field :last_name, class: "form-control", required: true %>
+          </div>
+          <div class="mb-3">
+            <%= f.label :delivery_address, "Delivery Address" %>
+            <%= f.text_area :delivery_address, class: "form-control", rows: 3, required: true %>
+          </div>
+
+          <!-- Payment Section -->
+          <h4 class="mt-4">Payment Method</h4>
+
+          <!-- M-PESA -->
+          <div class="form-check mb-3">
+            <%= f.radio_button :provider, "mpesa", checked: true, class: "form-check-input", id: "provider_mpesa_cart" %>
+            <%= f.label :provider_mpesa_cart, "M-PESA (STK Push)", class: "form-check-label" %>
+          </div>
+          <div class="mb-3" id="mpesa_phone_field_cart">
+            <%= f.label :phone_number, "M-PESA Phone Number" %>
+            <%= f.telephone_field :phone_number,
+                  value: current_user.phone,
+                  class: "form-control",
+                  placeholder: "e.g. 2547XXXXXXXX" %>
+          </div>
+
+          <!-- PayPal -->
+          <div class="form-check mb-3">
+            <%= f.radio_button :provider, "paypal", class: "form-check-input", id: "provider_paypal_cart" %>
+            <%= f.label :provider_paypal_cart, "PayPal", class: "form-check-label" %>
+          </div>
+
+          <!-- Credit/Debit Card (via Paystack) -->
+          <div class="form-check mb-3">
+            <%= f.radio_button :provider, "paystack", class: "form-check-input", id: "provider_paystack_cart" %>
+            <%= f.label :provider_paystack_cart, "Credit/Debit Card", class: "form-check-label" %>
+          </div>
+
+          <%= f.submit "Confirm & Pay", class: "btn btn-success w-100 fw-bold" %>
+        <% end %>
+      <% else %>
+        <p>Your cart is empty.</p>
+        <%= link_to "Back to Products", products_path, class: "btn btn-primary" %>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<!-- Payment method toggle script -->
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const mpesaRadio   = document.getElementById("provider_mpesa") || document.getElementById("provider_mpesa_cart");
+    const paypalRadio  = document.getElementById("provider_paypal") || document.getElementById("provider_paypal_cart");
+    const paystackRadio= document.getElementById("provider_paystack") || document.getElementById("provider_paystack_cart");
+    const phoneField   = document.getElementById("mpesa_phone_field") || document.getElementById("mpesa_phone_field_cart");
+
+    function togglePhoneField() {
+      if (mpesaRadio && mpesaRadio.checked) {
+        phoneField.style.display = "block";
+      } else {
+        phoneField.style.display = "none";
+      }
+    }
+
+    // Attach listeners
+    [mpesaRadio, paypalRadio, paystackRadio].forEach(radio => {
+      if (radio) {
+        radio.addEventListener("change", togglePhoneField);
+      }
+    });
+
+    // Run once on page load
+    togglePhoneField();
+  });
+</script>

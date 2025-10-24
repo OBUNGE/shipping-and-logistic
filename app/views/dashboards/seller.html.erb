@@ -1,0 +1,123 @@
+<h1>Seller Dashboard</h1>
+<hr>
+<h2>Storefront Settings</h2>
+<p>Update your store name, logo, banner, and description.</p>
+<%= link_to "Edit Storefront", edit_seller_path(current_user.store_slug), class: "btn btn-outline-primary" %>
+
+<!-- Summary Cards -->
+<div class="grid grid-cols-3 gap-4 my-4">
+  <div class="card p-4 shadow rounded bg-light">
+    <h4>Total Products</h4>
+    <p><%= @products.count %></p>
+  </div>
+
+  <div class="card p-4 shadow rounded bg-light">
+    <h4>Total Orders</h4>
+    <p><%= @orders.count %></p>
+  </div>
+
+  <div class="card p-4 shadow rounded bg-light">
+    <h4>Total Revenue</h4>
+    <p>KES <%= number_to_currency(@orders.where(status: "paid").sum(:total), unit: "", precision: 2) %></p>
+  </div>
+</div>
+
+<!-- Shipment Breakdown -->
+<div class="grid grid-cols-3 gap-4 my-4">
+  <div class="card p-4 shadow rounded bg-light">
+    <h4>Pending Shipments</h4>
+    <p><%= @orders.joins(:shipment).where(shipments: { status: "pending" }).count %></p>
+  </div>
+  <div class="card p-4 shadow rounded bg-light">
+    <h4>In Transit</h4>
+    <p><%= @orders.joins(:shipment).where(shipments: { status: "in_transit" }).count %></p>
+  </div>
+  <div class="card p-4 shadow rounded bg-light">
+    <h4>Delivered</h4>
+    <p><%= @orders.joins(:shipment).where(shipments: { status: "delivered" }).count %></p>
+  </div>
+</div>
+
+<hr>
+
+<!-- Charts -->
+<h3>Sales Over Time</h3>
+<% if @sales_data.present? %>
+  <%= line_chart @sales_data, height: "300px", colors: ["#007bff"] %>
+<% else %>
+  <p>No sales data available yet.</p>
+<% end %>
+
+<h3>Revenue Trend</h3>
+<% if @revenue_data.present? %>
+  <%= area_chart @revenue_data, height: "300px", colors: ["#28a745"] %>
+<% else %>
+  <p>No revenue data available yet.</p>
+<% end %>
+
+<h3>Top Selling Products</h3>
+<% if @top_products.present? %>
+  <%= column_chart @top_products, height: "300px", colors: ["#ffc107"] %>
+<% else %>
+  <p>No product sales yet.</p>
+<% end %>
+
+<hr>
+
+<!-- Product List -->
+<h2>My Products</h2>
+<% if @products.any? %>
+  <ul>
+    <% @products.each do |product| %>
+      <li><%= link_to product.title, product_path(product) %></li>
+    <% end %>
+  </ul>
+<% else %>
+  <p>You haven’t added any products yet.</p>
+<% end %>
+
+<hr>
+
+<!-- Orders Table -->
+<h2>Orders Received</h2>
+<% if @orders.any? %>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Buyer</th>
+        <th>Products</th>
+        <th>Status</th>
+        <th>Payment</th>
+        <th>Shipment</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @orders.each do |order| %>
+        <tr>
+          <td><%= order.buyer.email %></td>
+          <td>
+            <% order.order_items.each do |item| %>
+              <%= link_to item.product.title, product_path(item.product) %><br>
+            <% end %>
+          </td>
+          <td><%= order.status.capitalize %></td>
+          <td><%= order.payment&.status&.capitalize || "Pending" %></td>
+          <td><%= order.shipment&.status&.capitalize || "Not shipped" %></td>
+          <td>
+            <%= link_to "View", order_path(order), class: "btn btn-sm btn-outline-primary" %>
+
+            <% if order.payment&.status == "paid" && order.shipment.nil? %>
+              <!-- ✅ Redirects to Shipment Details after creation -->
+              <%= button_to "Create Shipment", order_shipment_path(order), method: :post,
+                            class: "btn btn-sm btn-success mt-1",
+                            data: { confirm: "Create shipment for this paid order?" } %>
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <p>No orders received yet.</p>
+<% end %>

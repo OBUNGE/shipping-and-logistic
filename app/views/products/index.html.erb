@@ -1,0 +1,179 @@
+<div class="container-fluid py-3">
+  <!-- 🔝 Sticky Scrollable Category Bar -->
+  <div class="category-bar sticky-top bg-white py-2 px-3 mb-3 d-flex align-items-center gap-3 shadow-sm overflow-auto"
+       style="top: 60px; z-index: 1050;">
+    <% {
+      "Industrial & Construction" => "🏗️",
+      "Agriculture & Farming" => "🚜",
+      "Office & Business" => "💼",
+      "Electronics & Energy" => "🔌",
+      "Home & Living" => "🏠"
+    }.each do |category, icon| %>
+      <%= link_to products_path(category: category),
+          class: "category-pill d-flex align-items-center px-3 py-2 text-decoration-none rounded-pill shadow-sm" do %>
+        <span class="me-2"><%= icon %></span>
+        <span class="fw-semibold small"><%= category %></span>
+      <% end %>
+    <% end %>
+  </div>
+
+  <!-- 🔍 Sticky Search Bar -->
+  <div class="sticky-top bg-white shadow-sm py-2 px-3 mb-3" style="top: 110px; z-index: 1020;">
+    <form action="<%= products_path %>" method="get" class="d-flex">
+      <input type="text" name="query" class="form-control me-2" placeholder="Search products..." />
+      <button class="btn btn-primary">Search</button>
+    </form>
+  </div>
+
+  <div class="row">
+    <!-- 📂 Sidebar Categories -->
+    <aside class="col-12 col-md-3 col-lg-2 mb-4 d-none d-md-block">
+      <div class="accordion sticky-top shadow-sm rounded-3" id="categoryAccordion" style="top: 170px;">
+        <% {
+          "Industrial & Construction" => { icon: "🏗️", subs: ["Construction machinery", "Building materials", "Hardware & tools", "Safety gear"] },
+          "Agriculture & Farming" => { icon: "🚜", subs: ["Tractors", "Irrigation", "Seeds & fertilizers", "Livestock equipment"] },
+          "Office & Business" => { icon: "💼", subs: ["Printers", "Furniture", "POS systems", "Stationery"] },
+          "Electronics & Energy" => { icon: "🔌", subs: ["Solar panels", "CCTV", "Phones", "Smart devices"] },
+          "Home & Living" => { icon: "🏠", subs: ["Furniture", "Appliances", "Décor", "Lighting"] }
+        }.each_with_index do |(category, data), idx| %>
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="heading-<%= idx %>">
+              <button class="accordion-button collapsed py-2 fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-<%= idx %>">
+                <%= data[:icon] %> <span class="ms-2"><%= category %></span>
+              </button>
+            </h2>
+            <div id="collapse-<%= idx %>" class="accordion-collapse collapse">
+              <div class="accordion-body py-2">
+                <ul class="list-unstyled mb-0">
+                  <% data[:subs].each do |sub| %>
+                    <li>
+                      <%= link_to sub, products_path(category: category, subcategory: sub),
+                          class: "text-decoration-none small d-block py-1 link-hover" %>
+                    </li>
+                  <% end %>
+                </ul>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </aside>
+
+    <!-- 🛍️ Main Product Grid -->
+    <main class="col-12 col-md-9 col-lg-10">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="fs-5 fw-semibold mb-0">🛍️ All Products</h2>
+        <% if user_signed_in? && current_user.seller? %>
+          <%= link_to "➕ Add Product", new_product_path, class: "btn btn-sm btn-primary shadow-sm" %>
+        <% end %>
+      </div>
+
+      <!-- Product Grid -->
+      <div class="row g-3">
+        <% @products.each do |product| %>
+          <% seller = product.seller %>
+          <div class="col-6 col-md-4 col-lg-3">
+            <div class="card h-100 border-0 shadow-sm rounded-3 hover-shadow transition-all">
+              <!-- 🖼️ Product Image -->
+              <div class="ratio ratio-1x1">
+                <% if product.image.attached? %>
+                  <%= image_tag product.image.variant(resize_to_limit: [400, 400]), class: "card-img-top rounded-top object-fit-cover" %>
+                <% else %>
+                  <%= image_tag "placeholder.jpg", class: "card-img-top rounded-top object-fit-cover" %>
+                <% end %>
+              </div>
+
+              <!-- Product Info -->
+              <div class="card-body d-flex flex-column p-2">
+                <h6 class="text-truncate mb-1 small fw-semibold">
+                  <%= link_to product.title, product_path(product), class: "text-dark text-decoration-none link-hover" %>
+                </h6>
+
+<p class="text-primary fw-bold small mb-1">
+  <%= display_price(product.price, user: current_user) %>
+</p>
+
+
+                <p class="small <%= product.stock.to_i > 0 ? 'text-success' : 'text-danger' %> mb-1">
+                  <%= product.stock.to_i > 0 ? "✅ In Stock" : "❌ Out of Stock" %>
+                </p>
+
+                <% if seller&.store_slug.present? %>
+                  <p class="small text-muted mb-2">
+                    Sold by: <%= link_to (seller.company_name || seller.name), seller_path(seller.store_slug),
+                        class: "fw-semibold text-decoration-none link-hover" %>
+                  </p>
+                <% end %>
+
+                <div class="mt-auto d-flex gap-2">
+                  <%= link_to "View", product_path(product), class: "btn btn-sm btn-outline-primary flex-fill" %>
+                  <% if product.stock.to_i > 0 %>
+                    <%= button_to "Add to Cart", add_cart_path, method: :post,
+                        params: { product_id: product.id }, class: "btn btn-sm btn-success flex-fill" %>
+                  <% end %>
+                </div>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </main>
+  </div>
+</div>
+
+<style>
+  /* 🔝 Scrollable Sticky Category Bar */
+  .category-bar {
+    white-space: nowrap;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #ccc transparent;
+  }
+
+  .category-bar::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  .category-bar::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 10px;
+  }
+
+  .category-pill {
+    background-color: #f8f9fa;
+    color: #333;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+  }
+
+  .category-pill:hover {
+    background-color: #0d6efd;
+    color: white !important;
+  }
+
+  /* Product Cards */
+  .hover-shadow:hover { transform: translateY(-3px); box-shadow: 0 6px 14px rgba(0,0,0,0.12); }
+  .link-hover:hover { color: #0d6efd !important; text-decoration: underline; }
+  .transition-all { transition: all 0.25s ease-in-out; }
+  .card { border-radius: 0.75rem; overflow: hidden; }
+  .card img { object-fit: cover; height: 100%; width: 100%; }
+
+  /* Buttons */
+  .btn-outline-primary:hover { color: #fff !important; background-color: #0d6efd; }
+  .btn-success { background-color: #198754; border-color: #198754; }
+  .btn-success:hover { background-color: #157347; border-color: #146c43; }
+
+  /* Responsive Grid */
+  @media (max-width: 768px) {
+    .card-body h6 { font-size: 0.8rem; }
+    .card-body p { font-size: 0.75rem; }
+    .btn { font-size: 0.75rem; padding: 0.25rem; }
+  }
+
+  @media (min-width: 992px) {
+    .col-lg-3 {
+      flex: 0 0 25%;
+      max-width: 25%;
+    }
+  }
+</style>

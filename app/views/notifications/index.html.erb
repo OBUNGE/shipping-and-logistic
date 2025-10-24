@@ -1,0 +1,14 @@
+<h1>Notifications</h1>
+
+<% if @notifications.any? %>
+  <ul>
+    <% @notifications.each do |notification| %>
+      <li style="<%= 'font-weight:bold;' unless notification.read %>">
+        <%= notification.message %>
+        <small>(<%= time_ago_in_words(notification.created_at) %> ago)</small>
+      </li>
+    <% end %>
+  </ul>
+<% else %>
+  <p>No notifications yet.</p>
+<% end %>

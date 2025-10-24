@@ -1,0 +1,19 @@
+<turbo-frame id="shipment_<%= shipment.id %>">
+  <tr>
+    <td><%= shipment.order_id %></td>
+    <td><%= shipment.carrier %></td>
+    <td><%= shipment.tracking_number %></td>
+    <td><%= number_to_currency(shipment.cost) %></td>
+    <td>
+      <%= shipment.status.humanize %>
+      <div class="progress-container">
+        <div class="progress-bar"
+             style="width: <%= shipment_progress(shipment.status) %>%; background-color: <%= progress_color(shipment.status) %>;">
+          <%= shipment_progress(shipment.status) %>%
+        </div>
+      </div>
+    </td>
+    <td><%= time_ago_in_words(shipment.updated_at) %> ago</td>
+    <td><%= link_to "View", order_shipment_path(shipment.order), class: "btn btn-sm btn-outline-primary" %></td>
+  </tr>
+</turbo-frame>

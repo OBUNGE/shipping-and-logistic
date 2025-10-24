@@ -1,0 +1,18 @@
+<h1><%= @category.name %></h1>
+
+<div class="row">
+  <% @products.each do |product| %>
+    <div class="col-md-4 mb-3">
+      <div class="card h-100">
+        <% if product.image.attached? %>
+          <%= image_tag product.image.variant(resize_to_limit: [400, 300]), class: "card-img-top" %>
+        <% end %>
+        <div class="card-body">
+          <h5><%= link_to product.title, product_path(product) %></h5>
+          <p>KSh <%= product.price %></p>
+          <small>Sold by <%= link_to product.seller.store_name, seller_path(product.seller.store_slug) %></small>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>

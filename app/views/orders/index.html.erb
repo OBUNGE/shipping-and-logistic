@@ -1,0 +1,39 @@
+<h1>Orders</h1>
+
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Buyer</th>
+      <th>Seller</th>
+      <th>Total</th>
+      <th>Status</th>
+      <th>Payment Method</th>
+      <th>Created At</th>
+      <th></th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @orders.each do |order| %>
+      <tr>
+        <td><%= order.id %></td>
+        <td><%= order.buyer&.name %></td>
+        <td><%= order.seller&.name %></td>
+        <td>
+          <!-- Converted total -->
+          <%= display_price(order.total, user: order.buyer) %>
+          <!-- Show original USD as muted text if different -->
+          <% if (session[:payment_method] == "mpesa" || session[:payment_method] == "paystack" || order.buyer&.country&.downcase == "kenya") %>
+            <br>
+            <small class="text-muted">(USD <%= number_to_currency(order.total, unit: "$") %>)</small>
+          <% end %>
+        </td>
+        <td><%= order.status.capitalize %></td>
+        <td><%= order.payment&.provider&.capitalize || "—" %></td>
+        <td><%= l(order.created_at, format: :short) %></td>
+        <td><%= link_to "View", order_path(order), class: "btn btn-sm btn-primary" %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

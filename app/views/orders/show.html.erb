@@ -1,0 +1,95 @@
+<div class="container mt-4">
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <h1 class="card-title mb-4">Order Summary</h1>
+
+      <p><strong>Order ID:</strong> <%= @order.id %></p>
+      <p><strong>Status:</strong> <%= @order.status.capitalize %></p>
+      <p><strong>Placed on:</strong> <%= @order.created_at.strftime("%B %d, %Y at %I:%M %p") %></p>
+
+      <hr>
+
+      <h4>Buyer</h4>
+      <p><strong>Name:</strong> <%= @order.buyer.name %></p>
+      <p><strong>Email:</strong> <%= @order.buyer.email %></p>
+      <p><strong>Phone:</strong> <%= @order.buyer.phone.presence || "Not provided" %></p>
+
+      <hr>
+
+      <h4>Seller</h4>
+      <p><strong>Name:</strong> <%= @order.seller.company_name.presence || @order.seller.name %></p>
+      <p><strong>Email:</strong> <%= @order.seller.email %></p>
+
+      <hr>
+
+      <% currency = @order.currency.presence || "USD" %>
+
+      <h4>Items</h4>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Qty</th>
+            <th>Unit Price</th>
+            <th>Subtotal</th>
+          </tr>
+        </thead>
+<tbody>
+  <% @order.order_items.each do |item| %>
+    <tr>
+      <td><%= item.product.title %></td>
+      <td><%= item.quantity %></td>
+      <td><%= display_price(item.product.price, user: @order.buyer) %></td>
+      <td><%= display_price(item.subtotal, user: @order.buyer) %></td>
+    </tr>
+  <% end %>
+</tbody>
+</table>
+
+
+      <h4>Total: <%= number_to_currency(@order.total, unit: "#{currency} ") %></h4>
+
+     <% if currency == "USD" %>
+  <% converted_total = ExchangeRateService.convert(@order.total, from: "USD", to: "KES") %>
+  <% if converted_total %>
+    <p class="text-muted">
+      Approx. in KES: <%= number_to_currency(converted_total, unit: "KES ") %>
+    </p>
+  <% else %>
+    <p class="text-muted">Exchange rate unavailable — KES estimate not shown.</p>
+  <% end %>
+<% end %>
+
+
+      <hr>
+
+      <h4>Payment</h4>
+      <% if @order.payment.present? %>
+        <p><strong>Provider:</strong> <%= @order.payment.provider.capitalize %></p>
+        <p><strong>Status:</strong> <%= @order.payment.status.capitalize %></p>
+        <p><strong>Transaction ID:</strong> <%= @order.payment.transaction_id %></p>
+        <p><strong>Amount Paid:</strong> <%= number_to_currency(@order.payment.amount, unit: "#{@order.payment.currency.presence || currency} ") %></p>
+
+        <% if @order.payment.paid? %>
+          <% if @order.payment.mpesa_receipt_number.present? %>
+            <p><strong>Receipt:</strong> <%= @order.payment.mpesa_receipt_number %></p>
+          <% end %>
+          <%= link_to "Download Receipt", receipt_order_path(@order), class: "btn btn-outline-primary" %>
+        <% else %>
+          <p class="text-warning">Payment is pending. Please complete it on your phone.</p>
+        <% end %>
+      <% else %>
+        <p class="text-danger">No payment record found.</p>
+      <% end %>
+
+      <%= link_to "Back to Orders", orders_path, class: "btn btn-secondary mt-3" %>
+    </div>
+  </div>
+</div>
+
+<style>
+  .card-title {
+    font-size: 1.75rem;
+    font-weight: 600;
+  }
+</style>

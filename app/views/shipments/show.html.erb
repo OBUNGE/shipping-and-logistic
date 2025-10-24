@@ -1,0 +1,71 @@
+<h2>Shipment Details for Order <%= @order.id %></h2>
+
+<p>
+  <strong>Status:</strong>
+  <%= status_icon(@shipment.status) %>
+  <%= @shipment.status.humanize %>
+</p>
+
+<p><strong>Tracking Number:</strong> <%= @shipment.tracking_number.presence || "Not assigned" %></p>
+<p><strong>Carrier:</strong> <%= @shipment.carrier.presence || "Not specified" %></p>
+<p><strong>Cost:</strong> <%= number_to_currency(@shipment.cost) if @shipment.cost.present? %></p>
+
+<% if estimated_delivery(@shipment) %>
+  <p><strong>Estimated Delivery:</strong> <%= estimated_delivery(@shipment) %></p>
+<% end %>
+
+<%# === Progress Bar === %>
+<div class="progress-container my-3">
+  <div class="progress-bar"
+       style="width: <%= shipment_progress(@shipment.status) %>%; background-color: <%= progress_color(@shipment.status) %>;">
+    <%= shipment_progress(@shipment.status) %>%
+  </div>
+</div>
+
+<%# === Seller Actions === %>
+<% if current_user == @order.seller %>
+  <div class="mb-3">
+    <%= link_to "Edit Shipment", edit_order_shipment_path(@order),
+                class: "btn btn-outline-secondary me-2" %>
+    <% if @shipment.carrier.downcase == "dhl" %>
+      <%= button_to "Track Now", track_order_shipment_path(@order),
+                    method: :post,
+                    class: "btn btn-primary" %>
+    <% else %>
+      <p class="text-muted d-inline-block">Tracking is only available for DHL shipments.</p>
+    <% end %>
+  </div>
+<% end %>
+
+<%# === Buyer Actions === %>
+<% if current_user == @order.buyer && @shipment.status.in?(["in_transit", "shipped"]) %>
+  <div class="mb-3">
+    <%= button_to "Confirm Delivery", order_shipment_path(@order),
+                  method: :patch,
+                  params: { shipment: { status: "delivered" } },
+                  class: "btn btn-success",
+                  data: { confirm: "Confirm that you’ve received this order?" } %>
+  </div>
+<% end %>
+
+<%# === Status History === %>
+<h3>Status History</h3>
+<% if @shipment.shipment_status_logs.any? %>
+  <ul class="list-group mb-4">
+    <% @shipment.shipment_status_logs.order(changed_at: :desc).each do |log| %>
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <div>
+          <strong><%= status_icon(log.status) %> <%= log.status.humanize %></strong>
+          <% if log.changed_by %>
+            by <%= log.changed_by.name %>
+          <% else %>
+            by <em>System</em>
+          <% end %>
+        </div>
+        <small><%= log.changed_at.strftime("%B %d, %Y %H:%M") %></small>
+      </li>
+    <% end %>
+  </ul>
+<% else %>
+  <p class="text-muted">No status changes recorded yet.</p>
+<% end %>

@@ -1,0 +1,13 @@
+<h1 class="mb-4">Review by <%= @review.user.name %></h1>
+
+<p><strong>Rating:</strong> <%= render_stars(@review.rating) %> (<%= @review.rating %> / 5)</p>
+<p><strong>Comment:</strong></p>
+<p><%= @review.comment %></p>
+
+<p class="text-muted"><small>Posted on <%= @review.created_at.strftime("%B %d, %Y") %></small></p>
+
+<% if @review.helpful_count.to_i > 0 %>
+  <p class="text-success">👍 <%= @review.helpful_count %> found this helpful</p>
+<% end %>
+
+<%= link_to "← Back to Product", product_path(@product), class: "btn btn-link mt-3" %>

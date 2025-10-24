@@ -1,0 +1,9 @@
+<h1 class="mb-4 text-danger">Delete Product</h1>
+
+<p>Are you sure you want to permanently delete <strong><%= @product.title %></strong>?</p>
+
+<%= form_with model: @product, url: product_path(@product), method: :delete, local: true do |form| %>
+  <%= form.submit "Yes, Delete", class: "btn btn-danger" %>
+<% end %>
+
+<%= link_to "Cancel", product_path(@product), class: "btn btn-secondary mt-2" %>

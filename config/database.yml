@@ -1,0 +1,27 @@
+# PostgreSQL configuration
+#   gem install pg
+#   Ensure the pg gem is defined in your Gemfile:
+#   gem "pg"
+
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  username: <%= ENV.fetch("PGUSER") { "postgres" } %>
+  password: <%= ENV.fetch("PGPASSWORD") { "" } %>
+  host: <%= ENV.fetch("PGHOST") { "localhost" } %>
+  port: <%= ENV.fetch("PGPORT") { 5432 } %>
+
+development:
+  <<: *default
+  database: shiping_development
+
+test:
+  <<: *default
+  database: shiping_test
+
+production:
+  adapter: postgresql
+  encoding: unicode
+  pool: 10
+  url: <%= ENV['DATABASE_URL'] %>

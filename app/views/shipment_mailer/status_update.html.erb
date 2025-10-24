@@ -1,0 +1,12 @@
+<h2>Hi <%= @buyer.first_name %>,</h2>
+
+<p>Your shipment for Order ##<%= @order.id %> has been updated to <strong><%= @status.humanize %></strong>.</p>
+
+<p>
+  <strong>Carrier:</strong> <%= @shipment.carrier %><br>
+  <strong>Tracking Number:</strong> <%= @shipment.tracking_number %><br>
+  <strong>Estimated Delivery:</strong> <%= estimated_delivery(@shipment) %>
+</p>
+
+<p>Thank you for shopping with us!</p>
+<p>Best regards,<br>Your Company Team</p>

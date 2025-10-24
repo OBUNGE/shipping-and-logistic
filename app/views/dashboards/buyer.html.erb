@@ -1,0 +1,55 @@
+<h1>Buyer Dashboard</h1>
+
+<h2>My Orders</h2>
+<% if @orders.any? %>
+  <table class="table table-bordered table-hover">
+    <thead class="table-light">
+      <tr>
+        <th>Products</th>
+        <th>Status</th>
+        <th>Payment</th>
+        <th>Shipment</th>
+        <th>Estimated Delivery</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @orders.each do |order| %>
+        <tr>
+          <td>
+            <% order.order_items.each do |item| %>
+              <%= link_to item.product.title, product_path(item.product) %><br>
+            <% end %>
+          </td>
+          <td><%= order.status.capitalize %></td>
+          <td><%= order.payment&.status&.capitalize || "Pending" %></td>
+          <td><%= order.shipment&.status&.humanize || "Not shipped" %></td>
+          <td>
+            <% if order.shipment&.estimated_delivery_date %>
+              <%= order.shipment.estimated_delivery_date.strftime("%B %d, %Y") %>
+            <% else %>
+              <span class="text-muted">N/A</span>
+            <% end %>
+          </td>
+          <td>
+            <%= link_to "View", order_path(order), class: "btn btn-sm btn-outline-primary mb-1" %>
+
+            <% if order.shipment&.status == "in_transit" %>
+              <%= button_to "Track Shipment", track_order_shipment_path(order), method: :post,
+                            class: "btn btn-sm btn-info mb-1" %>
+            <% end %>
+
+            <% if order.shipment&.status == "shipped" %>
+              <%= button_to "Confirm Delivery", order_shipment_path(order), method: :patch,
+                            params: { shipment: { status: "delivered" } },
+                            class: "btn btn-sm btn-success",
+                            data: { confirm: "Confirm that you’ve received this order?" } %>
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <p class="text-muted">You haven’t placed any orders yet.</p>
+<% end %>

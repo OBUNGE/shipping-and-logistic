@@ -1,0 +1,263 @@
+<h1 class="mb-4">Edit Product</h1>
+
+<%= render "form", product: @product %>
+
+<div class="mt-4">
+  <%= link_to "← Back to Products", products_path, class: "btn btn-sm btn-outline-secondary" %>
+</div>
+
+
+<!-- Dynamic Total Cost & Field Cloning & Image Preview -->
+<script>
+ document.addEventListener("DOMContentLoaded", () => {
+    const priceField = document.getElementById("product_price");
+    const shippingField = document.getElementById("product_shipping_cost");
+    const totalCostSpan = document.getElementById("total-cost");
+
+    function updateTotal() {
+      const price = parseFloat(priceField.value) || 0;
+      const shipping = parseFloat(shippingField.value) || 0;
+      const total = price + shipping;
+
+      // For now, just show USD symbol — server will render correct currency
+      totalCostSpan.textContent = `$${total.toFixed(2)}`;
+    }
+
+    priceField.addEventListener("input", updateTotal);
+    shippingField.addEventListener("input", updateTotal);
+  });
+
+
+  function addFields(containerId) {
+    const container = document.getElementById(containerId);
+    const lastBlock = container.querySelector("div.border:last-of-type");
+    if (lastBlock) {
+      const clone = lastBlock.cloneNode(true);
+      clone.querySelectorAll("input").forEach(input => input.value = "");
+      container.appendChild(clone);
+    }
+  }
+
+  function previewMainImage(event) {
+  const output = document.getElementById('main-image-preview');
+  const file = event.target.files[0];
+  if (file) {
+    output.src = URL.createObjectURL(file);
+    output.onload = () => URL.revokeObjectURL(output.src);
+    output.style.display = "block";
+  } else {
+    output.src = "";
+    output.style.display = "none";
+  }
+}
+
+
+  function previewGalleryImages(event) {
+    const previewContainer = document.getElementById("gallery-preview");
+    previewContainer.innerHTML = "";
+
+    Array.from(event.target.files).forEach((file, index) => {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const wrapper = document.createElement("div");
+        wrapper.className = "col-md-3 mb-2 text-center preview-item";
+        wrapper.draggable = true;
+        wrapper.dataset.index = index;
+
+        const img = document.createElement("img");
+        img.src = e.target.result;
+        img.className = "img-thumbnail";
+        img.style.maxHeight = "150px";
+        img.style.width = "auto";
+
+        const removeBtn = document.createElement("button");
+        removeBtn.className = "btn btn-sm btn-outline-danger mt-2";
+        removeBtn.textContent = "Remove";
+        removeBtn.onclick = () => wrapper.remove();
+
+        wrapper.appendChild(img);
+        wrapper.appendChild(removeBtn);
+        previewContainer.appendChild(wrapper);
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+  // Drag-and-drop sorting
+  document.addEventListener("DOMContentLoaded", () => {
+    const container = document.querySelector(".sortable-preview");
+    let dragged;
+
+    container?.addEventListener("dragstart", (e) => {
+      dragged = e.target.closest(".preview-item");
+      if (dragged) dragged.style.opacity = 0.5;
+    });
+
+    container?.addEventListener("dragend", (e) => {
+      if (dragged) dragged.style.opacity = "";
+    });
+
+    container?.addEventListener("dragover", (e) => {
+      e.preventDefault();
+    });
+
+    container?.addEventListener("drop", (e) => {
+      e.preventDefault();
+      const target = e.target.closest(".preview-item");
+      if (target && dragged && dragged !== target) {
+        container.insertBefore(dragged, target);
+      }
+    });
+  });
+
+
+// Variant Type-Value Dynamic Dropdowns
+
+document.addEventListener("turbo:load", () => {
+  const typeOptions = {
+    Size: ["XS","S","M","L","XL","XXL","3XL","4XL","5XL","6XL","7XL","8XL","9XL","10XL"],
+    Color: ["Red","Blue","Black","White","Green","Yellow","Purple","Orange","Pink","Gray","Brown","Cyan","Magenta","Lime","Teal","Navy","Maroon","Olive","Silver","Gold","Beige"],
+    Material: ["Cotton","Leather","Polyester","Plastic","Metal","Wood","Glass","Silk","Wool","Denim"],
+    Storage: ["64GB","128GB","256GB","512GB","1TB","2TB","4TB"],
+    Packaging: ["Box","Bag","Sachet","Envelope","Bottle","Jar"]
+  };
+
+  function updateValueOptions(typeSelect) {
+    const selectedType = typeSelect.value;
+    const block = typeSelect.closest(".variant-block");
+    const valueSelect = block.querySelector(".variant-value");
+    const actions = block.querySelector(".color-image-actions");
+
+    if (valueSelect) {
+      valueSelect.innerHTML = "";
+      const options = typeOptions[selectedType] || [];
+      if (options.length === 0) {
+        const fallback = document.createElement("option");
+        fallback.textContent = "No options available";
+        fallback.disabled = true;
+        valueSelect.appendChild(fallback);
+      } else {
+        options.forEach(opt => {
+          const option = document.createElement("option");
+          option.value = opt;
+          option.textContent = opt;
+          valueSelect.appendChild(option);
+        });
+      }
+    }
+
+    // Toggle "Add color image" button
+    if (actions) {
+      actions.classList.toggle("d-none", selectedType !== "Color");
+    }
+  }
+
+  function bindVariantDropdowns(container) {
+    container.querySelectorAll(".variant-block .variant-type").forEach(typeSelect => {
+      updateValueOptions(typeSelect);
+      typeSelect.addEventListener("change", () => {
+        updateValueOptions(typeSelect);
+      });
+    });
+  }
+
+  function bindDeleteButtons(container) {
+    container.querySelectorAll(".delete-variant").forEach(button => {
+      button.addEventListener("click", (e) => {
+        const block = e.target.closest(".variant-block");
+        if (block) block.remove();
+      });
+    });
+
+    container.querySelectorAll(".delete-variant-image").forEach(button => {
+      button.addEventListener("click", (e) => {
+        const block = e.target.closest(".variant-image-block");
+        if (block) block.remove();
+      });
+    });
+  }
+
+  function addVariantImageToBlock(variantBlock) {
+    const templateHtml = document.getElementById("variant-image-template").innerHTML;
+
+    // Determine variant index by position among .variant-blocks
+    const variantIndex = Array.from(document.querySelectorAll("#variant-fields .variant-block")).indexOf(variantBlock);
+
+    // Determine next image index within this variant
+    const existingImages = variantBlock.querySelectorAll(".variant-image-block").length;
+    const imageIndex = existingImages; // 0-based
+
+    const html = templateHtml
+      .replace(/NEW_RECORD/g, variantIndex)
+      .replace(/NEW_IMAGE/g, imageIndex);
+
+    const wrapper = document.createElement("div");
+    wrapper.innerHTML = html.trim();
+    const imageBlock = wrapper.firstElementChild;
+
+    if (imageBlock) {
+      variantBlock.appendChild(imageBlock);
+      bindDeleteButtons(imageBlock);
+    }
+  }
+
+  function bindAddImageButtons(container) {
+    container.querySelectorAll(".variant-block .add-variant-image-btn").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        const variantBlock = e.target.closest(".variant-block");
+        addVariantImageToBlock(variantBlock);
+      });
+    });
+  }
+
+  // Add Variant (uses NEW_RECORD placeholder replacement)
+  window.addFields = function(containerId) {
+    const container = document.getElementById(containerId);
+    const templateEl = document.getElementById("variant-template");
+    if (!templateEl) {
+      console.error("Template not found");
+      return;
+    }
+
+    const template = templateEl.innerHTML;
+    const index = container.querySelectorAll(".variant-block").length;
+
+    const newBlockHtml = template.replace(/NEW_RECORD/g, index);
+
+    const wrapper = document.createElement("div");
+    wrapper.innerHTML = newBlockHtml.trim();
+    const newBlock = wrapper.firstElementChild;
+
+    if (!newBlock) {
+      console.error("Template produced no element");
+      return;
+    }
+
+    container.appendChild(newBlock);
+
+    bindVariantDropdowns(newBlock);
+    bindDeleteButtons(newBlock);
+    bindAddImageButtons(newBlock);
+  };
+
+  // Initial bindings
+  bindVariantDropdowns(document);
+  bindDeleteButtons(document);
+  bindAddImageButtons(document);
+});
+</script>
+<!-- Variant Image Template (hidden) -->
+<script>
+<template id="variant-image-template">
+  <div class="variant-image-block border p-2 mb-2 position-relative">
+    <button type="button" class="btn-close position-absolute top-0 end-0 m-2 delete-variant-image" aria-label="Delete variant image"></button>
+    <div class="mb-2">
+      <label for="product_variants_NEW_RECORD_variant_images_NEW_IMAGE_image" class="form-label fw-semibold">Variant Image</label>
+      <input type="file" name="product[variants][NEW_RECORD][variant_images][NEW_IMAGE][image]" id="product_variants_NEW_RECORD_variant_images_NEW_IMAGE_image" class="form-control" accept="image/*">
+    </div>
+  </div>
+</template>
+<style>
+  .preview-item {
+    cursor: move;
+  }
+</style>
