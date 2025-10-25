@@ -143,6 +143,8 @@ GEM
       responders
       warden (~> 1.2.3)
     diff-lcs (1.6.2)
+    dockerfile-rails (1.7.10)
+      rails (>= 3.0.0)
     dotenv (3.1.8)
     dotenv-rails (3.1.8)
       dotenv (= 3.1.8)
@@ -243,6 +245,27 @@ GEM
       activerecord
       kaminari-core (= 1.2.2)
     kaminari-core (1.2.2)
+    litestream (0.14.0)
+      actionpack (>= 7.0)
+      actionview (>= 7.0)
+      activejob (>= 7.0)
+      activesupport (>= 7.0)
+      railties (>= 7.0)
+      sqlite3
+    litestream (0.14.0-aarch64-linux)
+      actionpack (>= 7.0)
+      actionview (>= 7.0)
+      activejob (>= 7.0)
+      activesupport (>= 7.0)
+      railties (>= 7.0)
+      sqlite3
+    litestream (0.14.0-x86_64-linux)
+      actionpack (>= 7.0)
+      actionview (>= 7.0)
+      activejob (>= 7.0)
+      activesupport (>= 7.0)
+      railties (>= 7.0)
+      sqlite3
     logger (1.7.0)
     loofah (2.24.1)
       crass (~> 1.0.2)
@@ -378,6 +401,8 @@ GEM
       erb
       psych (>= 4.0.0)
       tsort
+    redis (5.4.1)
+      redis-client (>= 0.22.0)
     redis-client (0.26.1)
       connection_pool
     regexp_parser (2.11.3)
@@ -555,6 +580,7 @@ DEPENDENCIES
   chartkick
   debug
   devise
+  dockerfile-rails (>= 1.7)
   dotenv-rails
   factory_bot_rails
   faker
@@ -567,12 +593,14 @@ DEPENDENCIES
   jbuilder
   kamal
   kaminari
+  litestream (~> 0.14.0)
   money-rails
   paypal-checkout-sdk (~> 1.0)
   pg
   prawn
   puma (>= 5.0)
   rails (~> 8.0.3)
+  redis (~> 5.4)
   rspec-rails
   rubocop-rails-omakase
   sassc-rails
@@ -591,4 +619,4 @@ DEPENDENCIES
   webdrivers
 
 BUNDLED WITH
-   2.7.1
+   2.6.9

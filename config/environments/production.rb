@@ -24,7 +24,7 @@ Rails.application.configure do
   config.cache_store = :memory_store
 
   # Active Storage (use Supabase S3, not local)
-  config.active_storage.service = :supabase
+  config.active_storage.service = :tigris
 
   # Mailer
   config.action_mailer.raise_delivery_errors = true
