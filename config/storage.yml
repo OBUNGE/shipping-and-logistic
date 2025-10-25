@@ -37,5 +37,5 @@ supabase:
   access_key_id: <%= ENV["SUPABASE_ACCESS_KEY"] %>
   secret_access_key: <%= ENV["SUPABASE_SECRET_KEY"] %>
   region: us-east-1
-  bucket: carhire
+  bucket: carhirehub
   endpoint: https://ioqmzsimocnwwecohlil.storage.supabase.co/storage/v1/s3

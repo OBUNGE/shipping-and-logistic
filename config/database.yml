@@ -7,36 +7,23 @@ default: &default
   adapter: postgresql
   encoding: unicode
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+
+development:
+  <<: *default
+  database: shipping_development
   username: <%= ENV.fetch("PGUSER") { "postgres" } %>
   password: <%= ENV.fetch("PGPASSWORD") { "" } %>
   host: <%= ENV.fetch("PGHOST") { "localhost" } %>
   port: <%= ENV.fetch("PGPORT") { 5432 } %>
 
-development:
-  <<: *default
-  database: shiping_development
-
 test:
   <<: *default
-  database: shiping_test
+  database: shipping_test
+  username: <%= ENV.fetch("PGUSER") { "postgres" } %>
+  password: <%= ENV.fetch("PGPASSWORD") { "" } %>
+  host: <%= ENV.fetch("PGHOST") { "localhost" } %>
+  port: <%= ENV.fetch("PGPORT") { 5432 } %>
 
 production:
-  primary:
-    <<: *default
-    database: shiping_production
-    username: <%= ENV["PGUSER"] %>
-    password: <%= ENV["PGPASSWORD"] %>
-    host: <%= ENV["PGHOST"] %>
-    port: <%= ENV.fetch("PGPORT") { 5432 } %>
-  cache:
-    <<: *default
-    database: shiping_production_cache
-    migrations_paths: db/cache_migrate
-  queue:
-    <<: *default
-    database: shiping_production_queue
-    migrations_paths: db/queue_migrate
-  cable:
-    <<: *default
-    database: shiping_production_cable
-    migrations_paths: db/cable_migrate
+  <<: *default
+  url: <%= ENV["DATABASE_URL"] %>
