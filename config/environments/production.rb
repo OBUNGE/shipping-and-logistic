@@ -4,6 +4,8 @@ Rails.application.configure do
     host: "shipping-and-logistic.onrender.com",
     protocol: "https"
   }
+  config.consider_all_requests_local = true
+
 
   # Allow this host
   config.hosts << "shipping-and-logistic.onrender.com"
