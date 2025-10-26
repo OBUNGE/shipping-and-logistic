@@ -17,14 +17,14 @@ Rails.application.configure do
   # Production best practices
   config.enable_reloading = false
   config.eager_load = true
-  config.consider_all_requests_local = false  # Only one declaration, correctly placed
+  config.consider_all_requests_local = false
 
   # Caching
   config.action_controller.perform_caching = true
   config.cache_store = :memory_store
 
-  # Active Storage (Supabase S3-compatible)
-  config.active_storage.service = :supabase
+  # Active Storage (use Supabase S3, not local)
+  config.active_storage.service = :local
 
   # Mailer
   config.action_mailer.raise_delivery_errors = true
@@ -35,7 +35,4 @@ Rails.application.configure do
   config.active_record.verbose_query_logs = false
   config.active_record.query_log_tags_enabled = true
   config.active_job.verbose_enqueue_logs = false
-
-  # Optional: enforce master key presence for encrypted credentials
-  config.require_master_key = true
 end
