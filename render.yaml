@@ -1,45 +1,67 @@
-services:
-  - type: web
-    name: shipping-and-logistic
-    env: ruby
-    plan: starter
-    region: frankfurt
-    runtime: ruby
-    buildCommand: bundle install && yarn install && bundle exec rake db:migrate
-    startCommand: bundle exec rails server
-    repo: https://github.com/OBUNGE/shipping-and-logistic
-    branch: main
-    autoDeployTrigger: commit
-    envVars:
-      - key: RAILS_ENV
-        value: production
-      - key: DATABASE_URL
-        fromDatabase:
-          name: supabase-db
-          property: connectionString
-      - key: SUPABASE_STORAGE_URL
-        value: https://kizdkyyopnzmdcavlktm.supabase.co/storage/v1
-      - key: SUPABASE_STORAGE_BUCKET
-        value: obunge-images
-      - key: SUPABASE_STORAGE_KEY
-        sync: false  # Prompt for secret in Render dashboard
-
-databases:
-  - name: supabase-db
-    plan: basic-256mb
-    region: frankfurt
-    postgresMajorVersion: "15"
-    diskSizeGB: 15
-    ipAllowList:
-      - source: 0.0.0.0/0
-        description: allow all
-
-envVarGroups:
-  - name: supabase-credentials
-    envVars:
+# Exported from Render on 2025-10-26T07:44:21Z
+version: "1"
+projects:
+- name: shipping and Logistics
+  environments:
+  - name: Production
+    services:
+    - type: web
+      name: shipping-and-logistic
+      runtime: ruby
+      repo: https://github.com/OBUNGE/shipping-and-logistic
+      plan: free
+      envVars:
+      - key: SUPABASE_KEY
+        sync: false
       - key: SUPABASE_URL
-        value: https://your-supabase-project.supabase.co
-      - key: SUPABASE_ANON_KEY
         sync: false
-      - key: SUPABASE_SERVICE_ROLE_KEY
+      - key: SUPABASE_STORAGE_URL
         sync: false
+      - key: SUPABASE_BUCKET
+        sync: false
+      - key: APP_URL
+        sync: false
+      - key: DEFAULT_CURRENCY
+        sync: false
+      - key: RAILS_ENV
+        sync: false
+      - key: DHL-API-Key
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: SUPABASE_SECRET_KEY
+        sync: false
+      - key: SUPABASE_ACCESS_KEY
+        sync: false
+      - key: PAYPAL_CLIENT_SECRET
+        sync: false
+      - key: PAYPAL_CLIENT_ID
+        sync: false
+      - key: PAYSTACK_PUBLIC_KEY
+        sync: false
+      - key: PAYSTACK_SECRET_KEY
+        sync: false
+      - key: RAILS_MASTER_KEY
+        sync: false
+      - key: EXCHANGE_RATE_API_KEY
+        sync: false
+      - key: MPESA_PASSKEY
+        sync: false
+      - key: MPESA_SHORTCODE
+        sync: false
+      - key: MPESA_CONSUMER_SECRET
+        sync: false
+      region: ohio
+      buildCommand: bundle install
+      startCommand: bundle exec puma
+      autoDeployTrigger: commit
+    databases:
+    - name: product-images
+      databaseName: product_images
+      user: product_images_user
+      plan: free
+      region: oregon
+      ipAllowList:
+      - source: 0.0.0.0/0
+        description: everywhere
+      postgresMajorVersion: "17"
