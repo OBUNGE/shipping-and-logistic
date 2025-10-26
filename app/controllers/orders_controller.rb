@@ -215,6 +215,11 @@ class OrdersController < ApplicationController
     order
   end
 
+  def order_params
+  params.permit(:currency, :provider, :phone_number)
+end
+
+
   def handle_payment(order, provider, phone_number)
     result = PaymentService.process(
       order,

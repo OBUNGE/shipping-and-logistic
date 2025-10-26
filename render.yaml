@@ -1,0 +1,45 @@
+services:
+  - type: web
+    name: shipping-and-logistic
+    env: ruby
+    plan: starter
+    region: frankfurt
+    runtime: ruby
+    buildCommand: bundle install && yarn install && bundle exec rake db:migrate
+    startCommand: bundle exec rails server
+    repo: https://github.com/OBUNGE/shipping-and-logistic
+    branch: main
+    autoDeployTrigger: commit
+    envVars:
+      - key: RAILS_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: supabase-db
+          property: connectionString
+      - key: SUPABASE_STORAGE_URL
+        value: https://kizdkyyopnzmdcavlktm.supabase.co/storage/v1
+      - key: SUPABASE_STORAGE_BUCKET
+        value: obunge-images
+      - key: SUPABASE_STORAGE_KEY
+        sync: false  # Prompt for secret in Render dashboard
+
+databases:
+  - name: supabase-db
+    plan: basic-256mb
+    region: frankfurt
+    postgresMajorVersion: "15"
+    diskSizeGB: 15
+    ipAllowList:
+      - source: 0.0.0.0/0
+        description: allow all
+
+envVarGroups:
+  - name: supabase-credentials
+    envVars:
+      - key: SUPABASE_URL
+        value: https://your-supabase-project.supabase.co
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false

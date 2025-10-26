@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_10_24_051844) do
+ActiveRecord::Schema[8.0].define(version: 2025_10_25_164257) do
   create_schema "auth"
   create_schema "extensions"
   create_schema "graphql"
@@ -135,8 +135,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_24_051844) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.decimal "subtotal"
+    t.bigint "variant_id"
+    t.decimal "shipping"
     t.index ["order_id"], name: "index_order_items_on_order_id"
     t.index ["product_id"], name: "index_order_items_on_product_id"
+    t.index ["variant_id"], name: "index_order_items_on_variant_id"
   end
 
   create_table "orders", force: :cascade do |t|
@@ -312,6 +315,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_24_051844) do
   add_foreign_key "notifications", "users"
   add_foreign_key "order_items", "orders"
   add_foreign_key "order_items", "products"
+  add_foreign_key "order_items", "variants"
   add_foreign_key "payments", "orders"
   add_foreign_key "payments", "users"
   add_foreign_key "product_images", "products"

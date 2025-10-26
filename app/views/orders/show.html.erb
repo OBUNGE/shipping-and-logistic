@@ -24,30 +24,47 @@
 
       <% currency = @order.currency.presence || "USD" %>
 
-      <h4>Items</h4>
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Product</th>
-            <th>Qty</th>
-            <th>Unit Price</th>
-            <th>Subtotal</th>
-          </tr>
-        </thead>
-<tbody>
-  <% @order.order_items.each do |item| %>
+   <h4>Items</h4>
+<table class="table">
+  <thead>
     <tr>
-      <td><%= item.product.title %></td>
-      <td><%= item.quantity %></td>
-      <td><%= display_price(item.product.price, user: @order.buyer) %></td>
-      <td><%= display_price(item.subtotal, user: @order.buyer) %></td>
+      <th>Product</th>
+      <th>Variant</th>
+      <th>Qty</th>
+      <th>Unit Price</th>
+      <th>Shipping</th>
+      <th>Subtotal</th>
     </tr>
-  <% end %>
-</tbody>
+  </thead>
+  <tbody>
+    <% @order.order_items.each do |item| %>
+      <tr>
+        <td><%= item.product.title %></td>
+        <td>
+          <% if item.variant.present? %>
+            <span class="badge bg-info text-dark"><%= "#{item.variant.name}: #{item.variant.value}" %></span>
+          <% else %>
+            <span class="text-muted">—</span>
+          <% end %>
+        </td>
+        <td><%= item.quantity %></td>
+        <td><%= display_price(item.unit_price || item.product.price, user: @order.buyer) %></td>
+        <td><%= display_price(item.shipping || 0, user: @order.buyer) %></td>
+        <td><%= display_price(item.subtotal, user: @order.buyer) %></td>
+      </tr>
+    <% end %>
+  </tbody>
 </table>
 
 
-      <h4>Total: <%= number_to_currency(@order.total, unit: "#{currency} ") %></h4>
+
+     <% subtotal = @order.order_items.sum(&:subtotal) %>
+<% shipping_total = @order.order_items.sum { |i| i.shipping || 0 } %>
+<% grand_total = subtotal + shipping_total %>
+
+<h5>Subtotal (Products): <%= number_to_currency(subtotal, unit: "#{currency} ") %></h5>
+<h5>Shipping: <%= number_to_currency(shipping_total, unit: "#{currency} ") %></h5>
+<h4>Total: <%= number_to_currency(grand_total, unit: "#{currency} ") %></h4>
 
      <% if currency == "USD" %>
   <% converted_total = ExchangeRateService.convert(@order.total, from: "USD", to: "KES") %>
