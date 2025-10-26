@@ -12,5 +12,5 @@ supabase:
   secret_access_key: <%= ENV["SUPABASE_SECRET_KEY"] %>
   region: us-east-1
   bucket: carhirehub
-  endpoint: https://ioqmzsimocnwwecohlil.storage.supabase.co
+  endpoint: https://kizdkyyopnzmdcavlktm.supabase.co
   force_path_style: true

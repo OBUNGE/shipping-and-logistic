@@ -4,9 +4,12 @@ class ProductsController < ApplicationController
 
   require "csv"
 
-  def index
-    @products = Product.all
-  end
+def index
+  @products = Product.all
+rescue => e
+  Rails.logger.error "Products#index failed: #{e.message}"
+  raise
+end
 
   def show
     @reviews = @product.reviews.order(created_at: :desc).page(params[:page]).per(5)
