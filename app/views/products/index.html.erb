@@ -68,7 +68,6 @@
         <% end %>
       </div>
 
-      <!-- Product Grid -->
       <div class="row g-3">
         <% @products.each do |product| %>
           <% seller = product.seller %>
@@ -77,9 +76,13 @@
               <!-- 🖼️ Product Image -->
               <div class="ratio ratio-1x1">
                 <% if product.image.attached? %>
-                  <%= image_tag product.image.variant(resize_to_limit: [400, 400]), class: "card-img-top rounded-top object-fit-cover" %>
+                  <%= image_tag url_for(product.image.variant(resize_to_limit: [400, 400])), 
+                                alt: product.title,
+                                class: "card-img-top rounded-top object-fit-cover" %>
                 <% else %>
-                  <%= image_tag "placeholder.jpg", class: "card-img-top rounded-top object-fit-cover" %>
+                  <%= image_tag asset_path("placeholder.jpg"), 
+                                alt: "No image available",
+                                class: "card-img-top rounded-top object-fit-cover" %>
                 <% end %>
               </div>
 
@@ -89,10 +92,9 @@
                   <%= link_to product.title, product_path(product), class: "text-dark text-decoration-none link-hover" %>
                 </h6>
 
-<p class="text-primary fw-bold small mb-1">
-  <%= display_price(product.price, user: current_user) %>
-</p>
-
+                <p class="text-primary fw-bold small mb-1">
+                  <%= display_price(product.price, user: current_user) %>
+                </p>
 
                 <p class="small <%= product.stock.to_i > 0 ? 'text-success' : 'text-danger' %> mb-1">
                   <%= product.stock.to_i > 0 ? "✅ In Stock" : "❌ Out of Stock" %>

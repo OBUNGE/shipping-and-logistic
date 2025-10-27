@@ -17,6 +17,9 @@ Rails.application.configure do
     protocol: "https"
   }
 
+  # ✅ Early boot debug message (safe with puts)
+  puts "🚀 Booting in #{Rails.env} mode with DB: #{ENV['SUPABASE_DB_URL']}"
+
   # ✅ Production best practices
   config.enable_reloading = false
   config.eager_load = true
