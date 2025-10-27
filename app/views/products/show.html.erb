@@ -172,7 +172,7 @@
           <% end %>
         </div>
 <!-- 🛒 Cart + Purchase Info -->
-<div class="col-md-6">
+<div class="col-12">
   <div class="border rounded p-3 bg-light">
     <h5 class="fw-semibold mb-3">Buy or Add to Cart</h5>
 
@@ -209,16 +209,13 @@
     <% if user_signed_in? && current_user.buyer? %>
       <% if @order.present? %>
         <% if @order.payment.nil? %>
-          <%= button_to "Pay Now", order_payment_path(@order),
-                method: :post,
-                class: "btn btn-success w-100 mb-2" %>
+          <%= button_to "Pay Now", order_payment_path(@order), method: :post, class: "btn btn-success w-100 mb-2" %>
         <% else %>
           <p><strong>Order Status:</strong> <%= @order.status.capitalize %></p>
           <p><strong>Payment Status:</strong> <%= @order.payment.status.capitalize %></p>
         <% end %>
       <% else %>
-        <%= link_to "Buy Now", new_product_order_path(@product),
-              class: "btn btn-outline-primary w-100 mb-3" %>
+        <%= link_to "Buy Now", new_product_order_path(@product), class: "btn btn-outline-primary w-100 mb-3" %>
       <% end %>
 
       <!-- Add to Cart Form -->
@@ -236,24 +233,15 @@
                     (+<%= display_price(variant.price_modifier, user: current_user) %>)
                   </span>
                 <% end %>
-                <%= number_field_tag "variants[#{variant.id}]",
-                      0,
-                      min: 0,
-                      class: "form-control form-control-sm",
-                      style: "width: 80px;" %>
+                <%= number_field_tag "variants[#{variant.id}]", 0, min: 0, class: "form-control form-control-sm", style: "width: 80px;" %>
               </div>
             <% end %>
             <small class="text-muted">Enter quantities for each variant you want to add.</small>
           </div>
         <% else %>
-          <!-- Fallback if no variants -->
           <div class="mb-2">
             <%= f.label :quantity, "Quantity", class: "form-label small fw-semibold" %>
-            <%= f.number_field :quantity,
-                  value: @product.min_order || 1,
-                  min: @product.min_order || 1,
-                  class: "form-control form-control-sm",
-                  required: true %>
+            <%= f.number_field :quantity, value: @product.min_order || 1, min: @product.min_order || 1, class: "form-control form-control-sm", required: true %>
           </div>
         <% end %>
 
@@ -264,7 +252,7 @@
 </div>
 
 <!-- 🧾 Customer Reviews Section -->
-<div class="col-md-6 mt-4">
+<div id="customer-reviews" class="col-12 mt-5">
   <div class="border rounded p-3 bg-white">
     <h3 class="fw-semibold mb-3">Customer Reviews</h3>
 
@@ -289,19 +277,12 @@
 
           <div class="mt-2 d-flex flex-wrap gap-2">
             <% if user_signed_in? && review.user == current_user %>
-              <%= link_to "Edit",
-                  edit_product_review_path(@product, review),
-                  class: "btn btn-sm btn-outline-secondary" %>
+              <%= link_to "Edit", edit_product_review_path(@product, review), class: "btn btn-sm btn-outline-secondary" %>
             <% end %>
 
             <% if user_signed_in? && current_user.buyer? && review.user != current_user %>
-              <%= button_to "Helpful",
-                  product_review_votes_path(@product, review),
-                  method: :post,
-                  class: "btn btn-sm btn-outline-success" %>
-              <%= link_to "Report",
-                  new_product_review_report_path(@product, review),
-                  class: "btn btn-sm btn-outline-warning" %>
+              <%= button_to "Helpful", product_review_votes_path(@product, review), method: :post, class: "btn btn-sm btn-outline-success" %>
+              <%= link_to "Report", new_product_review_report_path(@product, review), class: "btn btn-sm btn-outline-warning" %>
             <% end %>
           </div>
         </div>
@@ -320,9 +301,7 @@
       <hr class="my-4">
       <h4 class="fw-semibold mb-3">Leave a Review</h4>
 
-      <%= form_with model: [@product, Review.new],
-                    remote: true,
-                    html: { id: "review-form", class: "border rounded p-3 bg-light" } do |f| %>
+      <%= form_with model: [@product, Review.new], remote: true, html: { id: "review-form", class: "border rounded p-3 bg-light" } do |f| %>
         <div class="mb-3">
           <%= f.label :rating, "Your Rating", class: "form-label small fw-semibold" %>
           <div class="star-rating d-flex gap-2" id="star-rating">
@@ -335,14 +314,10 @@
 
         <div class="mb-3">
           <%= f.label :comment, "Your Review", class: "form-label small fw-semibold" %>
-          <%= f.text_area :comment,
-                          rows: 3,
-                          class: "form-control form-control-sm",
-                          placeholder: "Share your experience..." %>
+          <%= f.text_area :comment, rows: 3, class: "form-control form-control-sm", placeholder: "Share your experience..." %>
         </div>
 
-        <%= f.submit "Submit Review",
-                     class: "btn btn-outline-primary w-100 fw-semibold" %>
+        <%= f.submit "Submit Review", class: "btn btn-outline-primary w-100 fw-semibold" %>
       <% end %>
     <% end %>
   </div>
@@ -354,7 +329,7 @@
     <h3 class="fw-semibold mb-3">Related Products</h3>
     <div class="row g-3">
       <% Product.where.not(id: @product.id).limit(4).each do |related| %>
-        <div class="col-md-3">
+        <div class="col-md-3 col-sm-6">
           <div class="card h-100 shadow-sm">
             <% if related.image.attached? %>
               <%= image_tag related.image.variant(resize_to_limit: [300, 200]), class: "card-img-top", alt: related.title %>
@@ -362,10 +337,8 @@
             <div class="card-body">
               <h6 class="card-title fw-semibold"><%= related.title %></h6>
               <p class="card-text small text-muted">KES <%= related.price %></p>
-              <%= link_to "View", product_path(related), class: "btn btn-sm btn-outline-primary w-100" %>
+                            <%= link_to "View", product_path(related), class: "btn btn-sm btn-outline-primary w-100" %>
             </div>
-          </div>
-                      </div>
           </div>
         </div>
       <% end %>
