@@ -1,31 +1,107 @@
-<h2>Edit Storefront</h2>
+<style>
+  @media (min-width: 992px) {
+    .col-lg-5th {
+      flex: 0 0 20%;
+      max-width: 20%;
+    }
+  }
+</style>
 
-<%= form_with model: @seller, url: seller_path(@seller.store_slug), method: :patch, local: true do |f| %>
-  <div class="mb-3">
-    <%= f.label :store_name, "Store Name", class: "form-label" %>
-    <%= f.text_field :store_name, class: "form-control" %>
-  </div>
+<div class="storefront-header text-center mb-4">
+  <% if @seller.store_banner.attached? %>
+    <%= image_tag url_for(@seller.store_banner.variant(resize_to_fill: [1200, 250])),
+        class: "img-fluid rounded mb-3",
+        style: "object-fit: cover; width: 100%;",
+        alt: "#{@seller.store_name || @seller.name} banner" %>
+  <% end %>
 
-  <div class="mb-3">
-    <%= f.label :store_description, "Description", class: "form-label" %>
-    <%= f.text_area :store_description, rows: 3, class: "form-control" %>
-  </div>
-
-  <div class="mb-3">
-    <%= f.label :store_banner, "Banner", class: "form-label" %>
-    <%= f.file_field :store_banner, class: "form-control" %>
-    <% if @seller.store_banner.attached? %>
-      <%= image_tag @seller.store_banner.variant(resize_to_limit: [600, 200]), class: "img-fluid mt-2" %>
-    <% end %>
-  </div>
-
-  <div class="mb-3">
-    <%= f.label :store_logo, "Logo", class: "form-label" %>
-    <%= f.file_field :store_logo, class: "form-control" %>
+  <div class="d-flex align-items-center justify-content-center gap-3">
     <% if @seller.store_logo.attached? %>
-      <%= image_tag @seller.store_logo.variant(resize_to_limit: [100, 100]), class: "rounded-circle mt-2" %>
+      <%= image_tag url_for(@seller.store_logo.variant(resize_to_limit: [80, 80])),
+          class: "rounded-circle border",
+          alt: "#{@seller.store_name || @seller.name} logo" %>
     <% end %>
+    <h1 class="fw-bold"><%= @seller.store_name.presence || @seller.name %></h1>
   </div>
 
-  <%= f.submit "Save Changes", class: "btn btn-primary" %>
+  <p class="text-muted"><%= @seller.store_description %></p>
+</div>
+
+<!-- Filters and Sorting -->
+<div class="mb-4 text-center">
+  <%= form_with url: seller_path(@seller.store_slug), method: :get, local: true, id: "filter-form" do %>
+    <%= select_tag :category, options_for_select(@categories, params[:category]), prompt: "Filter by Category", class: "form-select w-auto d-inline-block me-2", id: "category-select" %>
+    <%= select_tag :subcategory, options_for_select(@subcategories, params[:subcategory]), prompt: "Filter by Subcategory", class: "form-select w-auto d-inline-block me-2", id: "subcategory-select" %>
+    <%= select_tag :sort, options_for_select([["Newest", ""], ["Price: Low to High", "price_asc"], ["Price: High to Low", "price_desc"]], params[:sort]), class: "form-select w-auto d-inline-block me-2" %>
+    <%= submit_tag "Apply", class: "btn btn-outline-secondary me-2" %>
+    <%= link_to "Clear Filters", seller_path(@seller.store_slug), class: "btn btn-outline-danger" %>
+  <% end %>
+</div>
+
+<!-- No Products Message -->
+<% if @no_products_found %>
+  <div class="alert alert-warning text-center">
+    No products found for the selected filters.
+  </div>
 <% end %>
+
+<!-- Product Grid -->
+<div class="row">
+  <% @products.each do |product| %>
+    <div class="col-6 col-sm-4 col-md-3 col-lg-5th mb-3">
+      <div class="card h-100 shadow-sm">
+        <% if product.image.attached? %>
+          <%= image_tag url_for(product.image.variant(resize_to_limit: [400, 300])),
+              class: "card-img-top",
+              alt: product.title %>
+        <% else %>
+          <%= image_tag asset_path("placeholder.png"),
+              class: "card-img-top",
+              alt: "No image available" %>
+        <% end %>
+        <div class="card-body">
+          <h5 class="card-title"><%= link_to product.title, product_path(product), class: "text-decoration-none link-hover" %></h5>
+          <p class="card-text">KSh <%= product.price %></p>
+          <div class="mt-2">
+            <% if product.category.present? %>
+              <span class="badge bg-secondary me-1"><%= product.category.name %></span>
+            <% end %>
+            <% if product.subcategory.present? %>
+              <span class="badge bg-info"><%= product.subcategory.name %></span>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>
+
+<!-- Pagination -->
+<div class="mt-4 d-flex justify-content-center">
+  <%= paginate @products %>
+</div>
+
+<!-- Dynamic Subcategory Script -->
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const categorySelect = document.getElementById("category-select");
+    const subcategorySelect = document.getElementById("subcategory-select");
+
+    categorySelect.addEventListener("change", function () {
+      const selectedCategory = categorySelect.value;
+      const slug = "<%= @seller.store_slug %>";
+
+      fetch(`/sellers/${slug}/subcategories?category=${encodeURIComponent(selectedCategory)}`)
+        .then(response => response.json())
+        .then(data => {
+          subcategorySelect.innerHTML = '<option value="">Filter by Subcategory</option>';
+          data.forEach(sub => {
+            const option = document.createElement("option");
+            option.value = sub;
+            option.textContent = sub;
+            subcategorySelect.appendChild(option);
+          });
+        });
+    });
+  });
+</script>
