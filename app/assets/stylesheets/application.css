@@ -9,7 +9,7 @@
  * Consider organizing styles into separate files for maintainability.
  */
  body {
-  background-color: rgb(221, 72, 159);
+  background-color: rgba(52, 24, 65, 1);
 }
 
 .star-rating .star {
@@ -157,7 +157,7 @@ form h2 {
 }
 
 .border.p-2 {
-  background-color: #f8f9fa;
+  background-color: #531fcc;
   border-radius: 0.5rem;
 }
 

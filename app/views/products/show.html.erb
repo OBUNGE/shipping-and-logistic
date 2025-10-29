@@ -1,17 +1,19 @@
 <div class="container mt-4">
   <div class="col-md-10 offset-md-1">
 
-    <!-- Product Title -->
+    <!-- 🏷️ Product Title -->
     <h1 class="mb-4 fw-bold text-center"><%= @product.title %></h1>
 
-    <!-- Product Image & Gallery -->
+    <!-- 🖼️ Product Image & Gallery -->
     <div class="mb-4">
       <% if @product.image.attached? || @product.gallery_images.attached? || @variant_images.any? %>
         <div class="image-gallery-wrapper">
 
-          <!-- Main Carousel -->
+          <!-- 🎞️ Main Carousel -->
           <div id="productCarousel" class="carousel slide rounded shadow-sm mb-3" data-bs-ride="carousel" data-bs-touch="true">
             <div class="carousel-inner">
+
+              <!-- Main Product Image -->
               <% if @product.image.attached? %>
                 <div class="carousel-item active">
                   <%= image_tag url_for(@product.image.variant(resize_to_limit: [900, 600])),
@@ -20,17 +22,18 @@
                 </div>
               <% end %>
 
-            <% @product.gallery_images.each_with_index do |img, index| %>
-  <% if img.blob.present? %>
-    <div class="carousel-item <%= 'active' if !@product.image.attached? && index == 0 %>">
-      <%= image_tag url_for(img.variant(resize_to_limit: [900, 600])),
-          class: "d-block w-100",
-          alt: "Gallery image #{index + 1}" %>
-    </div>
-  <% end %>
-<% end %>
+              <!-- Gallery Images -->
+              <% @product.gallery_images.each_with_index do |img, index| %>
+                <% if img.blob.present? %>
+                  <div class="carousel-item <%= 'active' if !@product.image.attached? && index == 0 %>">
+                    <%= image_tag url_for(img.variant(resize_to_limit: [900, 600])),
+                        class: "d-block w-100",
+                        alt: "Gallery image #{index + 1}" %>
+                  </div>
+                <% end %>
+              <% end %>
 
-
+              <!-- Variant Images -->
               <% @variant_images.each do |vi| %>
                 <% if vi.image.attached? %>
                   <div class="carousel-item">
@@ -46,6 +49,7 @@
               <% end %>
             </div>
 
+            <!-- Carousel Controls -->
             <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
               <span class="carousel-control-prev-icon" aria-hidden="true"></span>
               <span class="visually-hidden">Previous</span>
@@ -56,17 +60,15 @@
             </button>
           </div>
 
-    <!-- Thumbnails row BELOW carousel -->
-<div class="thumb-row d-flex justify-content-center flex-wrap mt-3">
-  <% @product.gallery_images.each do |img| %>
-    <% if img.blob.present? %>
-      <%= image_tag url_for(img.variant(resize_to_limit: [70, 70])),
-          class: "img-thumbnail me-2 mb-2",
-          alt: "#{@product.title} thumbnail" %>
-    <% end %>
-  <% end %>
-</div>
-
+          <!-- 🖼️ Thumbnails Row -->
+          <div class="thumb-row d-flex justify-content-center flex-wrap mt-3">
+            <% @product.gallery_images.each do |img| %>
+              <% if img.blob.present? %>
+                <%= image_tag url_for(img.variant(resize_to_limit: [70, 70])),
+                    class: "img-thumbnail me-2 mb-2",
+                    alt: "#{@product.title} thumbnail" %>
+              <% end %>
+            <% end %>
 
             <% @variant_images.each do |vi| %>
               <% if vi.image.attached? %>
@@ -79,7 +81,7 @@
           </div>
         </div>
       <% else %>
-        <!-- Fallback if no images -->
+        <!-- 🧃 Fallback Image -->
         <%= image_tag asset_path("placeholder.jpg"),
             class: "img-fluid rounded shadow-sm",
             alt: "No product image available" %>
