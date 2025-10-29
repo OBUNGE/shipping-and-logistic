@@ -8,17 +8,22 @@ Rails.application.configure do
   # ✅ Allow both Render and localhost for production testing
   config.hosts << "shipping-and-logistic.onrender.com"
   config.hosts << "localhost"
+  config.hosts << "www.example.com"
+
+  # ✅ Active Storage (Supabase S3-compatible)
+  config.active_storage.service = :supabase
+
+  # ✅ Early boot debug message
+  puts "🚀 Booting in #{Rails.env} mode with DB: #{ENV['SUPABASE_DB_URL']}"
+  puts "✅ SUPABASE_BUCKET: #{ENV['SUPABASE_BUCKET'].inspect}"
+  puts "✅ ActiveStorage service: #{Rails.application.config.active_storage.service.inspect}"
+ 
 
   # ✅ Mailer URLs (used by Devise, password reset, etc.)
   config.action_mailer.default_url_options = {
     host: "shipping-and-logistic.onrender.com",
     protocol: "https"
   }
-
-  # ✅ Early boot debug message
-  puts "🚀 Booting in #{Rails.env} mode with DB: #{ENV['SUPABASE_DB_URL']}"
-  puts "✅ SUPABASE_BUCKET: #{ENV['SUPABASE_BUCKET']}"
-  puts "✅ ActiveStorage service: #{config.active_storage.service}"
 
   # ✅ Production best practices
   config.enable_reloading = false
@@ -28,9 +33,6 @@ Rails.application.configure do
   # ✅ Caching
   config.action_controller.perform_caching = true
   config.cache_store = :memory_store
-
-  # ✅ Active Storage (Supabase S3-compatible)
-  config.active_storage.service = :supabase
 
   # ✅ Mailer delivery settings
   config.action_mailer.raise_delivery_errors = true

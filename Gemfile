@@ -13,7 +13,8 @@ gem 'faraday'
 gem 'kaminari'
 
 # For environment variables (API keys)
-gem 'dotenv-rails', groups: [:development, :test]
+gem 'dotenv-rails', groups: [:development, :test, :production]
+
 
 # For money formatting
 gem 'money-rails'
