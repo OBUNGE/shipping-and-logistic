@@ -97,53 +97,51 @@
     <%= form.text_area :return_policy, class: "form-control form-control-sm", rows: 2, placeholder: "e.g. Returns accepted within 7 days" %>
   </div>
 
-  <!-- 🖼️ Main Product Image -->
-  <div class="mb-3">
-    <%= form.label :image, "Main Product Image", class: "form-label small" %>
+<!-- 🖼️ Main Product Image -->
+<div class="mb-3">
+  <%= form.label :image, "Main Product Image", class: "form-label small" %>
 
-<% if @product.persisted? && @product.image.attached? %>
-  <div class="mb-2">
-    <%= image_tag @product.image.variant(resize_to_limit: [600, 400]),
-                  class: "img-fluid rounded shadow-sm",
-                  style: "max-height: 250px;" %>
-  </div>
-<% end %>
-
-
-    <%= form.file_field :image, class: "form-control form-control-sm", accept: "image/*", onchange: "previewMainImage(event)" %>
-    <img id="main-image-preview" class="img-fluid mt-2 rounded shadow-sm" style="max-height: 250px;" />
-  </div>
-
-  <!-- 🖼️ Gallery Images -->
-  <div class="mb-3">
-    <%= form.label :gallery_images, "Gallery Images", class: "form-label small" %>
-
-<% if @product.persisted? %>
-  <div class="row g-2 mb-2">
-    <% @product.gallery_images.each do |img| %>
-      <div class="col-4 text-center">
-        <%= image_tag img.variant(resize_to_limit: [300, 200]),
-                      class: "img-fluid rounded shadow-sm mb-1" %>
-        <%= link_to "Remove",
-                    product_remove_gallery_image_path(product_id: @product.id, image_id: img.id),
-                    method: :delete,
-                    data: { confirm: "Are you sure?" },
-                    class: "btn btn-sm btn-outline-danger" %>
-      </div>
-    <% end %>
-  </div>
-<% end %>
-
-
-    <div id="gallery-inputs">
-      <%= form.file_field :gallery_images, multiple: true, class: "form-control form-control-sm mb-2", accept: "image/*", onchange: "previewGalleryImages(event)" %>
+  <% if @product.persisted? && @product.image.attached? && @product.image.representable? %>
+    <div class="mb-2">
+      <%= image_tag @product.image.variant(resize_to_limit: [600, 400]),
+                    class: "img-fluid rounded shadow-sm",
+                    style: "max-height: 250px;" %>
     </div>
+  <% end %>
 
-    <button type="button" class="btn btn-sm btn-outline-primary mt-2" onclick="addGalleryInput()">➕ Add More Images</button>
-    <div id="gallery-preview" class="row mt-2 sortable-preview"></div>
+  <%= form.file_field :image, class: "form-control form-control-sm", accept: "image/*", onchange: "previewMainImage(event)" %>
+  <img id="main-image-preview" class="img-fluid mt-2 rounded shadow-sm" style="max-height: 250px;" />
+</div>
+
+<!-- 🖼️ Gallery Images -->
+<div class="mb-3">
+  <%= form.label :gallery_images, "Gallery Images", class: "form-label small" %>
+
+  <% if @product.persisted? %>
+    <div class="row g-2 mb-2">
+      <% @product.gallery_images.each do |img| %>
+        <% if img.representable? %>
+          <div class="col-4 text-center">
+            <%= image_tag img.variant(resize_to_limit: [300, 200]),
+                          class: "img-fluid rounded shadow-sm mb-1" %>
+            <%= link_to "Remove",
+                        product_remove_gallery_image_path(product_id: @product.id, image_id: img.id),
+                        method: :delete,
+                        data: { confirm: "Are you sure?" },
+                        class: "btn btn-sm btn-outline-danger" %>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+
+  <div id="gallery-inputs">
+    <%= form.file_field :gallery_images, multiple: true, class: "form-control form-control-sm mb-2", accept: "image/*", onchange: "previewGalleryImages(event)" %>
   </div>
 
-
+  <button type="button" class="btn btn-sm btn-outline-primary mt-2" onclick="addGalleryInput()">➕ Add More Images</button>
+  <div id="gallery-preview" class="row mt-2 sortable-preview"></div>
+</div>
 
 <!-- 🔀 Variants -->
 <div id="variant-fields">
@@ -167,23 +165,24 @@
         </div>
       </div>
 
-      <!-- 🎨 Variant Images (only for Color) -->
-      <div class="mt-2 color-image-actions <%= 'd-none' unless variant_fields.object.name == 'Color' %>">
-        <%= variant_fields.fields_for :variant_images do |image_fields| %>
-          <div class="border p-2 mb-2 bg-light rounded variant-image-block">
-            <% if image_fields.object.image.attached? %>
-              <%= image_tag image_fields.object.image.variant(resize_to_limit: [150, 150]), class: "img-thumbnail mb-1" %>
-            <% end %>
-            <%= image_fields.file_field :image, class: "form-control form-control-sm", accept: "image/*" %>
-            <%= image_fields.hidden_field :_destroy, class: "destroy-flag" %>
-            <button type="button" class="btn btn-sm btn-outline-danger delete-variant-image">Delete</button>
-          </div>
-        <% end %>
+   <!-- 🎨 Variant Images (only for Color) -->
+<div class="mt-2 color-image-actions <%= 'd-none' unless variant_fields.object.name == 'Color' %>">
+  <%= variant_fields.fields_for :variant_images do |image_fields| %>
+    <div class="border p-2 mb-2 bg-light rounded variant-image-block">
+      <% if image_fields.object.image.attached? && image_fields.object.image.representable? %>
+        <%= image_tag image_fields.object.image.variant(resize_to_limit: [150, 150]), class: "img-thumbnail mb-1" %>
+      <% end %>
+      <%= image_fields.file_field :image, class: "form-control form-control-sm", accept: "image/*" %>
+      <%= image_fields.hidden_field :_destroy, class: "destroy-flag" %>
+      <button type="button" class="btn btn-sm btn-outline-danger delete-variant-image">Delete</button>
+    </div>
+  <% end %>
 
-        <button type="button" class="btn btn-sm btn-outline-secondary add-variant-image-btn">
-           Add color image
-        </button>
-      </div>
+  <button type="button" class="btn btn-sm btn-outline-secondary add-variant-image-btn">
+     Add color image
+  </button>
+</div>
+
     </div>
   <% end %>
 </div>
@@ -225,20 +224,6 @@
   </div>
 </div>
 
-<!-- 🖼️ Hidden Variant Image Template -->
-<div id="variant-image-template" style="display: none;">
-  <div class="border p-2 mb-2 bg-light rounded variant-image-block">
-    <div class="row g-2 align-items-end">
-      <div class="col-md-6">
-        <label class="form-label small">Image</label>
-        <input type="file" name="product[variants_attributes][NEW_RECORD][variant_images_attributes][NEW_IMAGE][image]" class="form-control form-control-sm" accept="image/*" />
-      </div>
-      <div class="col-md-6 d-flex align-items-end justify-content-end">
-        <button type="button" class="btn btn-sm btn-outline-danger delete-variant-image">Delete</button>
-      </div>
-    </div>
-  </div>
-</div>
 
 
 

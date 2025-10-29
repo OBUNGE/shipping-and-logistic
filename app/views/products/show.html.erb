@@ -12,7 +12,7 @@
           <!-- Main Carousel -->
           <div id="productCarousel" class="carousel slide rounded shadow-sm mb-3" data-bs-ride="carousel" data-bs-touch="true">
             <div class="carousel-inner">
-              <% if @product.image.attached? %>
+              <% if @product.image.attached? && @product.image.representable? %>
                 <div class="carousel-item active">
                   <%= image_tag url_for(@product.image.variant(resize_to_limit: [900, 600])),
                       class: "d-block w-100",
@@ -21,23 +21,27 @@
               <% end %>
 
               <% @product.gallery_images.each_with_index do |img, index| %>
-                <div class="carousel-item <%= 'active' if !@product.image.attached? && index == 0 %>">
-                  <%= image_tag url_for(img.variant(resize_to_limit: [900, 600])),
-                      class: "d-block w-100",
-                      alt: "#{@product.title} gallery image" %>
-                </div>
+                <% if img.representable? %>
+                  <div class="carousel-item <%= 'active' if !@product.image.attached? && index == 0 %>">
+                    <%= image_tag url_for(img.variant(resize_to_limit: [900, 600])),
+                        class: "d-block w-100",
+                        alt: "#{@product.title} gallery image" %>
+                  </div>
+                <% end %>
               <% end %>
 
               <% @variant_images.each do |vi| %>
-                <div class="carousel-item">
-                  <%= image_tag url_for(vi.image.variant(resize_to_limit: [900, 600])),
-                      class: "d-block w-100",
-                      alt: "#{vi.variant.name}: #{vi.variant.value}",
-                      data: { variant_id: vi.variant.id } %>
-                  <div class="carousel-caption d-none d-md-block">
-                    <span class="badge bg-secondary"><%= vi.variant.value %></span>
+                <% if vi.image.attached? && vi.image.representable? %>
+                  <div class="carousel-item">
+                    <%= image_tag url_for(vi.image.variant(resize_to_limit: [900, 600])),
+                        class: "d-block w-100",
+                        alt: "#{vi.variant.name}: #{vi.variant.value}",
+                        data: { variant_id: vi.variant.id } %>
+                    <div class="carousel-caption d-none d-md-block">
+                      <span class="badge bg-secondary"><%= vi.variant.value %></span>
+                    </div>
                   </div>
-                </div>
+                <% end %>
               <% end %>
             </div>
 
@@ -54,16 +58,20 @@
           <!-- Thumbnails row BELOW carousel -->
           <div class="thumb-row d-flex justify-content-center flex-wrap mt-3">
             <% @product.gallery_images.each do |img| %>
-              <%= image_tag url_for(img.variant(resize_to_limit: [70, 70])),
-                  class: "img-thumbnail me-2 mb-2",
-                  alt: "#{@product.title} thumbnail" %>
+              <% if img.representable? %>
+                <%= image_tag url_for(img.variant(resize_to_limit: [70, 70])),
+                    class: "img-thumbnail me-2 mb-2",
+                    alt: "#{@product.title} thumbnail" %>
+              <% end %>
             <% end %>
 
             <% @variant_images.each do |vi| %>
-              <%= image_tag url_for(vi.image.variant(resize_to_limit: [70, 70])),
-                  class: "img-thumbnail variant-thumb me-2 mb-2",
-                  alt: "#{vi.variant.value} thumbnail",
-                  data: { variant_id: vi.variant.id } %>
+              <% if vi.image.attached? && vi.image.representable? %>
+                <%= image_tag url_for(vi.image.variant(resize_to_limit: [70, 70])),
+                    class: "img-thumbnail variant-thumb me-2 mb-2",
+                    alt: "#{vi.variant.value} thumbnail",
+                    data: { variant_id: vi.variant.id } %>
+              <% end %>
             <% end %>
           </div>
         </div>
@@ -76,6 +84,7 @@
     </div>
   </div>
 </div>
+
 
 
 

@@ -4,12 +4,13 @@ class ProductsController < ApplicationController
 
   require "csv"
 
-def index
-  @products = Product.all
-rescue => e
-  Rails.logger.error "Products#index failed: #{e.message}"
-  raise
-end
+  def index
+    @products = Product.all
+  rescue => e
+    Rails.logger.error "🔥 Products#index failed: #{e.message}"
+    Rails.logger.error e.backtrace.join("\n")
+    render plain: "Product listing error: #{e.message}", status: 500
+  end
 
   def show
     @reviews = @product.reviews.order(created_at: :desc).page(params[:page]).per(5)
@@ -29,10 +30,15 @@ end
       format.json do
         image = @variant_images.first
         render json: {
-          image_url: image.present? ? url_for(image.image) : view_context.asset_path("placeholder.png")
+          image_url: image&.image&.attached? && image.image.representable? ?
+            url_for(image.image) : view_context.asset_path("placeholder.png")
         }
       end
     end
+  rescue => e
+    Rails.logger.error "🔥 Products#show failed: #{e.message}"
+    Rails.logger.error e.backtrace.join("\n")
+    render plain: "Product display error: #{e.message}", status: 500
   end
 
   def new
@@ -53,12 +59,15 @@ end
       render :new, status: :unprocessable_entity
     end
     Rails.logger.debug "👤 current_user: #{current_user.inspect}"
-
+  rescue => e
+    Rails.logger.error "🔥 Products#create crashed: #{e.message}"
+    Rails.logger.error e.backtrace.join("\n")
+    render plain: "Product creation error: #{e.message}", status: 500
   end
 
- def edit
-  build_nested_fields(@product)
-end
+  def edit
+    build_nested_fields(@product)
+  end
 
   def update
     if @product.update(product_params)
@@ -90,6 +99,7 @@ end
   def remove_gallery_image
     image = @product.gallery_images.find_by_id(params[:image_id])
     if image
+      Rails.logger.info "🧹 Purging gallery image ID: #{params[:image_id]}"
       image.purge
       redirect_to edit_product_path(@product), notice: "Image removed."
     else
@@ -98,46 +108,46 @@ end
   end
 
   def import_inventory_csv(product)
-  file = params[:product][:inventory_csv] || params[:inventory_csv]
-  return unless file.respond_to?(:path) # ✅ only proceed if it's a real file
+    file = params[:product][:inventory_csv] || params[:inventory_csv]
+    return unless file.respond_to?(:path)
 
-  errors = []
-  CSV.foreach(file.path, headers: true).with_index(2) do |row, line|
-    location = row["location"]
-    quantity = row["quantity"]
+    errors = []
+    CSV.foreach(file.path, headers: true).with_index(2) do |row, line|
+      location = row["location"]
+      quantity = row["quantity"]
 
-    if location.blank? || quantity.blank?
-      errors << "Line #{line}: Missing location or quantity"
-      next
+      if location.blank? || quantity.blank?
+        errors << "Line #{line}: Missing location or quantity"
+        next
+      end
+
+      unless quantity.to_s =~ /^\d+$/
+        errors << "Line #{line}: Quantity must be a whole number"
+        next
+      end
+
+      product.inventories.create(location: location.strip, quantity: quantity.to_i)
     end
 
-    unless quantity.to_s =~ /^\d+$/
-      errors << "Line #{line}: Quantity must be a whole number"
-      next
+    if errors.any?
+      flash[:alert] = "Inventory import completed with errors:\n#{errors.join("\n")}"
+    else
+      flash[:notice] = "Inventory imported successfully"
     end
-
-    product.inventories.create(location: location.strip, quantity: quantity.to_i)
   end
-
-  if errors.any?
-    flash[:alert] = "Inventory import completed with errors:\n#{errors.join("\n")}"
-  else
-    flash[:notice] = "Inventory imported successfully"
-  end
-end
-
 
   private
 
-def set_product
-  @product = Product.find(params[:id] || params[:product_id])
-end
-
+  def set_product
+    @product = Product.find_by(id: params[:id] || params[:product_id])
+    unless @product
+      redirect_to products_path, alert: "Product not found"
+    end
+  end
 
   def build_nested_fields(product)
     product.variants.build if product.variants.empty?
 
-    # For each Color variant, ensure it has an image slot
     product.variants.select { |v| v.name == "Color" }.each do |color_variant|
       color_variant.variant_images.build if color_variant.variant_images.empty?
     end
@@ -146,28 +156,27 @@ end
     10.times { product.variants.build } if product.variants.empty?
   end
 
- def product_params
-  params.require(:product).permit(
-    :title,
-    :description,
-    :price,
-    :shipping_cost,
-    :min_order,
-    :stock,
-    :estimated_delivery_range,
-    :return_policy,
-    :image,
-    :category_id,
-    :subcategory_id, # ✅ newly added
-    :inventory_csv,
-    gallery_images: [],
-    product_images_attributes: [:id, :image, :caption, :_destroy],
-    variants_attributes: [
-      :id, :name, :value, :price_modifier, :_destroy,
-      variant_images_attributes: [:id, :variant_id, :image, :_destroy]
-    ],
-    inventories_attributes: [:id, :location, :quantity, :_destroy]
-  )
-end
-
+  def product_params
+    params.require(:product).permit(
+      :title,
+      :description,
+      :price,
+      :shipping_cost,
+      :min_order,
+      :stock,
+      :estimated_delivery_range,
+      :return_policy,
+      :image,
+      :category_id,
+      :subcategory_id,
+      :inventory_csv,
+      gallery_images: [],
+      product_images_attributes: [:id, :image, :caption, :_destroy],
+      variants_attributes: [
+        :id, :name, :value, :price_modifier, :_destroy,
+        variant_images_attributes: [:id, :variant_id, :image, :_destroy]
+      ],
+      inventories_attributes: [:id, :location, :quantity, :_destroy]
+    )
+  end
 end
