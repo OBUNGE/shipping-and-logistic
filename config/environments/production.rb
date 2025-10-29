@@ -1,6 +1,4 @@
 Rails.application.configure do
-  # ✅ Fix for allow_browser crash
-
   # ✅ Host for URL generation (used by Devise, mailers, etc.)
   config.action_controller.default_url_options = {
     host: "shipping-and-logistic.onrender.com",
@@ -17,8 +15,10 @@ Rails.application.configure do
     protocol: "https"
   }
 
-  # ✅ Early boot debug message (safe with puts)
+  # ✅ Early boot debug message
   puts "🚀 Booting in #{Rails.env} mode with DB: #{ENV['SUPABASE_DB_URL']}"
+  puts "✅ SUPABASE_BUCKET: #{ENV['SUPABASE_BUCKET']}"
+  puts "✅ ActiveStorage service: #{config.active_storage.service}"
 
   # ✅ Production best practices
   config.enable_reloading = false
