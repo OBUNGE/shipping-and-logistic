@@ -20,15 +20,16 @@
                 </div>
               <% end %>
 
-              <% @product.gallery_images.each_with_index do |img, index| %>
-                <% if img.attached? %>
-                  <div class="carousel-item <%= 'active' if !@product.image.attached? && index == 0 %>">
-                    <%= image_tag url_for(img.variant(resize_to_limit: [900, 600])),
-                        class: "d-block w-100",
-                        alt: "#{@product.title} gallery image" %>
-                  </div>
-                <% end %>
-              <% end %>
+            <% @product.gallery_images.each_with_index do |img, index| %>
+  <% if img.blob.present? %>
+    <div class="carousel-item <%= 'active' if !@product.image.attached? && index == 0 %>">
+      <%= image_tag url_for(img.variant(resize_to_limit: [900, 600])),
+          class: "d-block w-100",
+          alt: "Gallery image #{index + 1}" %>
+    </div>
+  <% end %>
+<% end %>
+
 
               <% @variant_images.each do |vi| %>
                 <% if vi.image.attached? %>
