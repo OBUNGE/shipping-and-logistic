@@ -79,7 +79,11 @@ Rails.application.routes.draw do
 
   post "/dhl/webhook", to: "webhooks#dhl"
 
-  # === Health check and root ===
-  get "up" => "rails/health#show", as: :rails_health_check
-  root "products#index"
+ # === ActiveStorage for image variants ===
+mount ActiveStorage::Engine => "/rails/active_storage"
+
+# === Health check and root ===
+get "up" => "rails/health#show", as: :rails_health_check
+root "products#index"
+
 end

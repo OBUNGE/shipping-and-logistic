@@ -12,7 +12,7 @@
           <!-- Main Carousel -->
           <div id="productCarousel" class="carousel slide rounded shadow-sm mb-3" data-bs-ride="carousel" data-bs-touch="true">
             <div class="carousel-inner">
-              <% if @product.image.attached? && @product.image.representable? %>
+              <% if @product.image.attached? %>
                 <div class="carousel-item active">
                   <%= image_tag url_for(@product.image.variant(resize_to_limit: [900, 600])),
                       class: "d-block w-100",
@@ -21,7 +21,7 @@
               <% end %>
 
               <% @product.gallery_images.each_with_index do |img, index| %>
-                <% if img.representable? %>
+                <% if img.attached? %>
                   <div class="carousel-item <%= 'active' if !@product.image.attached? && index == 0 %>">
                     <%= image_tag url_for(img.variant(resize_to_limit: [900, 600])),
                         class: "d-block w-100",
@@ -31,7 +31,7 @@
               <% end %>
 
               <% @variant_images.each do |vi| %>
-                <% if vi.image.attached? && vi.image.representable? %>
+                <% if vi.image.attached? %>
                   <div class="carousel-item">
                     <%= image_tag url_for(vi.image.variant(resize_to_limit: [900, 600])),
                         class: "d-block w-100",
@@ -58,7 +58,7 @@
           <!-- Thumbnails row BELOW carousel -->
           <div class="thumb-row d-flex justify-content-center flex-wrap mt-3">
             <% @product.gallery_images.each do |img| %>
-              <% if img.representable? %>
+              <% if img.attached? %>
                 <%= image_tag url_for(img.variant(resize_to_limit: [70, 70])),
                     class: "img-thumbnail me-2 mb-2",
                     alt: "#{@product.title} thumbnail" %>
@@ -66,7 +66,7 @@
             <% end %>
 
             <% @variant_images.each do |vi| %>
-              <% if vi.image.attached? && vi.image.representable? %>
+              <% if vi.image.attached? %>
                 <%= image_tag url_for(vi.image.variant(resize_to_limit: [70, 70])),
                     class: "img-thumbnail variant-thumb me-2 mb-2",
                     alt: "#{vi.variant.value} thumbnail",
@@ -84,9 +84,6 @@
     </div>
   </div>
 </div>
-
-
-
 
 
 <div class="container-fluid px-3 px-md-4 mt-4">
