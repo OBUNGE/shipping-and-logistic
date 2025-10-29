@@ -29,17 +29,16 @@ Rails.application.routes.draw do
   end
 
   # === M-PESA Callback (single global route) ===
-  post "/mpesa/callback", to: "payments#mpesa_callback", as: :mpesa_callback
+  post "/mpesa/callback/:order_id", to: "payments#mpesa_callback", as: :mpesa_callback
 
   # === Orders and nested payment/shipment routes ===
   resources :orders, only: [:index, :show, :new, :create] do
     resources :order_items, only: [:create, :destroy]
 
-    resource :payment, only: [:create] do
-      member do
-        post :paystack_callback
-        get  :paypal_callback
-        # removed duplicate :mpesa_callback here
+    resources :payments, only: [:create] do
+      collection do
+        match :paystack_callback, via: [:get, :post]
+        get   :paypal_callback,  via: [:get, :post]
       end
     end
 
@@ -77,7 +76,8 @@ Rails.application.routes.draw do
     post 'clear',  to: 'carts#clear'
     post 'update', to: 'carts#update', as: :update
   end
-post "/dhl/webhook", to: "webhooks#dhl"
+
+  post "/dhl/webhook", to: "webhooks#dhl"
 
   # === Health check and root ===
   get "up" => "rails/health#show", as: :rails_health_check

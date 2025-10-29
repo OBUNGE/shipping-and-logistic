@@ -1,17 +1,20 @@
-# app/services/paypal_gateway.rb
 require "paypal-checkout-sdk"
 
 class PaypalGateway
   include Rails.application.routes.url_helpers
 
-  def initialize(order, return_url, currency: nil)
+  def initialize(order:, return_url:, currency: nil)
     @order      = order
     @return_url = return_url
     @currency   = currency || order.currency || "USD"
   end
 
   def default_url_options
-    { host: "localhost", port: 3000 } # ✅ required for route helpers to work
+    uri = URI.parse(ENV["APP_HOST"] || "http://localhost:3000")
+    options = { host: uri.host }
+    options[:port] = uri.port unless [80, 443].include?(uri.port)
+    options[:protocol] = uri.scheme if uri.scheme
+    options
   end
 
   def client
@@ -60,13 +63,13 @@ class PaypalGateway
     end
   rescue => e
     Rails.logger.error("PaypalGateway error: #{e.message}")
+    Rails.logger.error(e.backtrace.join("\n"))
     { error: "PayPal initiation failed" }
   end
 
   private
 
   def callback_url(params = {})
-  paypal_callback_order_payment_url(@order, params)
-end
-
+    paypal_callback_order_payments_url(@order, params)
+  end
 end

@@ -1,93 +1,248 @@
-# app/controllers/mpesa_payments_controller.rb
-class MpesaPaymentsController < ApplicationController
-  # Safaricom sends callbacks from external servers — skip CSRF protection
-  skip_before_action :verify_authenticity_token
+class OrdersController < ApplicationController
+  before_action :authenticate_user!
+  before_action :set_product, only: [:new, :create], if: -> { params[:product_id].present? }
+  before_action :set_order, only: [:show, :receipt]
 
-  def stk_push
-    service = MpesaStkPushService.new(
-      phone_number: params[:phone_number],
-      amount: params[:amount],
-      account_reference: "Order_#{params[:order_id]}",
-      description: "Payment for Order #{params[:order_id]}"
-    )
-    result = service.call
-    render json: result
+  def index
+    @orders = (current_user.orders_as_buyer + current_user.orders_as_seller).uniq
   end
 
-  # POST /mpesa_payments/callback
-  def callback
-    Rails.logger.info("📩 M-PESA Callback Received: #{params.to_unsafe_h.inspect}")
+  def show; end
 
-    stk_callback        = params.dig("Body", "stkCallback") || {}
-    result_code         = stk_callback["ResultCode"].to_i
-    result_desc         = stk_callback["ResultDesc"]
-    checkout_request_id = stk_callback["CheckoutRequestID"]
-    callback_metadata   = stk_callback.dig("CallbackMetadata", "Item") || []
+  def new
+    if params[:product_id].present?
+      @order = current_user.orders_as_buyer.new
+    else
+      @cart_items = (session[:cart] || []).map do |item|
+        product = Product.find(item["product_id"])
+        variant = item["variant_id"].present? ? Variant.find_by(id: item["variant_id"]) : nil
+        final_price = product.price + (variant&.price_modifier || 0)
 
-    # Extract important data
-    amount        = extract_metadata(callback_metadata, "Amount")
-    mpesa_receipt = extract_metadata(callback_metadata, "MpesaReceiptNumber")
-    phone_number  = extract_metadata(callback_metadata, "PhoneNumber")
-    account_ref   = extract_metadata(callback_metadata, "AccountReference")
-
-    unless account_ref.present?
-      Rails.logger.error("⚠️ M-PESA Callback: Missing AccountReference")
-      return head :bad_request
+        {
+          product: product,
+          variant: variant,
+          quantity: item["quantity"].to_i,
+          unit_price: final_price,
+          subtotal: final_price * item["quantity"].to_i,
+          shipping: (product.shipping_cost || 0) * item["quantity"].to_i
+        }
+      end
+      @order = current_user.orders_as_buyer.new
     end
+  end
 
-    order_id = account_ref.to_s.gsub("Order_", "")
-    order = Order.find_by(id: order_id)
-    unless order
-      Rails.logger.error("⚠️ M-PESA Callback: Order not found for ID #{order_id}")
-      return head :not_found
-    end
+  def create
+    phone_number   = params[:phone_number].presence || current_user.phone
+    provider       = params[:provider] || "mpesa"
+    first_name     = params[:first_name]
+    last_name      = params[:last_name]
+    address        = params[:delivery_address]
+    buyer_currency = params[:currency].presence || "USD"
 
-    payment = Payment.find_or_initialize_by(order: order) do |p|
-      p.user                = order.buyer
-      p.provider            = "M-PESA"
-      p.checkout_request_id = checkout_request_id
-      p.amount              = amount
-      p.status              = :pending
-    end
+    if params[:product_id].present?
+      product  = Product.find(params[:product_id])
+      variant  = params[:variant_id].present? ? Variant.find_by(id: params[:variant_id]) : nil
+      quantity = params[:quantity].to_i.nonzero? || 1
 
-    if result_code.zero?
-      # ✅ Payment Successful
-      ActiveRecord::Base.transaction do
-        payment.update!(
-          mpesa_receipt_number: mpesa_receipt,
-          amount: amount,
-          status: :paid,
-          transaction_id: checkout_request_id
-        )
-        order.update!(status: :paid)
+      if quantity > product.stock
+        redirect_to product_path(product), alert: "Sorry, only #{product.stock} units available." and return
       end
 
-      Rails.logger.info("✅ Order ##{order.id} marked as PAID — M-PESA Receipt: #{mpesa_receipt}")
-      send_notifications(order)
+      order = build_order_for_product(product, variant, quantity, first_name, last_name, address, buyer_currency)
+
+      ActiveRecord::Base.transaction do
+        order.save!
+        decrement_stock!(order)
+      end
+
+      notify_seller(product.seller)
+      handle_payment(order, provider, phone_number)
+
     else
-      # ❌ Payment Failed
-      payment.update!(
-        mpesa_receipt_number: mpesa_receipt,
-        amount: amount || 0,
-        status: :failed,
-        transaction_id: checkout_request_id
-      )
-      Rails.logger.warn("❌ Payment for Order ##{order.id} failed: #{result_desc}")
+      grouped_items = (session[:cart] || []).group_by do |item|
+        Product.find(item["product_id"]).seller.id
+      end
+
+      orders = []
+      ActiveRecord::Base.transaction do
+        grouped_items.each do |seller_id, items|
+          order = current_user.orders_as_buyer.build(
+            seller_id: seller_id,
+            status: :pending,
+            first_name: first_name,
+            last_name: last_name,
+            delivery_address: address,
+            currency: buyer_currency
+          )
+
+          items.each do |item|
+            product       = Product.find(item["product_id"])
+            variant       = item["variant_id"].present? ? Variant.find_by(id: item["variant_id"]) : nil
+            requested_qty = item["quantity"].to_i
+
+            if requested_qty > product.stock
+              redirect_to cart_path, alert: "Sorry, only #{product.stock} units of #{product.title} are available." and return
+            end
+
+            base_price = product.price + (variant&.price_modifier || 0)
+            subtotal   = ExchangeRateService.convert(
+              base_price * requested_qty,
+              from: product.currency,
+              to: buyer_currency
+            )
+            shipping   = (product.shipping_cost || 0) * requested_qty
+
+            order.order_items.build(
+              product: product,
+              variant: variant,
+              quantity: requested_qty,
+              subtotal: subtotal,
+              shipping: shipping
+            )
+          end
+
+          order.total = order.order_items.sum { |oi| oi.subtotal + (oi.shipping || 0) }
+          order.build_shipment(first_name: first_name, last_name: last_name, address: address, status: :pending)
+          order.save!
+          decrement_stock!(order)
+          notify_seller(order.seller)
+          orders << order
+        end
+      end
+
+      session[:cart] = []
+      handle_payment(orders.first, provider, phone_number)
+    end
+  rescue ActiveRecord::RecordInvalid => e
+    Rails.logger.error("⚠️ Order Creation Failed: #{e.record.errors.full_messages.join(', ')}")
+    respond_to do |format|
+      format.html { redirect_to new_order_path(product_id: params[:product_id]), alert: "Failed to create order: #{e.record.errors.full_messages.join(', ')}" }
+      format.turbo_stream { redirect_to new_order_path(product_id: params[:product_id]), alert: "Failed to create order." }
+    end
+  end
+
+  def receipt
+    unless @order.payment&.paid?
+      redirect_to @order, alert: "Receipt is only available after payment." and return
     end
 
-    render json: { ResultCode: 0, ResultDesc: "Callback received successfully" }
+    pdf = ReceiptGenerator.new(@order, Time.current).generate
+    send_data pdf,
+              filename: "receipt_order_#{@order.id}.pdf",
+              type: "application/pdf",
+              disposition: "inline"
+  end
+
+  def pay
+    order = Order.find(params[:id])
+    callback_url = Rails.application.routes.url_helpers.mpesa_callback_url(
+      host: ENV["APP_HOST"],
+      order_id: order.id
+    )
+
+    service = MpesaStkPushService.new(
+      order: order,
+      phone_number: params[:phone],
+      amount: order.total,
+      account_reference: "Order#{order.id}",
+      description: "Payment for Order #{order.id}"
+    )
+
+    result = service.call
+    Rails.logger.info("M-PESA STK Push response: #{result}")
+    render json: result
   end
 
   private
 
-  def extract_metadata(items, key)
-    items.find { |i| i["Name"] == key }&.dig("Value")
+  def set_product
+    @product = Product.find(params[:product_id])
   end
 
-  def send_notifications(order)
-    OrderMailer.payment_confirmation(order).deliver_later
-    OrderMailer.seller_notification(order).deliver_later
-  rescue => e
-    Rails.logger.error("⚠️ Notification Error: #{e.message}")
+  def set_order
+    @order = Order.find(params[:id])
+    unless @order.buyer == current_user || @order.seller == current_user
+      redirect_to root_path, alert: "You are not authorized to view this order."
+    end
+  end
+
+  def notify_seller(seller)
+    Notification.create!(user: seller, message: "New order placed", read: false)
+  end
+
+  def decrement_stock!(order)
+    order.order_items.each do |item|
+      product = item.product
+      product.update!(stock: product.stock - item.quantity)
+    end
+  end
+
+  def build_order_for_product(product, variant, quantity, first_name, last_name, address, buyer_currency)
+    base_price = product.price + (variant&.price_modifier || 0)
+    subtotal   = ExchangeRateService.convert(
+      base_price * quantity,
+      from: product.currency,
+      to: buyer_currency
+    )
+    shipping   = (product.shipping_cost || 0) * quantity
+
+    order = current_user.orders_as_buyer.build(
+      seller: product.seller,
+      status: :pending,
+      first_name: first_name,
+      last_name: last_name,
+      delivery_address: address,
+      currency: buyer_currency
+    )
+
+    order.order_items.build(
+      product: product,
+      variant: variant,
+      quantity: quantity,
+      subtotal: subtotal,
+      shipping: shipping
+    )
+    order.total = order.order_items.sum { |oi| oi.subtotal + (oi.shipping || 0) }
+
+    order.build_shipment(
+      first_name: first_name,
+      last_name: last_name,
+      address: address,
+      status: :pending
+    )
+    order
+  end
+
+  def order_params
+    params.permit(:currency, :provider, :phone_number)
+  end
+
+  def handle_payment(order, provider, phone_number)
+    callback_url = Rails.application.routes.url_helpers.mpesa_callback_url(
+      host: ENV["APP_HOST"],
+      order_id: order.id
+    )
+
+    result = PaymentService.process(
+      order,
+      provider: provider,
+      phone_number: phone_number,
+      currency: order.currency,
+      callback_url: callback_url,
+      return_url: order_url(order)
+    )
+
+    respond_to do |format|
+      if result[:redirect_url]
+        format.html { redirect_to result[:redirect_url] }
+        format.turbo_stream { redirect_to result[:redirect_url] }
+      elsif result[:error]
+        format.html { redirect_to order_path(order), alert: result[:error] }
+        format.turbo_stream { redirect_to order_path(order), alert: result[:error] }
+      else
+        format.html { redirect_to order_path(order), notice: "Order created! Please complete payment." }
+        format.turbo_stream { redirect_to order_path(order), notice: "Order created! Please complete payment." }
+      end
+    end
   end
 end

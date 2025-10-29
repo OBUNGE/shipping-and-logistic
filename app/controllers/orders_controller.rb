@@ -219,27 +219,28 @@ class OrdersController < ApplicationController
   params.permit(:currency, :provider, :phone_number)
 end
 
+def handle_payment(order, provider, phone_number)
+  result = PaymentService.process(
+    order,
+    provider: provider,
+    phone_number: phone_number,
+    currency: order.currency,
+    return_url: order_url(order),
+    callback_url: mpesa_callback_url(order_id: order.id, host: ENV["APP_HOST"])
+  )
 
-  def handle_payment(order, provider, phone_number)
-    result = PaymentService.process(
-      order,
-      provider: provider,
-      phone_number: phone_number,
-      currency: order.currency,
-      return_url: order_url(order)
-    )
-
-    respond_to do |format|
-      if result[:redirect_url]
-        format.html { redirect_to result[:redirect_url] }
-        format.turbo_stream { redirect_to result[:redirect_url] }
-      elsif result[:error]
-        format.html { redirect_to order_path(order), alert: result[:error] }
-        format.turbo_stream { redirect_to order_path(order), alert: result[:error] }
-      else
-        format.html { redirect_to order_path(order), notice: "Order created! Please complete payment." }
-        format.turbo_stream { redirect_to order_path(order), notice: "Order created! Please complete payment." }
-      end
+  respond_to do |format|
+    if result[:redirect_url]
+      format.html         { redirect_to result[:redirect_url], allow_other_host: true }
+      format.turbo_stream { redirect_to result[:redirect_url], allow_other_host: true }
+    elsif result[:error]
+      format.html         { redirect_to order_path(order), alert: result[:error] }
+      format.turbo_stream { redirect_to order_path(order), alert: result[:error] }
+    else
+      format.html         { redirect_to order_path(order), notice: "Order created! Please complete payment." }
+      format.turbo_stream { redirect_to order_path(order), notice: "Order created! Please complete payment." }
     end
   end
+end
+
 end

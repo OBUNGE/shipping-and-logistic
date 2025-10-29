@@ -2,12 +2,14 @@ require "httparty"
 
 class PaystackGateway
   include HTTParty
+  include Rails.application.routes.url_helpers
+
   base_uri "https://api.paystack.co"
 
-  def initialize(order, return_url, amount: nil, currency: nil)
+  def initialize(order:, return_url:, amount: nil, currency: nil)
     @order      = order
     @return_url = return_url
-    @amount     = amount || (order.total * 100).to_i # default: order total in minor units
+    @amount     = amount || (order.total * 100).to_i # Paystack expects minor units
     @currency   = currency || order.currency || "USD"
   end
 
@@ -20,7 +22,7 @@ class PaystackGateway
       },
       body: {
         email:        @order.buyer.email,
-        amount:       @amount,          # already in minor units
+        amount:       @amount,
         currency:     @currency,
         callback_url: callback_url
       }.to_json
@@ -28,7 +30,7 @@ class PaystackGateway
 
     body = JSON.parse(response.body) rescue {}
     if body["status"] && body.dig("data", "authorization_url")
-      @order.create_payment!(
+      @order.payments.create!(
         user:           @order.buyer,
         provider:       "Paystack",
         amount:         @amount.to_f / 100.0, # store in major units
@@ -48,7 +50,16 @@ class PaystackGateway
   private
 
   def callback_url
-    # Ensure you have this route defined in config/routes.rb
-    Rails.application.routes.url_helpers.payments_paystack_callback_url(@order)
+    paystack_callback_order_payments_url(@order)
   end
+
+def default_url_options
+  uri = URI.parse(ENV["APP_HOST"] || "http://localhost:3000")
+  options = {
+    host: uri.host,
+    protocol: uri.scheme
+  }
+  options[:port] = uri.port unless [80, 443].include?(uri.port)
+  options
+end
 end
