@@ -56,15 +56,17 @@
             </button>
           </div>
 
-          <!-- Thumbnails row BELOW carousel -->
-          <div class="thumb-row d-flex justify-content-center flex-wrap mt-3">
-            <% @product.gallery_images.each do |img| %>
-              <% if img.attached? %>
-                <%= image_tag url_for(img.variant(resize_to_limit: [70, 70])),
-                    class: "img-thumbnail me-2 mb-2",
-                    alt: "#{@product.title} thumbnail" %>
-              <% end %>
-            <% end %>
+    <!-- Thumbnails row BELOW carousel -->
+<div class="thumb-row d-flex justify-content-center flex-wrap mt-3">
+  <% @product.gallery_images.each do |img| %>
+    <% if img.blob.present? %>
+      <%= image_tag url_for(img.variant(resize_to_limit: [70, 70])),
+          class: "img-thumbnail me-2 mb-2",
+          alt: "#{@product.title} thumbnail" %>
+    <% end %>
+  <% end %>
+</div>
+
 
             <% @variant_images.each do |vi| %>
               <% if vi.image.attached? %>
