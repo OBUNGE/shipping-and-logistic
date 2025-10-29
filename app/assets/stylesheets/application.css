@@ -8,6 +8,9 @@
  *
  * Consider organizing styles into separate files for maintainability.
  */
+ body {
+  background-color: rgb(221, 72, 159);
+}
 
 .star-rating .star {
   cursor: pointer;
