@@ -35,7 +35,7 @@ Rails.application.configure do
   # ✅ Optional: also log to file (for local debugging)
   file_logger = Logger.new(Rails.root.join("log/production.log"))
   file_logger.level = Logger::DEBUG
-  config.logger.extend(ActiveSupport::Logger.broadcast(file_logger))
+ 
 
   # ✅ Healthcheck silence
   config.silence_healthcheck_path = "/up"
