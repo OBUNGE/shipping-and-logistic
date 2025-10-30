@@ -4,12 +4,17 @@ Rails.application.configure do
   # ✅ Use Supabase for Active Storage
   config.active_storage.service = :supabase
 
+  # ✅ Host for ActiveStorage signed URLs
+  config.action_controller.default_url_options = {
+    host: "shipping-and-logistic.onrender.com",
+    protocol: "https"
+  }
+
   # ✅ Secret key fallback
   config.secret_key_base = ENV["SECRET_KEY_BASE"] || Rails.application.credentials.secret_key_base
 
   # ✅ Serve static assets in production (required for CSS/JS)
- config.public_file_server.enabled = true
-
+  config.public_file_server.enabled = true
   config.public_file_server.headers = {
     "Cache-Control" => "public, max-age=#{1.year.to_i}"
   }
@@ -29,14 +34,11 @@ Rails.application.configure do
   # ✅ Logging to STDOUT (for Render) and optionally to file
   config.log_tags = [:request_id]
   config.log_level = ENV.fetch("RAILS_LOG_LEVEL", "info")
-
-  # ✅ Correct logger setup
   config.logger = ActiveSupport::TaggedLogging.new(Logger.new(STDOUT))
 
   # ✅ Optional: also log to file (for local debugging)
   file_logger = Logger.new(Rails.root.join("log/production.log"))
   file_logger.level = Logger::DEBUG
- 
 
   # ✅ Healthcheck silence
   config.silence_healthcheck_path = "/up"
