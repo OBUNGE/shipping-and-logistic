@@ -16,7 +16,7 @@
               <!-- Main Product Image -->
               <% if @product.image.attached? %>
                 <div class="carousel-item active">
-                  <%= image_tag url_for(@product.image.variant(resize_to_limit: [900, 600])),
+                  <%= image_tag rails_representation_url(@product.image.variant(resize_to_limit: [900, 600]), only_path: false),
                       class: "d-block w-100",
                       alt: @product.title %>
                 </div>
@@ -26,7 +26,7 @@
               <% @product.gallery_images.each_with_index do |img, index| %>
                 <% if img.blob.present? %>
                   <div class="carousel-item <%= 'active' if !@product.image.attached? && index == 0 %>">
-                    <%= image_tag url_for(img.variant(resize_to_limit: [900, 600])),
+                    <%= image_tag rails_representation_url(img.variant(resize_to_limit: [900, 600]), only_path: false),
                         class: "d-block w-100",
                         alt: "Gallery image #{index + 1}" %>
                   </div>
@@ -37,7 +37,7 @@
               <% @variant_images.each do |vi| %>
                 <% if vi.image.attached? %>
                   <div class="carousel-item">
-                    <%= image_tag url_for(vi.image.variant(resize_to_limit: [900, 600])),
+                    <%= image_tag rails_representation_url(vi.image.variant(resize_to_limit: [900, 600]), only_path: false),
                         class: "d-block w-100",
                         alt: "#{vi.variant.name}: #{vi.variant.value}",
                         data: { variant_id: vi.variant.id } %>
@@ -64,7 +64,7 @@
           <div class="thumb-row d-flex justify-content-center flex-wrap mt-3">
             <% @product.gallery_images.each do |img| %>
               <% if img.blob.present? %>
-                <%= image_tag url_for(img.variant(resize_to_limit: [70, 70])),
+                <%= image_tag rails_representation_url(img.variant(resize_to_limit: [70, 70]), only_path: false),
                     class: "img-thumbnail me-2 mb-2",
                     alt: "#{@product.title} thumbnail" %>
               <% end %>
@@ -72,7 +72,7 @@
 
             <% @variant_images.each do |vi| %>
               <% if vi.image.attached? %>
-                <%= image_tag url_for(vi.image.variant(resize_to_limit: [70, 70])),
+                <%= image_tag rails_representation_url(vi.image.variant(resize_to_limit: [70, 70]), only_path: false),
                     class: "img-thumbnail variant-thumb me-2 mb-2",
                     alt: "#{vi.variant.value} thumbnail",
                     data: { variant_id: vi.variant.id } %>
