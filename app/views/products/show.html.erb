@@ -16,8 +16,9 @@
               <!-- Main Product Image -->
               <% if @product.image.attached? %>
                 <div class="carousel-item active">
-                  <%= image_tag url_for(@product.image.variant(resize_to_limit: [900, 600])),
+                  <%= image_tag url_for(@product.image),
                       class: "d-block w-100",
+                      style: "max-height: 600px; object-fit: contain;",
                       alt: @product.title %>
                 </div>
               <% end %>
@@ -26,8 +27,9 @@
               <% @product.gallery_images.each_with_index do |img, index| %>
                 <% if img.blob.present? %>
                   <div class="carousel-item <%= 'active' if !@product.image.attached? && index == 0 %>">
-                    <%= image_tag url_for(img.variant(resize_to_limit: [900, 600])),
+                    <%= image_tag url_for(img),
                         class: "d-block w-100",
+                        style: "max-height: 600px; object-fit: contain;",
                         alt: "Gallery image #{index + 1}" %>
                   </div>
                 <% end %>
@@ -37,8 +39,9 @@
               <% @variant_images.each do |vi| %>
                 <% if vi.image.attached? %>
                   <div class="carousel-item">
-                    <%= image_tag url_for(vi.image.variant(resize_to_limit: [900, 600])),
+                    <%= image_tag url_for(vi.image),
                         class: "d-block w-100",
+                        style: "max-height: 600px; object-fit: contain;",
                         alt: "#{vi.variant.name}: #{vi.variant.value}",
                         data: { variant_id: vi.variant.id } %>
                     <div class="carousel-caption d-none d-md-block">
@@ -64,16 +67,18 @@
           <div class="thumb-row d-flex justify-content-center flex-wrap mt-3">
             <% @product.gallery_images.each do |img| %>
               <% if img.blob.present? %>
-                <%= image_tag url_for(img.variant(resize_to_limit: [70, 70])),
+                <%= image_tag url_for(img),
                     class: "img-thumbnail me-2 mb-2",
+                    style: "width: 70px; height: 70px; object-fit: cover;",
                     alt: "#{@product.title} thumbnail" %>
               <% end %>
             <% end %>
 
             <% @variant_images.each do |vi| %>
               <% if vi.image.attached? %>
-                <%= image_tag url_for(vi.image.variant(resize_to_limit: [70, 70])),
+                <%= image_tag url_for(vi.image),
                     class: "img-thumbnail variant-thumb me-2 mb-2",
+                    style: "width: 70px; height: 70px; object-fit: cover;",
                     alt: "#{vi.variant.value} thumbnail",
                     data: { variant_id: vi.variant.id } %>
               <% end %>
