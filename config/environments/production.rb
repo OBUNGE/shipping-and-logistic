@@ -1,6 +1,9 @@
 require "active_support/core_ext/integer/time"
 
 Rails.application.configure do
+
+
+  
   # ✅ Use Supabase for Active Storage
   config.active_storage.service = :supabase
 

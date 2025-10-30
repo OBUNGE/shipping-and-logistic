@@ -28,6 +28,20 @@ gem 'image_processing', '~> 1.2'
 
 gem "pg"
 
+
+gem "mini_magick"
+
+gem "blazer"
+
+
+
+
+gem "highcharts-rails"
+gem "lazy_high_charts"
+gem "googlecharts"
+gem "gon"
+
+
 gem "chartkick"
 gem "groupdate"
 

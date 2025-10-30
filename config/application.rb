@@ -10,6 +10,8 @@ module Shiping
   class Application < Rails::Application
 
     config.active_storage.variant_processor = :vips
+    config.active_storage.variant_processor = :mini_magick
+
 
     # Initialize configuration defaults for originally generated Rails version.
     config.load_defaults 8.0
