@@ -9,7 +9,7 @@
  * Consider organizing styles into separate files for maintainability.
  */
  body {
-  background-color: rgba(52, 24, 65, 1);
+  background-color: rgb(27, 145, 153);
 }
 
 .star-rating .star {
