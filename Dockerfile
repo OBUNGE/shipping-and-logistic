@@ -54,7 +54,7 @@ RUN ./bin/rails assets:precompile
 
 ENV RAILS_MASTER_KEY=$RAILS_MASTER_KEY
 # Migrate database
-RUN ./bin/rails db:migrate
+
 
 
 
