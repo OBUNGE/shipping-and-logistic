@@ -1,0 +1,43 @@
+version: "1"
+projects:
+- name: shipping and Logistics
+  environments:
+  - name: Production
+    services:
+    - type: web
+      name: shipping-and-logistic
+      runtime: docker
+      repo: https://github.com/OBUNGE/shipping-and-logistic
+      dockerfilePath: ./Dockerfile
+      plan: free
+      region: ohio
+      autoDeployTrigger: "off"
+      envVars:
+        - key: SUPABASE_STORAGE_ENDPOINT
+          sync: false
+        - key: RAILS_SERVE_STATIC_FILES
+          sync: false
+        - key: RAILS_ENV
+          sync: false
+        - key: SUPABASE_BUCKET
+          sync: false
+        - key: SUPABASE_SECRET_ACCESS_KEY
+          sync: false
+        - key: SUPABASE_ACCESS_KEY_ID
+          sync: false
+        - key: DATABASE_URL
+          sync: false
+        - key: SUPABASE_DB_URL
+          sync: false
+        - key: RAILS_MASTER_KEY
+          sync: false
+    databases:
+    - name: product-images
+      databaseName: product_images
+      user: product_images_user
+      plan: free
+      region: oregon
+      postgresMajorVersion: "17"
+      ipAllowList:
+        - source: 0.0.0.0/0
+          description: everywhere
