@@ -575,6 +575,7 @@ DEPENDENCIES
   rails (~> 8.0.3)
   rspec-rails
   rubocop-rails-omakase
+  ruby-vips
   sassc-rails
   selenium-webdriver
   sidekiq
