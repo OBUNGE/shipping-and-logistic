@@ -11,6 +11,9 @@
 ARG RUBY_VERSION=3.4.5
 FROM docker.io/library/ruby:$RUBY_VERSION-slim AS base
 
+ARG RAILS_MASTER_KEY
+
+
 # Rails app lives here
 WORKDIR /rails
 
@@ -48,6 +51,10 @@ RUN bundle exec bootsnap precompile app/ lib/
 # Precompiling assets for production without requiring secret RAILS_MASTER_KEY
 RUN ./bin/rails assets:precompile
 
+
+ENV RAILS_MASTER_KEY=$RAILS_MASTER_KEY
+# Migrate database
+RUN ./bin/rails db:migrate
 
 
 

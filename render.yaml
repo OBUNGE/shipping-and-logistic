@@ -12,6 +12,9 @@ projects:
       plan: free
       region: ohio
       autoDeployTrigger: "off"
+      build:
+        args:
+          RAILS_MASTER_KEY: ${RAILS_MASTER_KEY}
       envVars:
         - key: SUPABASE_STORAGE_ENDPOINT
           sync: false
