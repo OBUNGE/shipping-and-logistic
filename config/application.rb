@@ -8,6 +8,9 @@ Bundler.require(*Rails.groups)
 
 module Shiping
   class Application < Rails::Application
+
+    config.active_storage.variant_processor = :vips
+
     # Initialize configuration defaults for originally generated Rails version.
     config.load_defaults 8.0
 
