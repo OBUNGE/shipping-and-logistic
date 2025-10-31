@@ -14,7 +14,8 @@ class Product < ApplicationRecord
 
   # === Supabase Image Fields ===
   # These are stored as plain URLs
-  serialize gallery_image_urls: Array
+  store_accessor :gallery_image_urls
+
 
   # === Nested Attributes ===
   accepts_nested_attributes_for :variants,

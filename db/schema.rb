@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_10_31_103518) do
+ActiveRecord::Schema[8.0].define(version: 2025_10_31_113359) do
   create_schema "auth"
   create_schema "extensions"
   create_schema "graphql"
@@ -277,6 +277,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_31_103518) do
     t.string "store_name"
     t.text "store_description"
     t.string "country"
+    t.string "store_banner_url"
+    t.string "store_logo_url"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
     t.index ["store_slug"], name: "index_users_on_store_slug", unique: true

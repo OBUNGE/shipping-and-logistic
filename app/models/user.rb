@@ -27,8 +27,14 @@ class User < ApplicationRecord
   has_many :reports
 
   # Store branding
-  has_one_attached :store_banner
-  has_one_attached :store_logo
+def store_banner_url
+  self[:store_banner_url].presence
+end
+
+def store_logo_url
+  self[:store_logo_url].presence
+end
+
 
   # === Callbacks ===
   before_validation :generate_store_slug, on: :create
