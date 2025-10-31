@@ -2,41 +2,19 @@ class Product < ApplicationRecord
   # === Associations ===
   belongs_to :seller, class_name: "User", foreign_key: "user_id"
   belongs_to :category, optional: true
-  
+  belongs_to :subcategory, optional: true
 
   has_many :reviews, dependent: :destroy
   has_many :order_items
   has_many :orders, through: :order_items
-
   has_many :variants, dependent: :destroy
   has_many :inventories, dependent: :destroy
   has_many :product_images, dependent: :destroy
   has_one  :discount, dependent: :destroy
-  belongs_to :seller, class_name: "User"
-  belongs_to :subcategory,  optional: true
 
-
-  include Rails.application.routes.url_helpers
-
-def image_url
-  return unless image.attached?
-  Rails.application.routes.url_helpers.rails_blob_url(image, only_path: false)
-end
-
-def gallery_image_urls
-  gallery_images.map do |img|
-    Rails.application.routes.url_helpers.rails_blob_url(img, only_path: false)
-  end
-end
-
-
-
-  # variant_images come through variants
-  has_many :variant_images, through: :variants
-
-  # === Attachments ===
-  has_one_attached  :image
-  has_many_attached :gallery_images
+  # === Supabase Image Fields ===
+  # These are stored as plain URLs
+  serialize :gallery_image_urls, Array
 
   # === Nested Attributes ===
   accepts_nested_attributes_for :variants,
@@ -48,8 +26,6 @@ end
   accepts_nested_attributes_for :product_images,
                                 allow_destroy: true,
                                 reject_if: :all_blank
-  # ⚠️ Do NOT put accepts_nested_attributes_for :variant_images here,
-  # because it's a has_many :through. Instead, put it in Variant model.
 
   # === Virtual Attributes ===
   attr_accessor :inventory_csv
@@ -74,6 +50,15 @@ end
 
   def self.ransackable_associations(_auth_object = nil)
     %w[seller order_items orders reviews variants inventories discount]
+  end
+
+  # === Supabase Image Accessors ===
+  def image_url
+    self[:image_url].presence
+  end
+
+  def gallery_image_urls
+    self[:gallery_image_urls] || []
   end
 
   # === Custom Methods ===
@@ -112,11 +97,9 @@ end
 
   private
 
-  # Helper to ensure nested fields exist for form building
   def build_nested_fields
     variants.build if variants.empty?
     inventories.build if inventories.empty?
     product_images.build if product_images.empty?
-    # variant_images are built through variants
   end
 end

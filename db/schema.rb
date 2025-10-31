@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_10_25_164257) do
+ActiveRecord::Schema[8.0].define(version: 2025_10_31_102042) do
   create_schema "auth"
   create_schema "extensions"
   create_schema "graphql"
@@ -199,6 +199,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_25_164257) do
     t.integer "seller_id"
     t.integer "subcategory_id"
     t.string "currency", default: "USD", null: false
+    t.string "image_url"
     t.index ["category_id"], name: "index_products_on_category_id"
     t.index ["seller_id"], name: "index_products_on_seller_id"
     t.index ["user_id"], name: "index_products_on_user_id"
@@ -284,6 +285,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_25_164257) do
     t.bigint "variant_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "image_url"
     t.index ["variant_id"], name: "index_variant_images_on_variant_id"
   end
 
@@ -294,6 +296,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_25_164257) do
     t.decimal "price_modifier"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.text "image_urls"
     t.index ["product_id"], name: "index_variants_on_product_id"
   end
 

@@ -6,7 +6,7 @@
 
     <!-- 🖼️ Product Image & Gallery -->
     <div class="mb-4">
-      <% if @product.image.attached? || @product.gallery_images.attached? || @variant_images.any? %>
+      <% if @product.image_url.present? || @product.gallery_image_urls.any? || @variant_images.any? %>
         <div class="image-gallery-wrapper">
 
           <!-- 🎞️ Main Carousel -->
@@ -14,9 +14,9 @@
             <div class="carousel-inner">
 
               <!-- Main Product Image -->
-              <% if @product.image.attached? %>
+              <% if @product.image_url.present? %>
                 <div class="carousel-item active">
-                  <%= image_tag url_for(@product.image),
+                  <%= image_tag @product.image_url,
                       class: "d-block w-100",
                       style: "max-height: 600px; object-fit: contain;",
                       alt: @product.title %>
@@ -24,22 +24,20 @@
               <% end %>
 
               <!-- Gallery Images -->
-              <% @product.gallery_images.each_with_index do |img, index| %>
-                <% if img.blob.present? %>
-                  <div class="carousel-item <%= 'active' if !@product.image.attached? && index == 0 %>">
-                    <%= image_tag url_for(img),
-                        class: "d-block w-100",
-                        style: "max-height: 600px; object-fit: contain;",
-                        alt: "Gallery image #{index + 1}" %>
-                  </div>
-                <% end %>
+              <% @product.gallery_image_urls.each_with_index do |url, index| %>
+                <div class="carousel-item <%= 'active' if @product.image_url.blank? && index == 0 %>">
+                  <%= image_tag url,
+                      class: "d-block w-100",
+                      style: "max-height: 600px; object-fit: contain;",
+                      alt: "Gallery image #{index + 1}" %>
+                </div>
               <% end %>
 
               <!-- Variant Images -->
               <% @variant_images.each do |vi| %>
-                <% if vi.image.attached? %>
+                <% if vi.image_url.present? %>
                   <div class="carousel-item">
-                    <%= image_tag url_for(vi.image),
+                    <%= image_tag vi.image_url,
                         class: "d-block w-100",
                         style: "max-height: 600px; object-fit: contain;",
                         alt: "#{vi.variant.name}: #{vi.variant.value}",
@@ -65,18 +63,16 @@
 
           <!-- 🖼️ Thumbnails Row -->
           <div class="thumb-row d-flex justify-content-center flex-wrap mt-3">
-            <% @product.gallery_images.each do |img| %>
-              <% if img.blob.present? %>
-                <%= image_tag url_for(img),
-                    class: "img-thumbnail me-2 mb-2",
-                    style: "width: 70px; height: 70px; object-fit: cover;",
-                    alt: "#{@product.title} thumbnail" %>
-              <% end %>
+            <% @product.gallery_image_urls.each do |url| %>
+              <%= image_tag url,
+                  class: "img-thumbnail me-2 mb-2",
+                  style: "width: 70px; height: 70px; object-fit: cover;",
+                  alt: "#{@product.title} thumbnail" %>
             <% end %>
 
             <% @variant_images.each do |vi| %>
-              <% if vi.image.attached? %>
-                <%= image_tag url_for(vi.image),
+              <% if vi.image_url.present? %>
+                <%= image_tag vi.image_url,
                     class: "img-thumbnail variant-thumb me-2 mb-2",
                     style: "width: 70px; height: 70px; object-fit: cover;",
                     alt: "#{vi.variant.value} thumbnail",
