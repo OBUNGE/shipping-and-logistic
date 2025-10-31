@@ -52,7 +52,7 @@ class ProductsController < ApplicationController
     if @product.save
       import_inventory_csv(@product)
       @product.update(stock: @product.total_inventory) if params[:product][:inventory_csv].present?
-      redirect_to @product, notice: "Product created successfully."
+      redirect_to @product, allow_other_host: true, notice: "Product created successfully."
     else
       Rails.logger.debug "❌ Product save failed: #{@product.errors.full_messages}"
       build_nested_fields(@product)
