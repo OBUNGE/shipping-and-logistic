@@ -148,13 +148,6 @@ class ProductsController < ApplicationController
     10.times { product.variants.build } if product.variants.empty?
   end
 
-class ProductsController < ApplicationController
-  before_action :set_product, only: [:edit, :update, :destroy]
-
-  # Other actions...
-
-  private
-
   def product_params
     params.require(:product).permit(
       :title,
