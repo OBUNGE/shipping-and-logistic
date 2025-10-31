@@ -24,9 +24,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_25_164257) do
   enable_extension "extensions.pg_stat_statements"
   enable_extension "extensions.pgcrypto"
   enable_extension "extensions.uuid-ossp"
-  enable_extension "graphql.pg_graphql"
   enable_extension "pg_catalog.plpgsql"
-  enable_extension "vault.supabase_vault"
 
   create_table "active_admin_comments", force: :cascade do |t|
     t.string "namespace"
