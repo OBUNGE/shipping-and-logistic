@@ -162,30 +162,34 @@ class ProductsController < ApplicationController
     )
   end
 
-  def upload_to_supabase(file)
-    filename = "#{SecureRandom.hex}_#{file.original_filename}"
-    bucket = ENV["SUPABASE_BUCKET"]
-    project_ref = ENV["SUPABASE_ACCESS_KEY_ID"]
-    endpoint = "https://#{project_ref}.supabase.co/storage/v1/object/#{bucket}/#{filename}"
+def upload_to_supabase(file)
+  return unless file.respond_to?(:original_filename) && file.respond_to?(:read)
 
-    uri = URI(endpoint)
-    http = Net::HTTP.new(uri.host, uri.port)
-    http.use_ssl = true
+  raw_filename = "#{SecureRandom.hex}_#{file.original_filename}"
+  encoded_filename = URI.encode_www_form_component(raw_filename)
 
-    request = Net::HTTP::Put.new(uri)
-    request["Authorization"] = "Bearer #{ENV['SUPABASE_SECRET_ACCESS_KEY']}"
-    request["Content-Type"] = file.content_type
-    request.body = file.read
+  bucket = ENV["SUPABASE_BUCKET"]
+  project_ref = ENV["SUPABASE_ACCESS_KEY_ID"]
+  endpoint = "https://#{project_ref}.supabase.co/storage/v1/object/#{bucket}/#{encoded_filename}"
 
-    response = http.request(request)
+  uri = URI(endpoint)
+  http = Net::HTTP.new(uri.host, uri.port)
+  http.use_ssl = true
 
-    if response.code.to_i == 200
-      "https://#{project_ref}.supabase.co/storage/v1/object/public/#{bucket}/#{filename}"
-    else
-      Rails.logger.error "Supabase upload failed: #{response.code} - #{response.body}"
-      nil
-    end
+  request = Net::HTTP::Put.new(uri)
+  request["Authorization"] = "Bearer #{ENV['SUPABASE_SECRET_ACCESS_KE']}" # ✅ Use API key, not secret access key
+  request["Content-Type"] = file.content_type
+  request.body = file.read
+
+  response = http.request(request)
+
+  if response.code.to_i == 200
+    "https://#{project_ref}.supabase.co/storage/v1/object/public/#{bucket}/#{encoded_filename}"
+  else
+    Rails.logger.error "Supabase upload failed: #{response.code} - #{response.body}"
+    nil
   end
+end
 
 def attach_gallery_images(product)
   gallery_images = params[:product][:gallery_images]
