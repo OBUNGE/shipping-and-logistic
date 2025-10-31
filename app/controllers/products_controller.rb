@@ -148,43 +148,56 @@ class ProductsController < ApplicationController
     10.times { product.variants.build } if product.variants.empty?
   end
 
-def product_params
-  params.require(:product).permit(
-    :title,
-    :description,
-    :price,
-    :shipping_cost,
-    :min_order,
-    :stock,
-    :estimated_delivery_range,
-    :return_policy,
-    :image,
-    :category_id,
-    :subcategory_id,
-    :inventory_csv,
-    gallery_images: [],
+class ProductsController < ApplicationController
+  before_action :set_product, only: [:edit, :update, :destroy]
 
-    variants_attributes: [
-      :id,
-      :name,
-      :value,
-      :price_modifier,
-      :_destroy,
-      variant_images_attributes: [
+  # Other actions...
+
+  private
+
+  def product_params
+    params.require(:product).permit(
+      :title,
+      :description,
+      :price,
+      :shipping_cost,
+      :min_order,
+      :stock,
+      :estimated_delivery_range,
+      :return_policy,
+      :image,
+      :category_id,
+      :subcategory_id,
+      :inventory_csv,
+      gallery_images: [],
+
+      variants_attributes: [
         :id,
-        :image,
+        :name,
+        :value,
+        :price_modifier,
+        :_destroy,
+        variant_images_attributes: [
+          :id,
+          :image,
+          :_destroy
+        ]
+      ],
+
+      inventories_attributes: [
+        :id,
+        :location,
+        :quantity,
         :_destroy
       ]
-    ],
+    )
+  end
 
-    inventories_attributes: [
-      :id,
-      :location,
-      :quantity,
-      :_destroy
-    ]
-  )
+  def set_product
+    @product = Product.find(params[:id])
+  end
 end
+
 
 
 def upload_to_supabase(file)
