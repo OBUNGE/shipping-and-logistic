@@ -239,22 +239,23 @@ end
 
 
   def attach_variants(product)
-    return unless params[:product][:variants_attributes].present?
+  return unless params[:product][:variants_attributes].present?
 
-    params[:product][:variants_attributes].each do |_, variant_data|
-      variant = product.variants.create(
-        name: variant_data[:name],
-        value: variant_data[:value],
-        price_modifier: variant_data[:price_modifier]
-      )
+  params[:product][:variants_attributes].to_h.each do |_, variant_data|
+    variant = product.variants.create(
+      name: variant_data[:name],
+      value: variant_data[:value],
+      price_modifier: variant_data[:price_modifier]
+    )
 
-      if variant_data[:variant_images_attributes].present?
-        urls = variant_data[:variant_images_attributes].map do |_, image_data|
-          upload_to_supabase(image_data[:image]) if image_data[:image].present?
-        end.compact
+    if variant_data[:variant_images_attributes].present?
+      urls = variant_data[:variant_images_attributes].to_h.map do |_, image_data|
+        upload_to_supabase(image_data[:image]) if image_data[:image].present?
+      end.compact
 
-        variant.update(image_urls: urls)
-      end
+      variant.update(image_urls: urls)
     end
   end
+end
+
 end
