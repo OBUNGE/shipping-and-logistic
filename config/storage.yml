@@ -39,6 +39,6 @@ supabase:
   secret_access_key: <%= ENV["SUPABASE_SECRET_ACCESS_KEY"] %>
   region: "us-east-1"
   bucket: <%= ENV["SUPABASE_BUCKET"] %>
-  endpoint: <%= ENV["SUPABASE_URL"] %>/storage/v1/s3
+  endpoint: <%= ENV["SUPABASE_URL"] %>
   force_path_style: true
  
