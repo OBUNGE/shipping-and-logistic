@@ -187,15 +187,27 @@ class ProductsController < ApplicationController
     end
   end
 
-  def attach_gallery_images(product)
-    return unless params[:product][:gallery_images].present?
+def attach_gallery_images(product)
+  gallery_images = params[:product][:gallery_images]
 
-    urls = params[:product][:gallery_images].map do |file|
-      upload_to_supabase(file)
-    end.compact
+  return unless gallery_images.present? && gallery_images.is_a?(Array)
 
-    product.update(gallery_image_urls: urls)
+  valid_files = gallery_images.select do |file|
+    file.respond_to?(:original_filename) && file.respond_to?(:read)
   end
+
+  urls = valid_files.map do |file|
+    begin
+      upload_to_supabase(file)
+    rescue => e
+      Rails.logger.error "Supabase gallery image upload failed: #{e.message}"
+      nil
+    end
+  end.compact
+
+  product.update(gallery_image_urls: urls)
+end
+
 
   def attach_variants(product)
     return unless params[:product][:variants_attributes].present?

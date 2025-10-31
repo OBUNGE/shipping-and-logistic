@@ -45,6 +45,7 @@
 }
 
 
+
   function previewGalleryImages(event) {
     const previewContainer = document.getElementById("gallery-preview");
     previewContainer.innerHTML = "";
@@ -101,17 +102,14 @@
       }
     });
   });
-
-
-// Variant Type-Value Dynamic Dropdowns
-
+// ✅ Variant Type-Value Dynamic Dropdowns
 document.addEventListener("turbo:load", () => {
   const typeOptions = {
-    Size: ["XS","S","M","L","XL","XXL","3XL","4XL","5XL","6XL","7XL","8XL","9XL","10XL"],
-    Color: ["Red","Blue","Black","White","Green","Yellow","Purple","Orange","Pink","Gray","Brown","Cyan","Magenta","Lime","Teal","Navy","Maroon","Olive","Silver","Gold","Beige"],
-    Material: ["Cotton","Leather","Polyester","Plastic","Metal","Wood","Glass","Silk","Wool","Denim"],
-    Storage: ["64GB","128GB","256GB","512GB","1TB","2TB","4TB"],
-    Packaging: ["Box","Bag","Sachet","Envelope","Bottle","Jar"]
+    Size: ["XS", "S", "M", "L", "XL", "XXL", "3XL", "4XL", "5XL", "6XL", "7XL", "8XL", "9XL", "10XL"],
+    Color: ["Red", "Blue", "Black", "White", "Green", "Yellow", "Purple", "Orange", "Pink", "Gray", "Brown", "Cyan", "Magenta", "Lime", "Teal", "Navy", "Maroon", "Olive", "Silver", "Gold", "Beige"],
+    Material: ["Cotton", "Leather", "Polyester", "Plastic", "Metal", "Wood", "Glass", "Silk", "Wool", "Denim"],
+    Storage: ["64GB", "128GB", "256GB", "512GB", "1TB", "2TB", "4TB"],
+    Packaging: ["Box", "Bag", "Sachet", "Envelope", "Bottle", "Jar"]
   };
 
   function updateValueOptions(typeSelect) {
@@ -138,9 +136,12 @@ document.addEventListener("turbo:load", () => {
       }
     }
 
-    // Toggle "Add color image" button
+    // ✅ Show/hide color image section
     if (actions) {
       actions.classList.toggle("d-none", selectedType !== "Color");
+      if (selectedType === "Color") {
+        bindAddImageButtons(block); // Rebind buttons inside this block
+      }
     }
   }
 
@@ -171,13 +172,10 @@ document.addEventListener("turbo:load", () => {
 
   function addVariantImageToBlock(variantBlock) {
     const templateHtml = document.getElementById("variant-image-template").innerHTML;
+    if (!templateHtml) return;
 
-    // Determine variant index by position among .variant-blocks
     const variantIndex = Array.from(document.querySelectorAll("#variant-fields .variant-block")).indexOf(variantBlock);
-
-    // Determine next image index within this variant
-    const existingImages = variantBlock.querySelectorAll(".variant-image-block").length;
-    const imageIndex = existingImages; // 0-based
+    const imageIndex = variantBlock.querySelectorAll(".variant-image-block").length;
 
     const html = templateHtml
       .replace(/NEW_RECORD/g, variantIndex)
@@ -188,21 +186,23 @@ document.addEventListener("turbo:load", () => {
     const imageBlock = wrapper.firstElementChild;
 
     if (imageBlock) {
-      variantBlock.appendChild(imageBlock);
+      variantBlock.querySelector(".color-image-actions").appendChild(imageBlock);
       bindDeleteButtons(imageBlock);
     }
   }
 
   function bindAddImageButtons(container) {
     container.querySelectorAll(".variant-block .add-variant-image-btn").forEach(btn => {
-      btn.addEventListener("click", (e) => {
+      btn.removeEventListener("click", btn._boundClick); // Prevent double binding
+      btn._boundClick = (e) => {
         const variantBlock = e.target.closest(".variant-block");
         addVariantImageToBlock(variantBlock);
-      });
+      };
+      btn.addEventListener("click", btn._boundClick);
     });
   }
 
-  // Add Variant (uses NEW_RECORD placeholder replacement)
+  // ✅ Add Variant (uses NEW_RECORD placeholder replacement)
   window.addFields = function(containerId) {
     const container = document.getElementById(containerId);
     const templateEl = document.getElementById("variant-template");
@@ -232,7 +232,7 @@ document.addEventListener("turbo:load", () => {
     bindAddImageButtons(newBlock);
   };
 
-  // Initial bindings
+  // ✅ Initial bindings
   bindVariantDropdowns(document);
   bindDeleteButtons(document);
   bindAddImageButtons(document);

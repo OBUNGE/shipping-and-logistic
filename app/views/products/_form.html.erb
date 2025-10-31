@@ -207,12 +207,12 @@
       </div>
     </div>
 
-    <!-- 🎨 Variant Images -->
-    <div class="mt-2 d-none color-image-actions">
-      <input type="file" name="product[variants_attributes][NEW_RECORD][variant_images_attributes][NEW_IMAGE][image]" class="form-control form-control-sm" accept="image/*" />
-      <input type="hidden" name="product[variants_attributes][NEW_RECORD][variant_images_attributes][NEW_IMAGE][_destroy]" class="destroy-flag" value="false" />
-      <button type="button" class="btn btn-sm btn-outline-danger delete-variant-image">Delete</button>
-    </div>
+    <!-- ✅ Hidden Template for Variant Image Block -->
+<div id="variant-image-template" style="display: none;">
+  <div class="border p-2 mb-2 bg-light rounded variant-image-block">
+    <input type="file" name="product[variants_attributes][NEW_RECORD][variant_images_attributes][NEW_IMAGE][image]" class="form-control form-control-sm" accept="image/*" />
+    <input type="hidden" name="product[variants_attributes][NEW_RECORD][variant_images_attributes][NEW_IMAGE][_destroy]" class="destroy-flag" value="false" />
+    <button type="button" class="btn btn-sm btn-outline-danger delete-variant-image">Delete</button>
   </div>
 </div>
 
