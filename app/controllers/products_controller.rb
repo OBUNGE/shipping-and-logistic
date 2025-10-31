@@ -177,7 +177,7 @@ def upload_to_supabase(file)
   http.use_ssl = true
 
   request = Net::HTTP::Put.new(uri)
-  request["Authorization"] = "Bearer #{ENV['SUPABASE_SECRET_ACCESS_KE']}" # ✅ Use API key, not secret access key
+  request["Authorization"] = "Bearer #{ENV['SUPABASE_SECRET_ACCESS_KEY']}" # ✅ Use API key, not secret access key
   request["Content-Type"] = file.content_type
   request.body = file.read
 
