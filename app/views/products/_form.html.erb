@@ -135,7 +135,6 @@
   <button type="button" class="btn btn-sm btn-outline-primary mt-2" onclick="addGalleryInput()">➕ Add More Images</button>
   <div id="gallery-preview" class="row mt-2 sortable-preview"></div>
 </div>
-
 <!-- 🔀 Variants -->
 <div id="variant-fields">
   <%= form.fields_for :variants do |variant_fields| %>
@@ -207,7 +206,12 @@
       </div>
     </div>
 
-    <!-- ✅ Hidden Template for Variant Image Block -->
+    <!-- Placeholder for dynamic color-image-actions -->
+    <div class="mt-2 d-none color-image-actions"></div>
+  </div>
+</div>
+
+<!-- ✅ Hidden Template for Variant Image Block -->
 <div id="variant-image-template" style="display: none;">
   <div class="border p-2 mb-2 bg-light rounded variant-image-block">
     <input type="file" name="product[variants_attributes][NEW_RECORD][variant_images_attributes][NEW_IMAGE][image]" class="form-control form-control-sm" accept="image/*" />
@@ -215,8 +219,6 @@
     <button type="button" class="btn btn-sm btn-outline-danger delete-variant-image">Delete</button>
   </div>
 </div>
-  </div>
-
 
 
 <!-- 🏬 Inventory -->
