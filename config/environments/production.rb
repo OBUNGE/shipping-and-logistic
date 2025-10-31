@@ -6,12 +6,13 @@ Rails.application.configure do
 
   # ✅ Host for ActiveStorage signed URLs
   config.action_controller.default_url_options = {
-    host: "shipping-and-logistic.onrender.com",
+    host: "shipping-and-logistic-wuo1.onrender.com",
     protocol: "https"
   }
 
   # ✅ Ensure URL helpers (like rails_blob_url) generate full URLs
-  Rails.application.routes.default_url_options[:host] = "shipping-and-logistic.onrender.com"
+  Rails.application.routes.default_url_options[:host] = "shipping-and-logistic-wuo1.onrender.com"
+  Rails.application.routes.default_url_options[:protocol] = "https"
 
   # ✅ Secret key fallback
   config.secret_key_base = ENV["SECRET_KEY_BASE"] || Rails.application.credentials.secret_key_base
@@ -70,7 +71,7 @@ Rails.application.configure do
 
   # ✅ Mailer host (for Devise or ActionMailer)
   config.action_mailer.default_url_options = {
-    host: "shipping-and-logistic.onrender.com",
+    host: "shipping-and-logistic-wuo1.onrender.com",
     protocol: "https"
   }
 
