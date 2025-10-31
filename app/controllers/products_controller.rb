@@ -148,19 +148,44 @@ class ProductsController < ApplicationController
     10.times { product.variants.build } if product.variants.empty?
   end
 
-  def product_params
-    params.require(:product).permit(
-      :title, :description, :price, :shipping_cost, :min_order,
-      :stock, :estimated_delivery_range, :return_policy,
-      :image, :category_id, :subcategory_id, :inventory_csv,
-      gallery_images: [],
-      variants_attributes: [
-        :id, :name, :value, :price_modifier, :_destroy,
-        variant_images_attributes: [:id, :variant_id, :image, :_destroy]
-      ],
-      inventories_attributes: [:id, :location, :quantity, :_destroy]
-    )
-  end
+def product_params
+  params.require(:product).permit(
+    :title,
+    :description,
+    :price,
+    :shipping_cost,
+    :min_order,
+    :stock,
+    :estimated_delivery_range,
+    :return_policy,
+    :image,
+    :category_id,
+    :subcategory_id,
+    :inventory_csv,
+    gallery_images: [],
+
+    variants_attributes: [
+      :id,
+      :name,
+      :value,
+      :price_modifier,
+      :_destroy,
+      variant_images_attributes: [
+        :id,
+        :image,
+        :_destroy
+      ]
+    ],
+
+    inventories_attributes: [
+      :id,
+      :location,
+      :quantity,
+      :_destroy
+    ]
+  )
+end
+
 
 def upload_to_supabase(file)
   return unless file.respond_to?(:original_filename) && file.respond_to?(:read)
