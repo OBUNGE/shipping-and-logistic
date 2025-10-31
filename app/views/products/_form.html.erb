@@ -241,14 +241,17 @@
   <button type="button" class="btn btn-sm btn-outline-primary mt-2" onclick="addFields('inventory-fields')">➕ Add Inventory</button>
 </div>
 
-<!-- ✅ Submit (inside the form) -->
+<!-- ✅ Submit Button -->
 <div class="mt-3">
   <%= form.submit(@product.persisted? ? "Update Product" : "Save Product",
                   class: "btn btn-primary w-100 fw-semibold") %>
 </div>
-<% end %> 
-<!-- closes form_with -->
 
+<% end %>
+
+
+
+<!-- closes form_with -->
 <!-- 💸 Discount Section (outside the form) -->
 <% if @product.persisted? %>
   <hr>
