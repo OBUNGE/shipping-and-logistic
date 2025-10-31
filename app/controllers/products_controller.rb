@@ -186,12 +186,6 @@ class ProductsController < ApplicationController
     )
   end
 
-  def set_product
-    @product = Product.find(params[:id])
-  end
-end
-
-
 
 def upload_to_supabase(file)
   return unless file.respond_to?(:original_filename) && file.respond_to?(:read)
