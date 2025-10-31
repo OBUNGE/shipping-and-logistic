@@ -16,6 +16,21 @@ class Product < ApplicationRecord
   belongs_to :subcategory,  optional: true
 
 
+  include Rails.application.routes.url_helpers
+
+def image_url
+  return unless image.attached?
+  Rails.application.routes.url_helpers.rails_blob_url(image, only_path: false)
+end
+
+def gallery_image_urls
+  gallery_images.map do |img|
+    Rails.application.routes.url_helpers.rails_blob_url(img, only_path: false)
+  end
+end
+
+
+
   # variant_images come through variants
   has_many :variant_images, through: :variants
 
