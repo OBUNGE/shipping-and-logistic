@@ -149,7 +149,11 @@
               </div>
             <% end %>
 
-            <%= f.submit "Add to Cart", class: "btn btn-primary w-100 fw-semibold" %>
+            <%= button_to "Add to Cart",
+              add_cart_path(product_id: product.id, variant_id: variant.id),
+              method: :post,
+              class: "btn btn-primary" %>
+
           <% end %>
         <% else %>
           <p class="text-muted small">Please <%= link_to "log in as a buyer", new_user_session_path %> to purchase.</p>

@@ -1,7 +1,7 @@
 <h2>Storefront Settings</h2>
 <p>Update your store name, logo, banner, and description.</p>
 
-<%= form_with model: @seller, url: seller_path(@seller.store_slug), method: :patch, local: true, html: { id: "storefront-form" } do |f| %>
+<%= form_with model: seller, local: true, html: { id: "storefront-form" } do |f| %>
   <div class="mb-3">
     <%= f.label :store_name, "Store Name", class: "form-label" %>
     <%= f.text_field :store_name, class: "form-control" %>
@@ -9,9 +9,9 @@
 
   <div class="mb-3">
     <%= f.label :store_logo_url, "Store Logo", class: "form-label" %>
-    <% if @seller.store_logo_url.present? %>
+    <% if seller.store_logo_url.present? %>
       <div class="mb-2">
-        <%= image_tag @seller.store_logo_url,
+        <%= image_tag seller.store_logo_url,
             class: "rounded-circle border",
             style: "width: 80px; height: 80px; object-fit: cover;" %>
       </div>
@@ -22,9 +22,9 @@
 
   <div class="mb-3">
     <%= f.label :store_banner_url, "Store Banner", class: "form-label" %>
-    <% if @seller.store_banner_url.present? %>
+    <% if seller.store_banner_url.present? %>
       <div class="mb-2">
-        <%= image_tag @seller.store_banner_url,
+        <%= image_tag seller.store_banner_url,
             class: "img-fluid rounded",
             style: "max-height: 200px; object-fit: cover;" %>
       </div>
@@ -64,7 +64,6 @@
         return false;
       }
 
-      // ✅ Correct destructuring
       const { data } = supabase.storage.from(bucket).getPublicUrl(filePath);
       hiddenField.value = data.publicUrl;
     }
@@ -74,7 +73,6 @@
   document.getElementById("storefront-form").addEventListener("submit", async function (e) {
     e.preventDefault();
 
-    // Upload logo and banner before submitting
     await uploadFile("store_logo", "store_logo_url", "store-assets");
     await uploadFile("store_banner", "store_banner_url", "store-assets");
 

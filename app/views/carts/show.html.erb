@@ -5,9 +5,13 @@
 
       <% if @cart_items.empty? %>
         <div class="text-center my-5">
-          <%= image_tag "empty_cart.svg", alt: "Empty cart", class: "img-fluid opacity-75", style: "max-height: 250px;" %>
+          <%= image_tag asset_path("empty_cart.svg"),
+                        alt: "Empty cart",
+                        class: "img-fluid opacity-75",
+                        style: "max-height: 250px;" %>
           <p class="mt-3 fs-5 text-muted">Your cart is currently empty.</p>
-          <%= link_to "Browse Products", products_path, class: "btn btn-primary px-4 py-2 rounded-pill fw-semibold mt-2" %>
+          <%= link_to "Browse Products", products_path,
+                      class: "btn btn-primary px-4 py-2 rounded-pill fw-semibold mt-2" %>
         </div>
       <% else %>
         <div class="table-responsive">
@@ -34,21 +38,29 @@
                 <% shipping_cost = product.shipping_cost || 0 %>
 
                 <tr>
+                  <!-- Product title -->
                   <td>
                     <%= link_to product.title, product_path(product),
                           class: "text-decoration-none fw-semibold text-dark" %>
                   </td>
 
+                  <!-- Product / Variant Image -->
                   <td class="text-center">
-                    <% if product.image.attached? %>
-                      <%= image_tag product.image.variant(resize_to_limit: [70, 70]),
+                    <% image_url = variant&.image_url.presence || product.image_url.presence %>
+                    <% if image_url.present? %>
+                      <%= image_tag image_url,
                             class: "img-thumbnail border-0 rounded-3 shadow-sm",
+                            style: "width: 70px; height: 70px; object-fit: cover;",
                             alt: "#{product.title} image" %>
                     <% else %>
-                      <%= image_tag "placeholder.jpg", class: "img-thumbnail border-0 rounded-3 shadow-sm", alt: "No image" %>
+                      <%= image_tag asset_path("placeholder.jpg"),
+                            class: "img-thumbnail border-0 rounded-3 shadow-sm",
+                            style: "width: 70px; height: 70px; object-fit: cover;",
+                            alt: "No image" %>
                     <% end %>
                   </td>
 
+                  <!-- Variant Info -->
                   <td class="text-center">
                     <% if variant %>
                       <span class="badge bg-info text-dark"><%= "#{variant.name}: #{variant.value}" %></span>
@@ -57,10 +69,14 @@
                     <% end %>
                   </td>
 
+                  <!-- Quantity Update -->
                   <td class="text-center">
-                    <%= form_with url: update_cart_path(product_id: product.id, variant_id: variant&.id), method: :post, local: true do |f| %>
+                    <%= form_with url: update_cart_path(product_id: product.id, variant_id: variant&.id),
+                                  method: :post, local: true do |f| %>
                       <div class="d-flex flex-column align-items-center">
-                        <%= f.number_field :quantity, value: item[:quantity], min: 1,
+                        <%= f.number_field :quantity,
+                              value: item[:quantity],
+                              min: 1,
                               class: "form-control form-control-sm text-center mb-1",
                               style: "width: 70px;" %>
                         <%= f.submit "Update", class: "btn btn-sm btn-outline-secondary rounded-pill" %>
@@ -68,12 +84,22 @@
                     <% end %>
                   </td>
 
+                  <!-- Pricing -->
                   <td class="text-center"><%= display_price(item[:unit_price], user: current_user) %></td>
                   <td class="text-center"><%= display_price(item[:unit_price] * item[:quantity], user: current_user) %></td>
                   <td class="text-center"><%= display_price(shipping_cost, user: current_user) %></td>
-                  <td class="text-center"><%= product.seller.company_name.presence || product.seller.name.presence || "Unknown Seller" %></td>
+
+                  <!-- Seller -->
+                  <td class="text-center">
+                    <%= product.seller.company_name.presence ||
+                        product.seller.name.presence ||
+                        "Unknown Seller" %>
+                  </td>
+
+                  <!-- Delivery -->
                   <td class="text-center"><%= product.delivery_estimate.presence || "—" %></td>
 
+                  <!-- Remove -->
                   <td class="text-center">
                     <%= button_to "Remove",
                           remove_cart_path(product_id: product.id, variant_id: variant&.id),
@@ -87,6 +113,7 @@
           </table>
         </div>
 
+        <!-- Totals -->
         <% subtotal = @cart_items.sum { |item| item[:unit_price] * item[:quantity] } %>
         <% shipping_total = @cart_items.sum { |item| item[:product].shipping_cost || 0 } %>
         <% grand_total = subtotal + shipping_total %>
@@ -113,6 +140,7 @@
             </div>
           </div>
 
+          <!-- Actions -->
           <div class="col-md-6 d-flex flex-column justify-content-center align-items-md-end mt-4 mt-md-0">
             <div class="d-flex flex-column flex-md-row gap-3">
               <%= button_to "🧹 Clear Cart", clear_cart_path,

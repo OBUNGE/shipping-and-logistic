@@ -66,10 +66,10 @@
     <% end %>
   </div>
 
- <!-- Storefront Tab -->
-<div class="tab-pane fade" id="storefront" role="tabpanel" aria-labelledby="storefront-tab">
-  <%= render "sellers/form", seller: @user %>
-</div>
+  <!-- Storefront Tab -->
+  <div class="tab-pane fade" id="storefront" role="tabpanel" aria-labelledby="storefront-tab">
+    <%= render "sellers/form", seller: @user %>
+  </div>
 
   <!-- Security Tab -->
   <div class="tab-pane fade" id="security" role="tabpanel" aria-labelledby="security-tab">
@@ -98,8 +98,6 @@
 
 <hr class="my-4">
 
-<hr class="my-4">
-
 <!-- Cancel Account -->
 <h3 class="fs-5 fw-bold text-danger">❌ Cancel my account</h3>
 <p class="small text-muted">Unhappy? You can permanently delete your account.</p>
@@ -108,4 +106,3 @@
               data: { confirm: "Are you sure?", turbo_confirm: "Are you sure?" },
               method: :delete,
               class: "btn btn-outline-danger btn-sm" %>
-
