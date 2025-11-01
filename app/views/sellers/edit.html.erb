@@ -54,7 +54,7 @@
       const file = fileInput.files[0];
       const filePath = `${Date.now()}_${file.name}`;
 
-      let { error } = await supabase.storage.from(bucket).upload(filePath, file, {
+      const { error } = await supabase.storage.from(bucket).upload(filePath, file, {
         cacheControl: "3600",
         upsert: true
       });
@@ -64,7 +64,7 @@
         return false;
       }
 
-      // ✅ Correct way to get the public URL
+      // ✅ Correct destructuring
       const { data } = supabase.storage.from(bucket).getPublicUrl(filePath);
       hiddenField.value = data.publicUrl;
     }
