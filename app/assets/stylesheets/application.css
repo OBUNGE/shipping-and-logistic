@@ -14,6 +14,9 @@
 .dropdown-menu {
   z-index: 10000; /* higher than navbar and filter sections */
 }
+.category-bar { z-index: 900 !important; }
+.sticky-top.search-bar { z-index: 950 !important; }
+
 
 
 .star-rating .star {
