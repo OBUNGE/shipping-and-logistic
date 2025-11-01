@@ -4,13 +4,29 @@ class ProductsController < ApplicationController
 
   require "csv"
 
-  def index
-    @products = Product.all
-  rescue => e
-    Rails.logger.error "🔥 Products#index failed: #{e.message}"
-    Rails.logger.error e.backtrace.join("\n")
-    render plain: "Product listing error: #{e.message}", status: 500
+def index
+  @products = Product.includes(:variants, :inventories)
+                     .order(created_at: :desc)
+
+  # Filter by category if provided
+  if params[:category].present?
+    @products = @products.where(category_id: params[:category])
   end
+
+  # Filter by subcategory if provided
+  if params[:subcategory].present?
+    @products = @products.where(subcategory_id: params[:subcategory])
+  end
+
+  # Paginate results
+  @products = @products.page(params[:page]).per(20)
+
+rescue => e
+  Rails.logger.error "🔥 Products#index failed: #{e.message}"
+  Rails.logger.error e.backtrace.join("\n")
+  render plain: "Product listing error: #{e.message}", status: 500
+end
+
 
 def show
   @reviews = @product.reviews.order(created_at: :desc).page(params[:page]).per(5)
@@ -241,7 +257,6 @@ def attach_gallery_images(product)
   product.update(gallery_image_urls: urls)
 end
 
-
 def attach_variants(product)
   return unless product_params[:variants_attributes].present?
 
@@ -252,15 +267,15 @@ def attach_variants(product)
       price_modifier: variant_data[:price_modifier]
     )
 
-    if variant_data[:variant_images_attributes].present?
-      urls = variant_data[:variant_images_attributes].to_h.map do |_, image_data|
-        upload_to_supabase(image_data[:image]) if image_data[:image].present?
-      end.flatten.compact.select { |url| url.is_a?(String) && url.present? }
+    next unless variant_data[:variant_images_attributes].present?
 
-      variant.update(image_urls: urls)
+    urls = variant_data[:variant_images_attributes].to_h.map do |_, image_data|
+      image_data[:image].present? ? upload_to_supabase(image_data[:image]) : nil
     end
+
+    cleaned_urls = Array(urls).flatten.compact.select { |url| url.is_a?(String) && url.present? }
+
+    variant.update(image_urls: cleaned_urls)
   end
 end
-
-
 end
