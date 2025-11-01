@@ -1,94 +1,131 @@
-<h1 class="mb-4">🛒 Your Cart</h1>
+<div class="container my-5">
+  <div class="card shadow-lg border-0 rounded-4">
+    <div class="card-body p-4">
+      <h1 class="mb-4 text-center fw-bold text-primary">🛒 Your Shopping Cart</h1>
 
-<% if @cart_items.empty? %>
-  <div class="text-center my-5">
-    <%= image_tag "empty_cart.svg", alt: "Empty cart", class: "img-fluid", style: "max-height: 300px;" %>
-    <p class="mt-3">Your cart is empty.</p>
-    <%= link_to "Browse Products", products_path, class: "btn btn-primary" %>
-  </div>
-<% else %>
-  <table class="table table-hover align-middle">
-    <thead class="table-light">
-      <tr>
-        <th>Product</th>
-        <th>Image</th>
-        <th>Variant</th>
-        <th>Qty</th>
-        <th>Unit Price</th>
-        <th>Subtotal</th>
-        <th>Shipping</th>
-        <th>Seller</th>
-        <th>Delivery</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody>
-      <% @cart_items.each do |item| %>
-        <% product = item[:product] %>
-        <% variant = item[:variant] %>
-        <% shipping_cost = product.shipping_cost || 0 %>
+      <% if @cart_items.empty? %>
+        <div class="text-center my-5">
+          <%= image_tag "empty_cart.svg", alt: "Empty cart", class: "img-fluid opacity-75", style: "max-height: 250px;" %>
+          <p class="mt-3 fs-5 text-muted">Your cart is currently empty.</p>
+          <%= link_to "Browse Products", products_path, class: "btn btn-primary px-4 py-2 rounded-pill fw-semibold mt-2" %>
+        </div>
+      <% else %>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead class="table-primary text-center">
+              <tr>
+                <th>Product</th>
+                <th>Image</th>
+                <th>Variant</th>
+                <th>Qty</th>
+                <th>Unit Price</th>
+                <th>Subtotal</th>
+                <th>Shipping</th>
+                <th>Seller</th>
+                <th>Delivery</th>
+                <th></th>
+              </tr>
+            </thead>
 
-        <tr>
-          <td>
-            <%= link_to product.title, product_path(product),
-                  class: "text-decoration-none fw-semibold" %>
-          </td>
-          <td>
-            <% if product.image.attached? %>
-              <%= image_tag product.image.variant(resize_to_limit: [80, 80]),
-                    class: "img-thumbnail", alt: "#{product.title} image" %>
-            <% else %>
-              <%= image_tag "placeholder.jpg", class: "img-thumbnail", alt: "No image available" %>
-            <% end %>
-          </td>
-          <td>
-            <% if variant %>
-              <span class="badge bg-info text-dark"><%= "#{variant.name}: #{variant.value}" %></span>
-            <% else %>
-              <span class="text-muted">—</span>
-            <% end %>
-          </td>
-          <td>
-            <%= form_with url: update_cart_path(product_id: product.id, variant_id: variant&.id), method: :post, local: true do |f| %>
-              <%= f.number_field :quantity, value: item[:quantity], min: 1,
-                    class: "form-control form-control-sm", style: "width: 70px;" %>
-              <%= f.submit "Update", class: "btn btn-sm btn-outline-secondary mt-1" %>
-            <% end %>
-          </td>
-          <td><%= display_price(item[:unit_price], user: current_user) %></td>
-          <td><%= display_price(item[:unit_price] * item[:quantity], user: current_user) %></td>
-          <td><%= display_price(shipping_cost, user: current_user) %></td>
-          <td><%= product.seller.company_name.presence || product.seller.name.presence || "Unknown Seller" %></td>
-          <td><%= product.delivery_estimate.presence || "—" %></td>
-          <td>
-            <%= button_to "Remove",
-                  remove_cart_path(product_id: product.id, variant_id: variant&.id),
-                  method: :post,
-                  class: "btn btn-sm btn-danger",
-                  aria: { label: "Remove #{product.title} from cart" } %>
-          </td>
-        </tr>
+            <tbody class="table-group-divider">
+              <% @cart_items.each do |item| %>
+                <% product = item[:product] %>
+                <% variant = item[:variant] %>
+                <% shipping_cost = product.shipping_cost || 0 %>
+
+                <tr>
+                  <td>
+                    <%= link_to product.title, product_path(product),
+                          class: "text-decoration-none fw-semibold text-dark" %>
+                  </td>
+
+                  <td class="text-center">
+                    <% if product.image.attached? %>
+                      <%= image_tag product.image.variant(resize_to_limit: [70, 70]),
+                            class: "img-thumbnail border-0 rounded-3 shadow-sm",
+                            alt: "#{product.title} image" %>
+                    <% else %>
+                      <%= image_tag "placeholder.jpg", class: "img-thumbnail border-0 rounded-3 shadow-sm", alt: "No image" %>
+                    <% end %>
+                  </td>
+
+                  <td class="text-center">
+                    <% if variant %>
+                      <span class="badge bg-info text-dark"><%= "#{variant.name}: #{variant.value}" %></span>
+                    <% else %>
+                      <span class="text-muted">—</span>
+                    <% end %>
+                  </td>
+
+                  <td class="text-center">
+                    <%= form_with url: update_cart_path(product_id: product.id, variant_id: variant&.id), method: :post, local: true do |f| %>
+                      <div class="d-flex flex-column align-items-center">
+                        <%= f.number_field :quantity, value: item[:quantity], min: 1,
+                              class: "form-control form-control-sm text-center mb-1",
+                              style: "width: 70px;" %>
+                        <%= f.submit "Update", class: "btn btn-sm btn-outline-secondary rounded-pill" %>
+                      </div>
+                    <% end %>
+                  </td>
+
+                  <td class="text-center"><%= display_price(item[:unit_price], user: current_user) %></td>
+                  <td class="text-center"><%= display_price(item[:unit_price] * item[:quantity], user: current_user) %></td>
+                  <td class="text-center"><%= display_price(shipping_cost, user: current_user) %></td>
+                  <td class="text-center"><%= product.seller.company_name.presence || product.seller.name.presence || "Unknown Seller" %></td>
+                  <td class="text-center"><%= product.delivery_estimate.presence || "—" %></td>
+
+                  <td class="text-center">
+                    <%= button_to "Remove",
+                          remove_cart_path(product_id: product.id, variant_id: variant&.id),
+                          method: :post,
+                          class: "btn btn-sm btn-danger rounded-pill",
+                          aria: { label: "Remove #{product.title} from cart" } %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+
+        <% subtotal = @cart_items.sum { |item| item[:unit_price] * item[:quantity] } %>
+        <% shipping_total = @cart_items.sum { |item| item[:product].shipping_cost || 0 } %>
+        <% grand_total = subtotal + shipping_total %>
+
+        <div class="row mt-5">
+          <div class="col-md-6">
+            <div class="card border-0 bg-light shadow-sm rounded-3">
+              <div class="card-body">
+                <h5 class="fw-bold text-secondary mb-3">Order Summary</h5>
+                <div class="d-flex justify-content-between">
+                  <span>Subtotal (Products):</span>
+                  <strong><%= display_price(subtotal, user: current_user) %></strong>
+                </div>
+                <div class="d-flex justify-content-between">
+                  <span>Shipping:</span>
+                  <strong><%= display_price(shipping_total, user: current_user) %></strong>
+                </div>
+                <hr>
+                <div class="d-flex justify-content-between">
+                  <h5 class="fw-bold">Grand Total:</h5>
+                  <h5 class="fw-bold text-success"><%= display_price(grand_total, user: current_user) %></h5>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6 d-flex flex-column justify-content-center align-items-md-end mt-4 mt-md-0">
+            <div class="d-flex flex-column flex-md-row gap-3">
+              <%= button_to "🧹 Clear Cart", clear_cart_path,
+                    method: :post,
+                    class: "btn btn-outline-warning fw-semibold px-4 rounded-pill",
+                    data: { confirm: "Are you sure you want to clear your cart?" } %>
+
+              <%= link_to "✅ Proceed to Checkout", new_order_path,
+                    class: "btn btn-success fw-semibold px-4 rounded-pill" %>
+            </div>
+          </div>
+        </div>
       <% end %>
-    </tbody>
-  </table>
-
-  <% subtotal = @cart_items.sum { |item| item[:unit_price] * item[:quantity] } %>
-  <% shipping_total = @cart_items.sum { |item| item[:product].shipping_cost || 0 } %>
-  <% grand_total = subtotal + shipping_total %>
-
-  <div class="mt-4">
-    <h5>Subtotal (Products): <%= display_price(subtotal, user: current_user) %></h5>
-    <h5>Shipping: <%= display_price(shipping_total, user: current_user) %></h5>
-    <h4 class="mt-2">Grand Total: <%= display_price(grand_total, user: current_user) %></h4>
-  </div>
-
-  <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mt-4 gap-3">
-    <div>
-      <%= button_to "Clear Cart", clear_cart_path,
-            method: :post,
-            class: "btn btn-warning me-2",
-            data: { confirm: "Are you sure you want to clear your cart?" } %>
-      <%= link_to "Checkout", new_order_path, class: "btn btn-success" %>
     </div>
   </div>
-<% end %>
+</div>
