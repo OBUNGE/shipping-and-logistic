@@ -120,10 +120,14 @@
 
 <hr class="my-4">
 
+<hr class="my-4">
+
 <!-- Cancel Account -->
 <h3 class="fs-5 fw-bold text-danger">❌ Cancel my account</h3>
 <p class="small text-muted">Unhappy? You can permanently delete your account.</p>
-<%= button_to "Cancel my account", registration_path(resource_name), 
-              data: { confirm: "Are you sure?", turbo_confirm: "Are you sure?" }, 
-              method: :delete, class: "btn btn-outline-danger btn-sm" %>
-              
+<%= button_to "Cancel my account",
+              user_registration_path,
+              data: { confirm: "Are you sure?", turbo_confirm: "Are you sure?" },
+              method: :delete,
+              class: "btn btn-outline-danger btn-sm" %>
+

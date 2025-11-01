@@ -121,14 +121,15 @@
       const selectedCategory = categorySelect.value;
       const slug = "<%= @seller.store_slug %>";
 
-      fetch(`/sellers/${slug}/subcategories_for_category?category=${encodeURIComponent(selectedCategory)}`)
+      // ✅ Corrected endpoint to match routes.rb
+      fetch(`/sellers/${slug}/subcategories?category=${encodeURIComponent(selectedCategory)}`)
         .then(response => response.json())
         .then(data => {
           subcategorySelect.innerHTML = '<option value="">Filter by Subcategory</option>';
           data.forEach(sub => {
             const option = document.createElement("option");
-            option.value = sub.slug;       // ✅ use slug for filtering
-            option.textContent = sub.name; // ✅ show readable name
+            option.value = sub.slug;
+            option.textContent = sub.name;
             subcategorySelect.appendChild(option);
           });
         });
