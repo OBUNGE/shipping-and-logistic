@@ -11,6 +11,10 @@
  body {
   background-color: rgb(156, 169, 170);
 }
+.dropdown-menu {
+  z-index: 2000; /* higher than navbar and filter sections */
+}
+
 
 .star-rating .star {
   cursor: pointer;
