@@ -269,13 +269,13 @@ def attach_variants(product)
 
     next unless variant_data[:variant_images_attributes].present?
 
-    urls = variant_data[:variant_images_attributes].to_h.map do |_, image_data|
-      image_data[:image].present? ? upload_to_supabase(image_data[:image]) : nil
+    variant_data[:variant_images_attributes].to_h.each do |_, image_data|
+      if image_data[:image].present?
+        url = upload_to_supabase(image_data[:image])
+        variant.variant_images.create(image_url: url) if url.present?
+      end
     end
-
-    cleaned_urls = Array(urls).flatten.compact.select { |url| url.is_a?(String) && url.present? }
-
-    variant.update(image_urls: cleaned_urls)
   end
 end
+
 end
