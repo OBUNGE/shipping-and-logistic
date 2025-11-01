@@ -11,7 +11,9 @@
     <%= f.label :store_logo_url, "Store Logo", class: "form-label" %>
     <% if @seller.store_logo_url.present? %>
       <div class="mb-2">
-        <%= image_tag @seller.store_logo_url, class: "rounded-circle border", style: "width: 80px; height: 80px; object-fit: cover;" %>
+        <%= image_tag @seller.store_logo_url,
+            class: "rounded-circle border",
+            style: "width: 80px; height: 80px; object-fit: cover;" %>
       </div>
     <% end %>
     <input type="file" id="store_logo" class="form-control" />
@@ -22,7 +24,9 @@
     <%= f.label :store_banner_url, "Store Banner", class: "form-label" %>
     <% if @seller.store_banner_url.present? %>
       <div class="mb-2">
-        <%= image_tag @seller.store_banner_url, class: "img-fluid rounded", style: "max-height: 200px; object-fit: cover;" %>
+        <%= image_tag @seller.store_banner_url,
+            class: "img-fluid rounded",
+            style: "max-height: 200px; object-fit: cover;" %>
       </div>
     <% end %>
     <input type="file" id="store_banner" class="form-control" />
@@ -36,6 +40,7 @@
 
   <%= f.submit "Save Changes", class: "btn btn-primary" %>
 <% end %>
+
 <script type="module">
   import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
@@ -49,7 +54,7 @@
       const file = fileInput.files[0];
       const filePath = `${Date.now()}_${file.name}`;
 
-      let { data, error } = await supabase.storage.from(bucket).upload(filePath, file, {
+      let { error } = await supabase.storage.from(bucket).upload(filePath, file, {
         cacheControl: "3600",
         upsert: true
       });
@@ -59,9 +64,9 @@
         return false;
       }
 
-      // Get public URL
-      const { data: publicUrl } = supabase.storage.from(bucket).getPublicUrl(filePath);
-      hiddenField.value = publicUrl.publicUrl;
+      // ✅ Correct way to get the public URL
+      const { data } = supabase.storage.from(bucket).getPublicUrl(filePath);
+      hiddenField.value = data.publicUrl;
     }
     return true;
   }
