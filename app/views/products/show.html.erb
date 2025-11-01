@@ -35,7 +35,7 @@
               <% end %>
 
               <!-- Variant Images -->
-              <% @variant_images.flatten.compact.each_with_index do |url, index| %>
+              <% @variant_images.each_with_index do |url, index| %>
                 <% next unless url.is_a?(String) && url.present? %>
                 <div class="carousel-item <%= 'active' if @product.image_url.blank? && @product.gallery_image_urls.blank? && index == 0 %>">
                   <%= image_tag url,
@@ -67,7 +67,7 @@
                   alt: "#{@product.title} thumbnail" %>
             <% end %>
 
-            <% @variant_images.flatten.compact.each do |url| %>
+            <% @variant_images.each do |url| %>
               <% next unless url.is_a?(String) && url.present? %>
               <%= image_tag url,
                   class: "img-thumbnail variant-thumb me-2 mb-2",
