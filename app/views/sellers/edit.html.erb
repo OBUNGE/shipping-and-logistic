@@ -1,112 +1,26 @@
-<style>
-  @media (min-width: 992px) {
-    .col-lg-5th {
-      flex: 0 0 20%;
-      max-width: 20%;
-    }
-  }
-</style>
+<h2>Storefront Settings</h2>
+<p>Update your store name, logo, banner, and description.</p>
 
-<div class="storefront-header text-center mb-4">
-  <% if @seller.store_banner_url.present? %>
-    <%= image_tag @seller.store_banner_url,
-        class: "img-fluid rounded mb-3",
-        style: "object-fit: cover; width: 100%; height: 250px;",
-        alt: "#{@seller.store_name || @seller.name} banner" %>
-  <% end %>
-
-  <div class="d-flex align-items-center justify-content-center gap-3">
-    <% if @seller.store_logo_url.present? %>
-      <%= image_tag @seller.store_logo_url,
-          class: "rounded-circle border",
-          style: "width: 80px; height: 80px; object-fit: cover;",
-          alt: "#{@seller.store_name || @seller.name} logo" %>
-    <% end %>
-    <h1 class="fw-bold"><%= @seller.store_name.presence || @seller.name %></h1>
+<%= form_with model: @seller, url: seller_path(@seller.store_slug), method: :patch, local: true do |f| %>
+  <div class="mb-3">
+    <%= f.label :store_name, "Store Name", class: "form-label" %>
+    <%= f.text_field :store_name, class: "form-control" %>
   </div>
 
-  <p class="text-muted"><%= @seller.store_description %></p>
-</div>
-
-<!-- Filters and Sorting -->
-<div class="mb-4 text-center">
-  <%= form_with url: seller_path(@seller.store_slug), method: :get, local: true, id: "filter-form" do %>
-    <%= select_tag :category, options_for_select(@categories, params[:category]), prompt: "Filter by Category", class: "form-select w-auto d-inline-block me-2", id: "category-select" %>
-    <%= select_tag :subcategory, options_for_select(@subcategories, params[:subcategory]), prompt: "Filter by Subcategory", class: "form-select w-auto d-inline-block me-2", id: "subcategory-select" %>
-    <%= select_tag :sort, options_for_select([["Newest", ""], ["Price: Low to High", "price_asc"], ["Price: High to Low", "price_desc"]], params[:sort]), class: "form-select w-auto d-inline-block me-2" %>
-    <%= submit_tag "Apply", class: "btn btn-outline-secondary me-2" %>
-    <%= link_to "Clear Filters", seller_path(@seller.store_slug), class: "btn btn-outline-danger" %>
-  <% end %>
-</div>
-
-<!-- No Products Message -->
-<% if @no_products_found %>
-  <div class="alert alert-warning text-center">
-    No products found for the selected filters.
+  <div class="mb-3">
+    <%= f.label :store_logo_url, "Store Logo URL", class: "form-label" %>
+    <%= f.text_field :store_logo_url, class: "form-control" %>
   </div>
+
+  <div class="mb-3">
+    <%= f.label :store_banner_url, "Store Banner URL", class: "form-label" %>
+    <%= f.text_field :store_banner_url, class: "form-control" %>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :store_description, "Description", class: "form-label" %>
+    <%= f.text_area :store_description, class: "form-control", rows: 3 %>
+  </div>
+
+  <%= f.submit "Save Changes", class: "btn btn-primary" %>
 <% end %>
-
-<!-- Product Grid -->
-<div class="row">
-  <% @products.each do |product| %>
-    <div class="col-6 col-sm-4 col-md-3 col-lg-5th mb-3">
-      <div class="card h-100 shadow-sm">
-        <% if product.image_url.present? %>
-          <%= image_tag product.image_url,
-              class: "card-img-top",
-              style: "object-fit: cover; width: 100%; height: 300px;",
-              alt: product.title %>
-        <% else %>
-          <%= image_tag asset_path("placeholder.png"),
-              class: "card-img-top",
-              style: "object-fit: cover; width: 100%; height: 300px;",
-              alt: "No image available" %>
-        <% end %>
-        <div class="card-body">
-          <h5 class="card-title">
-            <%= link_to product.title, product_path(product), class: "text-decoration-none link-hover" %>
-          </h5>
-          <p class="card-text">KSh <%= product.price %></p>
-          <div class="mt-2">
-            <% if product.category.present? %>
-              <span class="badge bg-secondary me-1"><%= product.category.name %></span>
-            <% end %>
-            <% if product.subcategory.present? %>
-              <span class="badge bg-info"><%= product.subcategory.name %></span>
-            <% end %>
-          </div>
-        </div>
-      </div>
-    </div>
-  <% end %>
-</div>
-
-<!-- Pagination -->
-<div class="mt-4 d-flex justify-content-center">
-  <%= paginate @products %>
-</div>
-
-<!-- Dynamic Subcategory Script -->
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const categorySelect = document.getElementById("category-select");
-    const subcategorySelect = document.getElementById("subcategory-select");
-
-    categorySelect.addEventListener("change", function () {
-      const selectedCategory = categorySelect.value;
-      const slug = "<%= @seller.store_slug %>";
-
-      fetch(`/sellers/${slug}/subcategories?category=${encodeURIComponent(selectedCategory)}`)
-        .then(response => response.json())
-        .then(data => {
-          subcategorySelect.innerHTML = '<option value="">Filter by Subcategory</option>';
-          data.forEach(sub => {
-            const option = document.createElement("option");
-            option.value = sub;
-            option.textContent = sub;
-            subcategorySelect.appendChild(option);
-          });
-        });
-    });
-  });
-</script>
