@@ -350,13 +350,28 @@
       <% Product.where.not(id: @product.id).limit(4).each do |related| %>
         <div class="col-md-3 col-sm-6">
           <div class="card h-100 shadow-sm">
-            <% if related.image.attached? %>
-              <%= image_tag related.image.variant(resize_to_limit: [300, 200]), class: "card-img-top", alt: related.title %>
+            
+            <% if related.image_url.present? %>
+              <%= image_tag related.image_url,
+                  class: "card-img-top",
+                  style: "max-height: 200px; object-fit: cover;",
+                  alt: related.title %>
+            <% elsif related.gallery_image_urls.any? %>
+              <%= image_tag related.gallery_image_urls.first,
+                  class: "card-img-top",
+                  style: "max-height: 200px; object-fit: cover;",
+                  alt: related.title %>
+            <% else %>
+              <%= image_tag asset_path("placeholder.jpg"),
+                  class: "card-img-top",
+                  style: "max-height: 200px; object-fit: cover;",
+                  alt: "No image available" %>
             <% end %>
+
             <div class="card-body">
               <h6 class="card-title fw-semibold"><%= related.title %></h6>
               <p class="card-text small text-muted">KES <%= related.price %></p>
-                            <%= link_to "View", product_path(related), class: "btn btn-sm btn-outline-primary w-100" %>
+              <%= link_to "View", product_path(related), class: "btn btn-sm btn-outline-primary w-100" %>
             </div>
           </div>
         </div>
