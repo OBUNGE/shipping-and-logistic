@@ -1,7 +1,7 @@
 class Product < ApplicationRecord
   # === Associations ===
+    belongs_to :category, optional: true
   belongs_to :seller, class_name: "User", foreign_key: "user_id"
-  belongs_to :category, optional: true
   belongs_to :subcategory, optional: true
 
   has_many :reviews, dependent: :destroy

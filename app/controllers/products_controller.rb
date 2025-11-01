@@ -4,21 +4,36 @@ class ProductsController < ApplicationController
 
   require "csv"
 
+
 def index
   @products = Product.includes(:variants, :inventories)
                      .order(created_at: :desc)
 
-  # Filter by category if provided
+  # 🔍 Search by query (title or description)
+  if params[:query].present?
+    q = "%#{params[:query]}%"
+    @products = @products.where("products.title ILIKE ? OR products.description ILIKE ?", q, q)
+  end
+
+  # 🏷️ Filter by category (top-level)
   if params[:category].present?
-    @products = @products.where(category_id: params[:category])
+    category = Category.find_by(slug: params[:category], parent_id: nil)
+    if category
+      # include products in this category + its subcategories
+      sub_ids = category.subcategories.pluck(:id)
+      @products = @products.where(category_id: [category.id] + sub_ids)
+    end
   end
 
-  # Filter by subcategory if provided
+  # 🏷️ Filter by subcategory (child category)
   if params[:subcategory].present?
-    @products = @products.where(subcategory_id: params[:subcategory])
+    subcategory = Category.find_by(slug: params[:subcategory], parent_id: Category.where(slug: params[:category]).pluck(:id))
+    if subcategory
+      @products = @products.where(category_id: subcategory.id)
+    end
   end
 
-  # Paginate results
+  # 📄 Paginate results
   @products = @products.page(params[:page]).per(20)
 
 rescue => e
