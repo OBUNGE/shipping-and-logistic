@@ -1,39 +1,117 @@
-<h1>Orders</h1>
+<div class="container py-5">
+  <div class="card shadow-lg border-0 rounded-4">
+    <div class="card-body p-4">
 
-<table class="table table-striped">
-  <thead>
-    <tr>
-      <th>ID</th>
-      <th>Buyer</th>
-      <th>Seller</th>
-      <th>Total</th>
-      <th>Status</th>
-      <th>Payment Method</th>
-      <th>Created At</th>
-      <th></th>
-    </tr>
-  </thead>
+      <h1 class="fw-bold text-center text-primary mb-4">📦 Orders</h1>
 
-  <tbody>
-    <% @orders.each do |order| %>
-      <tr>
-        <td><%= order.id %></td>
-        <td><%= order.buyer&.name %></td>
-        <td><%= order.seller&.name %></td>
-        <td>
-          <!-- Converted total -->
-          <%= display_price(order.total, user: order.buyer) %>
-          <!-- Show original USD as muted text if different -->
-          <% if (session[:payment_method] == "mpesa" || session[:payment_method] == "paystack" || order.buyer&.country&.downcase == "kenya") %>
-            <br>
-            <small class="text-muted">(USD <%= number_to_currency(order.total, unit: "$") %>)</small>
-          <% end %>
-        </td>
-        <td><%= order.status.capitalize %></td>
-        <td><%= order.payment&.provider&.capitalize || "—" %></td>
-        <td><%= l(order.created_at, format: :short) %></td>
-        <td><%= link_to "View", order_path(order), class: "btn btn-sm btn-primary" %></td>
-      </tr>
-    <% end %>
-  </tbody>
-</table>
+      <% if @orders.any? %>
+        <div class="table-responsive">
+          <table class="table align-middle table-hover">
+            <thead class="table-light border-0">
+              <tr class="text-uppercase small text-muted">
+                <th>ID</th>
+                <th>Buyer</th>
+                <th>Seller</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th>Payment</th>
+                <th>Date</th>
+                <th class="text-center">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @orders.each do |order| %>
+                <tr class="order-row">
+                  <td class="fw-semibold text-primary">#<%= order.id %></td>
+                  <td><%= order.buyer&.name.presence || "—" %></td>
+                  <td><%= order.seller&.name.presence || "—" %></td>
+                  <td>
+                    <span class="fw-semibold"><%= display_price(order.total, user: order.buyer) %></span>
+                    <% if (session[:payment_method] == "mpesa" || session[:payment_method] == "paystack" || order.buyer&.country&.downcase == "kenya") %>
+                      <br>
+                      <small class="text-muted">(USD <%= number_to_currency(order.total, unit: "$") %>)</small>
+                    <% end %>
+                  </td>
+
+                  <!-- Order Status -->
+                  <td>
+                    <% status_class = case order.status.downcase
+                      when "pending" then "bg-warning text-dark"
+                      when "paid" then "bg-success"
+                      when "cancelled", "failed" then "bg-danger"
+                      else "bg-secondary"
+                    end %>
+                    <span class="badge <%= status_class %> px-3 py-2 text-uppercase">
+                      <%= order.status.capitalize %>
+                    </span>
+                  </td>
+
+                  <td>
+                    <span class="badge bg-light text-dark border">
+                      <%= order.payment&.provider&.capitalize || "—" %>
+                    </span>
+                  </td>
+
+                  <td><%= order.created_at.strftime("%b %d, %Y") %></td>
+
+                  <td class="text-center">
+                    <%= link_to "View", order_path(order), class: "btn btn-sm btn-gradient rounded-pill px-3" %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% else %>
+        <p class="text-center text-muted fs-5 mt-4">No orders found yet.</p>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<!-- STYLING -->
+<style>
+  .table {
+    border-collapse: separate;
+    border-spacing: 0 0.6rem;
+  }
+
+  .table thead th {
+    border: none;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+  }
+
+  .table tbody tr {
+    background-color: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    transition: all 0.2s ease;
+  }
+
+  .table tbody tr:hover {
+    transform: scale(1.01);
+    background-color: #f9fbff;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  }
+
+  .btn-gradient {
+    background: linear-gradient(135deg, #0d6efd, #198754);
+    color: #fff;
+    border: none;
+    transition: 0.3s;
+  }
+
+  .btn-gradient:hover {
+    background: linear-gradient(135deg, #198754, #0d6efd);
+    transform: translateY(-2px);
+  }
+
+  .badge {
+    font-size: 0.8rem;
+    border-radius: 0.75rem;
+  }
+
+  .card {
+    border-radius: 1rem;
+  }
+</style>

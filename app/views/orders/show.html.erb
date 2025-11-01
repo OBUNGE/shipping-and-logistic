@@ -1,112 +1,164 @@
-<div class="container mt-4">
-  <div class="card shadow-sm">
-    <div class="card-body">
-      <h1 class="card-title mb-4">Order Summary</h1>
+<div class="container my-5">
+  <div class="order-summary-wrapper mx-auto">
+    <div class="order-header text-center mb-5">
+      <h1 class="fw-bold text-primary mb-2">🧾 Order Summary</h1>
+      <p class="text-muted mb-0">Order details and payment confirmation</p>
+    </div>
 
-      <p><strong>Order ID:</strong> <%= @order.id %></p>
-      <p><strong>Status:</strong> <%= @order.status.capitalize %></p>
-      <p><strong>Placed on:</strong> <%= @order.created_at.strftime("%B %d, %Y at %I:%M %p") %></p>
+    <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+      <div class="card-body p-5">
+        <!-- Basic Info -->
+        <div class="d-flex justify-content-between flex-wrap mb-4 border-bottom pb-3">
+          <div>
+            <p class="mb-1"><strong>Order ID:</strong> <%= @order.id %></p>
+            <p class="mb-1"><strong>Placed on:</strong> <%= @order.created_at.strftime("%B %d, %Y at %I:%M %p") %></p>
+          </div>
+          <div>
+            <span class="badge bg-<%= @order.status == 'paid' ? 'success' : 'warning' %> px-3 py-2 fs-6">
+              <%= @order.status.capitalize %>
+            </span>
+          </div>
+        </div>
 
-      <hr>
+        <!-- Buyer and Seller Info -->
+        <div class="row g-4 mb-4">
+          <div class="col-md-6">
+            <div class="border rounded-3 p-3 bg-light">
+              <h5 class="fw-semibold text-primary mb-2">Buyer Information</h5>
+              <p class="mb-1"><strong>Name:</strong> <%= @order.buyer.name %></p>
+              <p class="mb-1"><strong>Email:</strong> <%= @order.buyer.email %></p>
+              <p class="mb-0"><strong>Phone:</strong> <%= @order.buyer.phone.presence || "Not provided" %></p>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="border rounded-3 p-3 bg-light">
+              <h5 class="fw-semibold text-primary mb-2">Seller Information</h5>
+              <p class="mb-1"><strong>Name:</strong> <%= @order.seller.company_name.presence || @order.seller.name %></p>
+              <p class="mb-0"><strong>Email:</strong> <%= @order.seller.email %></p>
+            </div>
+          </div>
+        </div>
 
-      <h4>Buyer</h4>
-      <p><strong>Name:</strong> <%= @order.buyer.name %></p>
-      <p><strong>Email:</strong> <%= @order.buyer.email %></p>
-      <p><strong>Phone:</strong> <%= @order.buyer.phone.presence || "Not provided" %></p>
+        <!-- Items Table -->
+        <% currency = @order.currency.presence || "USD" %>
+        <div class="table-responsive mb-4">
+          <h5 class="fw-semibold mb-3">🛍️ Items Purchased</h5>
+          <table class="table align-middle">
+            <thead class="table-primary text-dark">
+              <tr>
+                <th>Product</th>
+                <th>Variant</th>
+                <th>Qty</th>
+                <th>Unit Price</th>
+                <th>Shipping</th>
+                <th>Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @order.order_items.each do |item| %>
+                <tr>
+                  <td><%= item.product.title %></td>
+                  <td>
+                    <% if item.variant.present? %>
+                      <span class="badge bg-info text-dark">
+                        <%= "#{item.variant.name}: #{item.variant.value}" %>
+                      </span>
+                    <% else %>
+                      <span class="text-muted">—</span>
+                    <% end %>
+                  </td>
+                  <td><%= item.quantity %></td>
+                  <td><%= display_price(item.unit_price || item.product.price, user: @order.buyer) %></td>
+                  <td><%= display_price(item.shipping || 0, user: @order.buyer) %></td>
+                  <td class="fw-semibold"><%= display_price(item.subtotal, user: @order.buyer) %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
 
-      <hr>
+        <!-- Totals -->
+        <% subtotal = @order.order_items.sum(&:subtotal) %>
+        <% shipping_total = @order.order_items.sum { |i| i.shipping || 0 } %>
+        <% grand_total = subtotal + shipping_total %>
 
-      <h4>Seller</h4>
-      <p><strong>Name:</strong> <%= @order.seller.company_name.presence || @order.seller.name %></p>
-      <p><strong>Email:</strong> <%= @order.seller.email %></p>
+        <div class="border-top pt-3 mb-4">
+          <div class="d-flex justify-content-end flex-column align-items-end">
+            <p class="mb-1 fw-semibold">Subtotal: <%= number_to_currency(subtotal, unit: "#{currency} ") %></p>
+            <p class="mb-1 fw-semibold">Shipping: <%= number_to_currency(shipping_total, unit: "#{currency} ") %></p>
+            <h4 class="fw-bold text-success">Total: <%= number_to_currency(grand_total, unit: "#{currency} ") %></h4>
 
-      <hr>
+            <% if currency == "USD" %>
+              <% converted_total = ExchangeRateService.convert(@order.total, from: "USD", to: "KES") %>
+              <% if converted_total %>
+                <p class="text-muted small">≈ <%= number_to_currency(converted_total, unit: "KES ") %></p>
+              <% else %>
+                <p class="text-muted small">Exchange rate unavailable.</p>
+              <% end %>
+            <% end %>
+          </div>
+        </div>
 
-      <% currency = @order.currency.presence || "USD" %>
+        <!-- Payment Info -->
+        <div class="border rounded-3 p-4 bg-light mb-3">
+          <h5 class="fw-semibold text-primary mb-3">💳 Payment Details</h5>
+          <% if @order.payment.present? %>
+            <p class="mb-1"><strong>Provider:</strong> <%= @order.payment.provider.capitalize %></p>
+            <p class="mb-1"><strong>Status:</strong>
+              <span class="badge bg-<%= @order.payment.status == 'paid' ? 'success' : 'warning' %>">
+                <%= @order.payment.status.capitalize %>
+              </span>
+            </p>
+            <p class="mb-1"><strong>Transaction ID:</strong> <%= @order.payment.transaction_id %></p>
+            <p class="mb-2"><strong>Amount Paid:</strong> <%= number_to_currency(@order.payment.amount, unit: "#{@order.payment.currency.presence || currency} ") %></p>
 
-   <h4>Items</h4>
-<table class="table">
-  <thead>
-    <tr>
-      <th>Product</th>
-      <th>Variant</th>
-      <th>Qty</th>
-      <th>Unit Price</th>
-      <th>Shipping</th>
-      <th>Subtotal</th>
-    </tr>
-  </thead>
-  <tbody>
-    <% @order.order_items.each do |item| %>
-      <tr>
-        <td><%= item.product.title %></td>
-        <td>
-          <% if item.variant.present? %>
-            <span class="badge bg-info text-dark"><%= "#{item.variant.name}: #{item.variant.value}" %></span>
+            <% if @order.payment.paid? %>
+              <% if @order.payment.mpesa_receipt_number.present? %>
+                <p><strong>Receipt:</strong> <%= @order.payment.mpesa_receipt_number %></p>
+              <% end %>
+              <%= link_to "Download Receipt", receipt_order_path(@order), class: "btn btn-outline-primary mt-2 rounded-pill" %>
+            <% else %>
+              <p class="text-warning">Payment is pending. Please complete it on your phone.</p>
+            <% end %>
           <% else %>
-            <span class="text-muted">—</span>
+            <p class="text-danger">No payment record found.</p>
           <% end %>
-        </td>
-        <td><%= item.quantity %></td>
-        <td><%= display_price(item.unit_price || item.product.price, user: @order.buyer) %></td>
-        <td><%= display_price(item.shipping || 0, user: @order.buyer) %></td>
-        <td><%= display_price(item.subtotal, user: @order.buyer) %></td>
-      </tr>
-    <% end %>
-  </tbody>
-</table>
+        </div>
 
-
-
-     <% subtotal = @order.order_items.sum(&:subtotal) %>
-<% shipping_total = @order.order_items.sum { |i| i.shipping || 0 } %>
-<% grand_total = subtotal + shipping_total %>
-
-<h5>Subtotal (Products): <%= number_to_currency(subtotal, unit: "#{currency} ") %></h5>
-<h5>Shipping: <%= number_to_currency(shipping_total, unit: "#{currency} ") %></h5>
-<h4>Total: <%= number_to_currency(grand_total, unit: "#{currency} ") %></h4>
-
-     <% if currency == "USD" %>
-  <% converted_total = ExchangeRateService.convert(@order.total, from: "USD", to: "KES") %>
-  <% if converted_total %>
-    <p class="text-muted">
-      Approx. in KES: <%= number_to_currency(converted_total, unit: "KES ") %>
-    </p>
-  <% else %>
-    <p class="text-muted">Exchange rate unavailable — KES estimate not shown.</p>
-  <% end %>
-<% end %>
-
-
-      <hr>
-
-      <h4>Payment</h4>
-      <% if @order.payment.present? %>
-        <p><strong>Provider:</strong> <%= @order.payment.provider.capitalize %></p>
-        <p><strong>Status:</strong> <%= @order.payment.status.capitalize %></p>
-        <p><strong>Transaction ID:</strong> <%= @order.payment.transaction_id %></p>
-        <p><strong>Amount Paid:</strong> <%= number_to_currency(@order.payment.amount, unit: "#{@order.payment.currency.presence || currency} ") %></p>
-
-        <% if @order.payment.paid? %>
-          <% if @order.payment.mpesa_receipt_number.present? %>
-            <p><strong>Receipt:</strong> <%= @order.payment.mpesa_receipt_number %></p>
-          <% end %>
-          <%= link_to "Download Receipt", receipt_order_path(@order), class: "btn btn-outline-primary" %>
-        <% else %>
-          <p class="text-warning">Payment is pending. Please complete it on your phone.</p>
-        <% end %>
-      <% else %>
-        <p class="text-danger">No payment record found.</p>
-      <% end %>
-
-      <%= link_to "Back to Orders", orders_path, class: "btn btn-secondary mt-3" %>
+        <!-- Back -->
+        <div class="text-end">
+          <%= link_to "← Back to Orders", orders_path, class: "btn btn-secondary rounded-pill px-4" %>
+        </div>
+      </div>
     </div>
   </div>
 </div>
 
 <style>
-  .card-title {
-    font-size: 1.75rem;
+  body {
+    background: #f8f9fb;
+  }
+
+  .order-summary-wrapper {
+    max-width: 900px;
+  }
+
+  .table th {
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+
+  .table td {
+    vertical-align: middle;
+  }
+
+  .badge {
+    font-size: 0.85rem;
+  }
+
+  .fw-semibold {
     font-weight: 600;
   }
-</style>
+
+  .btn {
+    transition: al

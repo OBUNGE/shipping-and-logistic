@@ -22,6 +22,7 @@
 
     <style>
       .navbar.sticky-top { z-index: 1030; }
+      .dropdown-menu { z-index: 2000 !important; } /* ensure dropdown always above sticky bars */
     </style>
   </head>
 
@@ -70,7 +71,7 @@
                     <li><%= link_to "Admin Panel", admin_root_path, class: "dropdown-item" %></li>
                   <% end %>
 
-                  <% if current_user.buyer? && current_user.seller? %>
+                  <% if current_user.buyer? || current_user.seller? %>
                     <li><hr class="dropdown-divider"></li>
                     <li>
                       <%= button_to "Switch to #{current_user.active_role == 'buyer' ? 'Seller' : 'Buyer'} Mode",
