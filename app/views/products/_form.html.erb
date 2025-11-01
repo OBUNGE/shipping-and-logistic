@@ -237,6 +237,29 @@
     <% end %>
   </div>
 
+
+  <!-- 🔧 Hidden Inventory Template -->
+<div id="inventory-template" style="display: none;">
+  <div class="border p-2 mb-2 bg-light rounded">
+    <input type="text"
+           name="product[inventories_attributes][NEW_RECORD][location]"
+           placeholder="e.g. Nairobi Warehouse"
+           class="form-control form-control-sm mb-1" />
+
+    <input type="number"
+           name="product[inventories_attributes][NEW_RECORD][quantity]"
+           min="0"
+           class="form-control form-control-sm mb-1" />
+
+    <div class="form-check">
+      <input type="checkbox"
+             name="product[inventories_attributes][NEW_RECORD][_destroy]"
+             class="form-check-input" />
+      <label class="form-check-label small">Remove</label>
+    </div>
+  </div>
+</div>
+
   <div class="mt-3">
     <%= form.label :inventory_csv, "Upload CSV", class: "form-label small fw-semibold" %>
     <%= form.file_field :inventory_csv, class: "form-control form-control-sm", accept: ".csv" %>
