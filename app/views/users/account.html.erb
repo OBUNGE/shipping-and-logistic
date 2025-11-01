@@ -66,32 +66,10 @@
     <% end %>
   </div>
 
-  <!-- Storefront Tab -->
-  <div class="tab-pane fade" id="storefront" role="tabpanel" aria-labelledby="storefront-tab">
-    <%= form_with model: @user, url: account_path, method: :patch, local: true do |f| %>
-      <div class="mb-3">
-        <%= f.label :store_name, class: "form-label fw-semibold" %>
-        <%= f.text_field :store_name, class: "form-control" %>
-      </div>
-
-      <div class="mb-3">
-        <%= f.label :store_description, class: "form-label fw-semibold" %>
-        <%= f.text_area :store_description, class: "form-control" %>
-      </div>
-
-      <div class="mb-3">
-        <%= f.label :store_logo_url, "Logo URL", class: "form-label fw-semibold" %>
-        <%= f.text_field :store_logo_url, class: "form-control" %>
-      </div>
-
-      <div class="mb-3">
-        <%= f.label :store_banner_url, "Banner URL", class: "form-label fw-semibold" %>
-        <%= f.text_field :store_banner_url, class: "form-control" %>
-      </div>
-
-      <%= f.submit "Save Storefront", class: "btn btn-primary" %>
-    <% end %>
-  </div>
+ <!-- Storefront Tab -->
+<div class="tab-pane fade" id="storefront" role="tabpanel" aria-labelledby="storefront-tab">
+  <%= render "sellers/form", seller: @user %>
+</div>
 
   <!-- Security Tab -->
   <div class="tab-pane fade" id="security" role="tabpanel" aria-labelledby="security-tab">

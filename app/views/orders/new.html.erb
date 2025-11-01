@@ -1,27 +1,27 @@
-<div class="container mt-4">
-  <div class="card shadow-sm">
-    <div class="card-body">
-      <h1 class="card-title mb-4">Checkout</h1>
+<div class="container py-5">
+  <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+    <div class="card-body p-5">
+
+      <h1 class="fw-bold text-center mb-5 text-primary">🛒 Checkout</h1>
 
       <% if @product.present? %>
-        <!-- Single Product Checkout -->
-        <h4>Product Summary</h4>
-        <p><strong>Product:</strong> <%= @product.title %></p>
-        <p><strong>Price per unit:</strong> 
-          <%= display_price(@product.price, user: current_user) %>
-        </p>
-        <p><strong>Seller:</strong> 
-          <%= @product.seller.company_name.presence || @product.seller.name.presence || "Unknown Seller" %>
-        </p>
-        <p><strong>Delivery:</strong> <%= @product.estimated_delivery_range.presence || "2–5 business days" %></p>
-        <p><strong>Shipping:</strong> 
-          <%= display_price(@product.shipping_cost || 0, user: current_user) %>
-        </p>
+        <!-- SINGLE PRODUCT CHECKOUT -->
+        <section class="mb-5">
+          <h4 class="border-start border-4 border-primary ps-3 mb-3 fw-semibold">Product Summary</h4>
+          <div class="p-3 bg-light rounded-3">
+            <p><strong>Product:</strong> <%= @product.title %></p>
+            <p><strong>Price per unit:</strong> <%= display_price(@product.price, user: current_user) %></p>
+            <p><strong>Seller:</strong> <%= @product.seller.company_name.presence || @product.seller.name.presence || "Unknown Seller" %></p>
+            <p><strong>Delivery:</strong> <%= @product.estimated_delivery_range.presence || "2–5 business days" %></p>
+            <p><strong>Shipping:</strong> <%= display_price(@product.shipping_cost || 0, user: current_user) %></p>
+          </div>
+        </section>
 
-        <%= form_with url: product_orders_path(@product), method: :post, local: true do |f| %>
+        <%= form_with url: product_orders_path(@product), method: :post, local: true, class: "needs-validation" do |f| %>
+
           <% if @product.variants.any? %>
-            <div class="mb-3">
-              <%= f.label :variant_id, "Choose Variant", class: "form-label" %>
+            <div class="mb-4">
+              <%= f.label :variant_id, "Choose Variant", class: "form-label fw-semibold" %>
               <%= f.select :variant_id,
                     options_for_select(@product.variants.map { |v|
                       label = "#{v.name}: #{v.value}"
@@ -31,189 +31,135 @@
                       [label, v.id]
                     }),
                     { prompt: "Select a variant" },
-                    class: "form-select",
+                    class: "form-select form-select-lg shadow-sm rounded-pill",
                     required: true %>
             </div>
           <% end %>
 
           <!-- Quantity -->
-          <div class="mb-3">
-            <%= f.label :quantity, "Quantity", class: "form-label" %>
-            <%= f.number_field :quantity, value: 1, min: 1, class: "form-control", required: true %>
+          <div class="mb-4">
+            <%= f.label :quantity, "Quantity", class: "form-label fw-semibold" %>
+            <%= f.number_field :quantity, value: 1, min: 1, class: "form-control shadow-sm rounded-pill text-center", required: true %>
           </div>
 
           <!-- Currency Selection -->
-          <div class="mb-3">
-            <%= f.label :currency, "Choose Currency" %>
-            <%= f.select :currency, options_for_select([["USD", "USD"], ["KES", "KES"]], selected: "USD"), {}, class: "form-select" %>
+          <div class="mb-5">
+            <%= f.label :currency, "Currency", class: "form-label fw-semibold" %>
+            <%= f.select :currency,
+                options_for_select([["USD", "USD"], ["KES", "KES"]], selected: "USD"),
+                {},
+                class: "form-select shadow-sm rounded-pill" %>
           </div>
 
           <!-- Delivery Info -->
-          <h4 class="mt-4">Delivery Information</h4>
-          <div class="mb-3">
-            <%= f.label :first_name, "First Name" %>
-            <%= f.text_field :first_name, class: "form-control", required: true %>
+          <h4 class="border-start border-4 border-success ps-3 mb-3 fw-semibold">Delivery Information</h4>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <%= f.label :first_name, "First Name", class: "form-label" %>
+              <%= f.text_field :first_name, class: "form-control shadow-sm rounded-pill", required: true %>
+            </div>
+            <div class="col-md-6 mb-3">
+              <%= f.label :last_name, "Last Name", class: "form-label" %>
+              <%= f.text_field :last_name, class: "form-control shadow-sm rounded-pill", required: true %>
+            </div>
           </div>
-          <div class="mb-3">
-            <%= f.label :last_name, "Last Name" %>
-            <%= f.text_field :last_name, class: "form-control", required: true %>
-          </div>
-          <div class="mb-3">
-            <%= f.label :delivery_address, "Delivery Address" %>
-            <%= f.text_area :delivery_address, class: "form-control", rows: 3, required: true %>
-          </div>
-
-          <!-- Payment Section -->
-          <h4 class="mt-4">Payment Method</h4>
-          <div class="form-check mb-3">
-            <%= f.radio_button :provider, "mpesa", checked: true, class: "form-check-input", id: "provider_mpesa" %>
-            <%= f.label :provider_mpesa, "M-PESA (STK Push)", class: "form-check-label" %>
-          </div>
-          <div class="mb-3" id="mpesa_phone_field">
-            <%= f.label :phone_number, "M-PESA Phone Number" %>
-            <%= f.telephone_field :phone_number, value: current_user.phone, class: "form-control", placeholder: "e.g. 2547XXXXXXXX" %>
-          </div>
-          <div class="form-check mb-3">
-            <%= f.radio_button :provider, "paypal", class: "form-check-input", id: "provider_paypal" %>
-            <%= f.label :provider_paypal, "PayPal", class: "form-check-label" %>
-          </div>
-          <div class="form-check mb-3">
-            <%= f.radio_button :provider, "paystack", class: "form-check-input", id: "provider_paystack" %>
-            <%= f.label :provider_paystack, "Credit/Debit Card", class: "form-check-label" %>
-          </div>
-
-          <%= f.submit "Confirm & Pay", class: "btn btn-success w-100 fw-bold" %>
-        <% end %>
-
-      <% elsif @cart_items.present? %>
-        <!-- Cart Checkout -->
-        <h4>Your Cart</h4>
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Product</th>
-              <th>Variant</th>
-              <th>Qty</th>
-              <th>Unit Price</th>
-              <th>Subtotal</th>
-              <th>Shipping</th>
-            </tr>
-          </thead>
-          <tbody>
-            <% @cart_items.each do |item| %>
-              <% product = item[:product] %>
-              <% variant = item[:variant] %>
-              <% shipping_cost = item[:shipping] || 0 %>
-              <tr>
-                <td><%= product.title %></td>
-                <td>
-                  <% if variant %>
-                    <span class="badge bg-info text-dark"><%= "#{variant.name}: #{variant.value}" %></span>
-                  <% else %>
-                    <span class="text-muted">—</span>
-                  <% end %>
-                </td>
-                <td><%= item[:quantity] %></td>
-                <td><%= display_price(item[:unit_price], user: current_user) %></td>
-                <td><%= display_price(item[:subtotal], user: current_user) %></td>
-                <td><%= display_price(shipping_cost, user: current_user) %></td>
-              </tr>
-            <% end %>
-          </tbody>
-        </table>
-
-        <% subtotal = @cart_items.sum { |i| i[:subtotal] } %>
-        <% shipping_total = @cart_items.sum { |i| i[:shipping] || 0 } %>
-        <% grand_total = subtotal + shipping_total %>
-
-        <h5>Subtotal (Products): <%= display_price(subtotal, user: current_user) %></h5>
-        <h5>Shipping: <%= display_price(shipping_total, user: current_user) %></h5>
-        <h4>Grand Total: <%= display_price(grand_total, user: current_user) %></h4>
-
-        <%= form_with url: orders_path, method: :post, local: true do |f| %>
-          <!-- Currency Selection -->
-          <div class="mb-3">
-            <%= f.label :currency, "Choose Currency" %>
-            <%= f.select :currency, options_for_select([["USD", "USD"], ["KES", "KES"]], selected: "USD"), {}, class: "form-select" %>
-          </div>
-
-          <!-- Delivery Info -->
-          <h4 class="mt-4">Delivery Information</h4>
-          <div class="mb-3">
-            <%= f.label :first_name, "First Name" %>
-            <%= f.text_field :first_name, class: "form-control", required: true %>
-          </div>
-          <div class="mb-3">
-            <%= f.label :last_name, "Last Name" %>
-            <%= f.text_field :last_name, class: "form-control", required: true %>
-          </div>
-          <div class="mb-3">
-            <%= f.label :delivery_address, "Delivery Address" %>
-            <%= f.text_area :delivery_address, class: "form-control", rows: 3, required: true %>
+          <div class="mb-4">
+            <%= f.label :delivery_address, "Delivery Address", class: "form-label" %>
+            <%= f.text_area :delivery_address, class: "form-control shadow-sm rounded-4", rows: 3, required: true %>
           </div>
 
           <!-- Payment Section -->
-          <h4 class="mt-4">Payment Method</h4>
+          <h4 class="border-start border-4 border-warning ps-3 mb-3 fw-semibold">Payment Method</h4>
 
-          <!-- M-PESA -->
-          <div class="form-check mb-3">
-            <%= f.radio_button :provider, "mpesa", checked: true, class: "form-check-input", id: "provider_mpesa_cart" %>
-            <%= f.label :provider_mpesa_cart, "M-PESA (STK Push)", class: "form-check-label" %>
-          </div>
-          <div class="mb-3" id="mpesa_phone_field_cart">
-            <%= f.label :phone_number, "M-PESA Phone Number" %>
-            <%= f.telephone_field :phone_number,
-                  value: current_user.phone,
-                  class: "form-control",
-                  placeholder: "e.g. 2547XXXXXXXX" %>
-          </div>
+          <div class="p-3 bg-light rounded-3 mb-4">
+            <div class="form-check mb-2">
+              <%= f.radio_button :provider, "mpesa", checked: true, class: "form-check-input", id: "provider_mpesa" %>
+              <%= f.label :provider_mpesa, "M-PESA (STK Push)", class: "form-check-label fw-semibold" %>
+            </div>
+            <div id="mpesa_phone_field" class="mt-2">
+              <%= f.label :phone_number, "M-PESA Phone Number", class: "form-label" %>
+              <%= f.telephone_field :phone_number, value: current_user.phone, class: "form-control shadow-sm rounded-pill", placeholder: "e.g. 2547XXXXXXXX" %>
+            </div>
 
-          <!-- PayPal -->
-          <div class="form-check mb-3">
-            <%= f.radio_button :provider, "paypal", class: "form-check-input", id: "provider_paypal_cart" %>
-            <%= f.label :provider_paypal_cart, "PayPal", class: "form-check-label" %>
-          </div>
+            <div class="form-check mt-3">
+              <%= f.radio_button :provider, "paypal", class: "form-check-input", id: "provider_paypal" %>
+              <%= f.label :provider_paypal, "PayPal", class: "form-check-label fw-semibold" %>
+            </div>
 
-          <!-- Credit/Debit Card (via Paystack) -->
-          <div class="form-check mb-3">
-            <%= f.radio_button :provider, "paystack", class: "form-check-input", id: "provider_paystack_cart" %>
-            <%= f.label :provider_paystack_cart, "Credit/Debit Card", class: "form-check-label" %>
+            <div class="form-check mt-2">
+              <%= f.radio_button :provider, "paystack", class: "form-check-input", id: "provider_paystack" %>
+              <%= f.label :provider_paystack, "Credit/Debit Card", class: "form-check-label fw-semibold" %>
+            </div>
           </div>
 
-          <%= f.submit "Confirm & Pay", class: "btn btn-success w-100 fw-bold" %>
+          <%= f.submit "Confirm & Pay", class: "btn btn-gradient w-100 py-3 fw-bold rounded-pill" %>
         <% end %>
+
       <% else %>
-        <p>Your cart is empty.</p>
-        <%= link_to "Back to Products", products_path, class: "btn btn-primary" %>
+        <p class="text-center text-muted fs-5 mb-4">Your cart is empty.</p>
+        <div class="text-center">
+          <%= link_to "Back to Products", products_path, class: "btn btn-outline-primary rounded-pill px-4 py-2" %>
+        </div>
       <% end %>
     </div>
   </div>
 </div>
 
-<!-- Payment method toggle script -->
+<!-- Custom Styles -->
+<style>
+  .btn-gradient {
+    background: linear-gradient(135deg, #0d6efd, #198754);
+    color: #fff;
+    border: none;
+    transition: 0.3s ease;
+  }
+  .btn-gradient:hover {
+    background: linear-gradient(135deg, #198754, #0d6efd);
+    transform: scale(1.02);
+  }
+
+  .form-label {
+    font-weight: 600;
+  }
+
+  .form-control, .form-select {
+    border: 1px solid #ddd;
+  }
+
+  textarea.form-control {
+    border-radius: 1rem;
+  }
+
+  .card-body {
+    background-color: #fff;
+  }
+
+  .border-start {
+    border-radius: 3px;
+  }
+
+  .fw-semibold {
+    font-weight: 600;
+  }
+
+  .text-primary {
+    color: #0d6efd !important;
+  }
+</style>
+
+<!-- Payment toggle script -->
 <script>
   document.addEventListener("DOMContentLoaded", function() {
-    const mpesaRadio   = document.getElementById("provider_mpesa") || document.getElementById("provider_mpesa_cart");
-    const paypalRadio  = document.getElementById("provider_paypal") || document.getElementById("provider_paypal_cart");
-    const paystackRadio= document.getElementById("provider_paystack") || document.getElementById("provider_paystack_cart");
-    const phoneField   = document.getElementById("mpesa_phone_field") || document.getElementById("mpesa_phone_field_cart");
+    const mpesa = document.getElementById("provider_mpesa");
+    const paypal = document.getElementById("provider_paypal");
+    const paystack = document.getElementById("provider_paystack");
+    const phoneField = document.getElementById("mpesa_phone_field");
 
     function togglePhoneField() {
-      if (mpesaRadio && mpesaRadio.checked) {
-        phoneField.style.display = "block";
-      } else {
-        phoneField.style.display = "none";
-      }
+      phoneField.style.display = mpesa.checked ? "block" : "none";
     }
 
-    // Attach listeners
-    [mpesaRadio, paypalRadio, paystackRadio].forEach(radio => {
-      if (radio) {
-        radio.addEventListener("change", togglePhoneField);
-      }
-    });
-
-    // Run once on page load
+    [mpesa, paypal, paystack].forEach(el => el?.addEventListener("change", togglePhoneField));
     togglePhoneField();
   });
 </script>
