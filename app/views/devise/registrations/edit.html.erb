@@ -1,43 +1,111 @@
-<h2>Edit <%= resource_name.to_s.humanize %></h2>
+<h2 class="fs-4 fw-semibold mb-4">⚙️ Edit Account</h2>
 
-<%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { method: :put }) do |f| %>
+<%= form_for(resource, as: resource_name, url: registration_path(resource_name), 
+             html: { method: :put, class: "p-3 border rounded shadow-sm bg-white" }) do |f| %>
   <%= render "devise/shared/error_messages", resource: resource %>
 
-  <div class="field">
-    <%= f.label :email %><br />
-    <%= f.email_field :email, autofocus: true, autocomplete: "email" %>
+  <!-- Account Info -->
+  <h5 class="fw-bold mb-3">Account Information</h5>
+  <div class="mb-3">
+    <%= f.label :email, class: "form-label small fw-semibold" %>
+    <%= f.email_field :email, autofocus: true, autocomplete: "email", 
+          class: "form-control form-control-sm" %>
   </div>
 
   <% if devise_mapping.confirmable? && resource.pending_reconfirmation? %>
-    <div>Currently waiting confirmation for: <%= resource.unconfirmed_email %></div>
+    <div class="alert alert-info small">
+      Currently waiting confirmation for: <%= resource.unconfirmed_email %>
+    </div>
   <% end %>
 
-  <div class="field">
-    <%= f.label :password %> <i>(leave blank if you don't want to change it)</i><br />
-    <%= f.password_field :password, autocomplete: "new-password" %>
+  <!-- Personal Info -->
+  <h5 class="fw-bold mt-4 mb-3">Personal Information</h5>
+  <div class="mb-3">
+    <%= f.label :name, class: "form-label small fw-semibold" %>
+    <%= f.text_field :name, class: "form-control form-control-sm" %>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :company_name, class: "form-label small fw-semibold" %>
+    <%= f.text_field :company_name, class: "form-control form-control-sm" %>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :phone, class: "form-label small fw-semibold" %>
+    <%= f.telephone_field :phone, class: "form-control form-control-sm" %>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :country, class: "form-label small fw-semibold" %>
+    <%= f.select :country,
+          options_for_select([
+            ["Kenya", "Kenya"],
+            ["United States", "United States"],
+            ["United Kingdom", "United Kingdom"],
+            ["Nigeria", "Nigeria"],
+            ["South Africa", "South Africa"]
+          ], selected: resource.country),
+          { prompt: "Select your country" },
+          class: "form-select form-select-sm" %>
+  </div>
+
+  <!-- Roles -->
+  <h5 class="fw-bold mt-4 mb-3">Roles</h5>
+  <div class="mb-3">
+    <%= f.label :roles, "Choose your role(s)", class: "form-label small fw-semibold" %>
+    <%= f.select :roles, 
+          options_for_select([["Buyer", "buyer"], ["Seller", "seller"]], selected: resource.roles),
+          {}, multiple: true, class: "form-select form-select-sm" %>
+    <small class="text-muted">You can choose one or both roles</small>
+  </div>
+
+  <!-- Security -->
+  <h5 class="fw-bold mt-4 mb-3">Security</h5>
+  <div class="mb-3">
+    <%= f.label :password, class: "form-label small fw-semibold" %>
+    <em class="text-muted small">(leave blank if you don't want to change it)</em>
+    <%= f.password_field :password, autocomplete: "new-password", class: "form-control form-control-sm" %>
     <% if @minimum_password_length %>
-      <br />
-      <em><%= @minimum_password_length %> characters minimum</em>
+      <em class="text-muted small d-block"><%= @minimum_password_length %> characters minimum</em>
     <% end %>
   </div>
 
-  <div class="field">
-    <%= f.label :password_confirmation %><br />
-    <%= f.password_field :password_confirmation, autocomplete: "new-password" %>
+  <div class="mb-3">
+    <%= f.label :password_confirmation, class: "form-label small fw-semibold" %>
+    <%= f.password_field :password_confirmation, autocomplete: "new-password", class: "form-control form-control-sm" %>
   </div>
 
-  <div class="field">
-    <%= f.label :current_password %> <i>(we need your current password to confirm your changes)</i><br />
-    <%= f.password_field :current_password, autocomplete: "current-password" %>
+  <div class="mb-3">
+    <%= f.label :current_password, class: "form-label small fw-semibold" %>
+    <em class="text-muted small">(we need your current password to confirm your changes)</em>
+    <%= f.password_field :current_password, autocomplete: "current-password", class: "form-control form-control-sm" %>
   </div>
 
-  <div class="actions">
-    <%= f.submit "Update" %>
+  <!-- Submit -->
+  <div class="d-grid mt-4">
+    <%= f.submit "Update Account", class: "btn btn-primary fw-semibold" %>
   </div>
 <% end %>
 
-<h3>Cancel my account</h3>
+<hr class="my-4">
 
-<div>Unhappy? <%= button_to "Cancel my account", registration_path(resource_name), data: { confirm: "Are you sure?", turbo_confirm: "Are you sure?" }, method: :delete %></div>
+<!-- Cancel Account -->
+<h3 class="fs-5 fw-bold text-danger">❌ Cancel my account</h3>
+<p class="small text-muted">Unhappy? You can permanently delete your account.</p>
+<%= button_to "Cancel my account", registration_path(resource_name), 
+              data: { confirm: "Are you sure?", turbo_confirm: "Are you sure?" }, 
+              method: :delete, class: "btn btn-outline-danger btn-sm" %>
 
-<%= link_to "Back", :back %>
+<div class="mt-3">
+  <%= link_to "← Back", root_path, class: "btn btn-link" %>
+</div>
+
+<style>
+  .form-control-sm, .form-select-sm {
+    font-size: 0.875rem;
+    padding: 0.4rem 0.6rem;
+  }
+  .btn {
+    padding: 0.5rem;
+  }
+</style>

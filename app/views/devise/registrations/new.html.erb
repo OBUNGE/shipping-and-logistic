@@ -1,48 +1,52 @@
 <h2 class="fs-4 fw-semibold mb-4">📝 Sign Up</h2>
 
-<%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { class: "p-3 border rounded shadow-sm bg-white" }) do |f| %>
+<%= form_for(resource, as: resource_name, url: registration_path(resource_name), 
+             html: { class: "p-3 border rounded shadow-sm bg-white" }) do |f| %>
   <%= render "devise/shared/error_messages", resource: resource %>
 
-  <!-- Email -->
+  <!-- Account Info -->
+  <h5 class="fw-bold mb-3">Account Information</h5>
   <div class="mb-3">
     <%= f.label :email, class: "form-label small fw-semibold" %>
-    <%= f.email_field :email, autofocus: true, autocomplete: "email", class: "form-control form-control-sm" %>
+    <%= f.email_field :email, autofocus: true, autocomplete: "email", 
+          class: "form-control form-control-sm" %>
   </div>
 
-  <!-- Password -->
   <div class="mb-3">
     <%= f.label :password, class: "form-label small fw-semibold" %>
     <% if @minimum_password_length %>
       <em class="text-muted small">(<%= @minimum_password_length %> characters minimum)</em>
     <% end %>
-    <%= f.password_field :password, autocomplete: "new-password", class: "form-control form-control-sm" %>
+    <%= f.password_field :password, autocomplete: "new-password", 
+          class: "form-control form-control-sm" %>
   </div>
 
-  <!-- Password Confirmation -->
   <div class="mb-3">
     <%= f.label :password_confirmation, class: "form-label small fw-semibold" %>
-    <%= f.password_field :password_confirmation, autocomplete: "new-password", class: "form-control form-control-sm" %>
+    <%= f.password_field :password_confirmation, autocomplete: "new-password", 
+          class: "form-control form-control-sm" %>
   </div>
 
-  <!-- Name -->
+  <!-- Personal Info -->
+  <h5 class="fw-bold mt-4 mb-3">Personal Information</h5>
   <div class="mb-3">
     <%= f.label :name, class: "form-label small fw-semibold" %>
-    <%= f.text_field :name, class: "form-control form-control-sm", placeholder: "Your full name" %>
+    <%= f.text_field :name, class: "form-control form-control-sm", 
+          placeholder: "Your full name" %>
   </div>
 
-  <!-- Company Name -->
   <div class="mb-3">
     <%= f.label :company_name, class: "form-label small fw-semibold" %>
-    <%= f.text_field :company_name, class: "form-control form-control-sm", placeholder: "Business or Store name" %>
+    <%= f.text_field :company_name, class: "form-control form-control-sm", 
+          placeholder: "Business or Store name" %>
   </div>
 
-  <!-- Phone -->
   <div class="mb-3">
     <%= f.label :phone, class: "form-label small fw-semibold" %>
-    <%= f.telephone_field :phone, class: "form-control form-control-sm", placeholder: "e.g. 0712345678" %>
+    <%= f.telephone_field :phone, class: "form-control form-control-sm", 
+          placeholder: "e.g. 0712345678" %>
   </div>
 
-  <!-- Country -->
   <div class="mb-3">
     <%= f.label :country, class: "form-label small fw-semibold" %>
     <%= f.select :country,
@@ -52,21 +56,23 @@
             ["United Kingdom", "United Kingdom"],
             ["Nigeria", "Nigeria"],
             ["South Africa", "South Africa"]
-          ]),
+          ], selected: f.object.country),
           { prompt: "Select your country" },
           class: "form-select form-select-sm" %>
   </div>
 
   <!-- Roles -->
+  <h5 class="fw-bold mt-4 mb-3">Roles</h5>
   <div class="mb-3">
     <%= f.label :roles, "Choose your role(s)", class: "form-label small fw-semibold" %>
-    <%= f.select :roles, options_for_select([["Buyer", "buyer"], ["Seller", "seller"]]),
+    <%= f.select :roles, 
+          options_for_select([["Buyer", "buyer"], ["Seller", "seller"]], selected: f.object.roles),
           {}, multiple: true, class: "form-select form-select-sm" %>
     <small class="text-muted">You can choose one or both roles</small>
   </div>
 
   <!-- Submit -->
-  <div class="d-grid">
+  <div class="d-grid mt-4">
     <%= f.submit "Sign up", class: "btn btn-primary fw-semibold" %>
   </div>
 <% end %>

@@ -8,6 +8,12 @@ Rails.application.routes.draw do
   post "become_seller", to: "users#become_seller", as: :become_seller
   post "become_buyer",  to: "users#become_buyer",  as: :become_buyer
 
+  # === My Account (Profile / Storefront settings) ===
+  resource :account, only: [:show, :update], controller: "users" do
+    get "/",   to: "users#account",        as: ""
+    patch "/", to: "users#update_account"
+  end
+
   # === Products and nested resources ===
   resources :products do
     resources :orders, only: [:new, :create]
