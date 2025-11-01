@@ -243,10 +243,9 @@ end
 
 
 def attach_variants(product)
-  variants = product_params[:variants_attributes]
-  return unless variants.present?
+  return unless product_params[:variants_attributes].present?
 
-  variants.to_h.each do |_, variant_data|
+  product_params[:variants_attributes].to_h.each do |_, variant_data|
     variant = product.variants.create(
       name: variant_data[:name],
       value: variant_data[:value],
@@ -256,11 +255,12 @@ def attach_variants(product)
     if variant_data[:variant_images_attributes].present?
       urls = variant_data[:variant_images_attributes].to_h.map do |_, image_data|
         upload_to_supabase(image_data[:image]) if image_data[:image].present?
-      end.compact
+      end.flatten.compact.select { |url| url.is_a?(String) && url.present? }
 
       variant.update(image_urls: urls)
     end
   end
 end
+
 
 end
