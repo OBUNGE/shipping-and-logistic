@@ -34,17 +34,13 @@
               <% end %>
 
               <!-- Variant Images -->
-              <% @variant_images.each do |vi| %>
-                <% if vi.image_url.present? %>
-                  <div class="carousel-item">
-                    <%= image_tag vi.image_url,
+              <% @variant_images.each_with_index do |url, index| %>
+                <% if url.present? %>
+                  <div class="carousel-item <%= 'active' if @product.image_url.blank? && @product.gallery_image_urls.blank? && index == 0 %>">
+                    <%= image_tag url,
                         class: "d-block w-100",
                         style: "max-height: 600px; object-fit: contain;",
-                        alt: "#{vi.variant.name}: #{vi.variant.value}",
-                        data: { variant_id: vi.variant.id } %>
-                    <div class="carousel-caption d-none d-md-block">
-                      <span class="badge bg-secondary"><%= vi.variant.value %></span>
-                    </div>
+                        alt: "Variant image" %>
                   </div>
                 <% end %>
               <% end %>
@@ -70,13 +66,13 @@
                   alt: "#{@product.title} thumbnail" %>
             <% end %>
 
-            <% @variant_images.each do |vi| %>
-              <% if vi.image_url.present? %>
-                <%= image_tag vi.image_url,
+            <% @variant_images.each do |url| %>
+              <% if url.present? %>
+                <%= image_tag url,
                     class: "img-thumbnail variant-thumb me-2 mb-2",
                     style: "width: 70px; height: 70px; object-fit: cover;",
-                    alt: "#{vi.variant.value} thumbnail",
-                    data: { variant_id: vi.variant.id } %>
+                    alt: "Variant image",
+                    data: { variant_id: nil } %>
               <% end %>
             <% end %>
           </div>
@@ -90,7 +86,6 @@
     </div>
   </div>
 </div>
-
 
 <div class="container-fluid px-3 px-md-4 mt-4">
   <div class="row justify-content-center">
