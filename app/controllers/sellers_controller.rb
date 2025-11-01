@@ -15,19 +15,24 @@ class SellersController < ApplicationController
     # Base product scope
     @products = @seller.products.includes(:category)
 
-    # Collect only categories/subcategories this seller actually uses
+    # Collect only categories this seller actually uses (top-level only)
     seller_category_ids = @products.pluck(:category_id).uniq
     top_level_categories = Category.where(id: seller_category_ids, parent_id: nil)
 
+    # Build category filter options
     @categories = top_level_categories.map { |c| [c.name, c.slug] }
 
     # If category filter applied
     if params[:category].present?
       category = top_level_categories.find_by(slug: params[:category])
       if category
+        # Include both the category and its subcategories
         sub_ids = category.subcategories.pluck(:id)
         @products = @products.where(category_id: [category.id] + sub_ids)
-        @subcategories = category.subcategories.where(id: seller_category_ids).map { |s| [s.name, s.slug] }
+
+        # Only subcategories this seller actually has products in
+        seller_sub_ids = @products.pluck(:category_id).uniq
+        @subcategories = category.subcategories.where(id: seller_sub_ids).map { |s| [s.name, s.slug] }
       else
         @subcategories = []
       end
@@ -64,6 +69,7 @@ class SellersController < ApplicationController
   def subcategories_for_category
     category = Category.find_by(slug: params[:category], parent_id: nil)
     if category
+      # Only subcategories this seller actually has products in
       seller_sub_ids = @seller.products.pluck(:category_id).uniq
       subs = category.subcategories.where(id: seller_sub_ids)
       render json: subs.map { |s| { name: s.name, slug: s.slug } }

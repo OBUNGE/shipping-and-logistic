@@ -13,6 +13,11 @@
         class: "img-fluid rounded mb-3",
         style: "object-fit: cover; width: 100%; height: 250px;",
         alt: "#{@seller.store_name || @seller.name} banner" %>
+  <% else %>
+    <%= image_tag asset_path("store-banner-placeholder.png"),
+        class: "img-fluid rounded mb-3",
+        style: "object-fit: cover; width: 100%; height: 250px;",
+        alt: "Default store banner" %>
   <% end %>
 
   <div class="d-flex align-items-center justify-content-center gap-3">
@@ -21,6 +26,11 @@
           class: "rounded-circle border",
           style: "width: 80px; height: 80px; object-fit: cover;",
           alt: "#{@seller.store_name || @seller.name} logo" %>
+    <% else %>
+      <%= image_tag asset_path("store-logo-placeholder.png"),
+          class: "rounded-circle border",
+          style: "width: 80px; height: 80px; object-fit: cover;",
+          alt: "Default store logo" %>
     <% end %>
     <h1 class="fw-bold"><%= @seller.store_name.presence || @seller.name %></h1>
   </div>
@@ -86,8 +96,8 @@
             <% if product.category.present? %>
               <span class="badge bg-secondary me-1"><%= product.category.name %></span>
             <% end %>
-            <% if product.subcategory.present? %>
-              <span class="badge bg-info"><%= product.subcategory.name %></span>
+            <% if product.category&.parent.present? %>
+              <span class="badge bg-info"><%= product.category.name %></span>
             <% end %>
           </div>
         </div>
@@ -111,7 +121,7 @@
       const selectedCategory = categorySelect.value;
       const slug = "<%= @seller.store_slug %>";
 
-      fetch(`/sellers/${slug}/subcategories?category=${encodeURIComponent(selectedCategory)}`)
+      fetch(`/sellers/${slug}/subcategories_for_category?category=${encodeURIComponent(selectedCategory)}`)
         .then(response => response.json())
         .then(data => {
           subcategorySelect.innerHTML = '<option value="">Filter by Subcategory</option>';

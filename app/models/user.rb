@@ -79,4 +79,15 @@ end
     self.active_role ||= "buyer"
     self.roles = ["buyer"] if roles.blank?
   end
+
+  after_create :set_default_branding
+
+  private
+
+  def set_default_branding
+    update_columns(
+      store_logo_url: "https://<your-project-ref>.supabase.co/storage/v1/object/public/store-assets/store-logo-placeholder.png",
+      store_banner_url: "https://<your-project-ref>.supabase.co/storage/v1/object/public/store-assets/store-banner-placeholder.png"
+    )
+  end
 end
