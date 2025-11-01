@@ -238,10 +238,11 @@ def attach_gallery_images(product)
 end
 
 
-  def attach_variants(product)
-  return unless params[:product][:variants_attributes].present?
+def attach_variants(product)
+  variants = product_params[:variants_attributes]
+  return unless variants.present?
 
-  params[:product][:variants_attributes].to_h.each do |_, variant_data|
+  variants.to_h.each do |_, variant_data|
     variant = product.variants.create(
       name: variant_data[:name],
       value: variant_data[:value],
