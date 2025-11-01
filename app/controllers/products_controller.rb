@@ -12,30 +12,34 @@ class ProductsController < ApplicationController
     render plain: "Product listing error: #{e.message}", status: 500
   end
 
-  def show
-    @reviews = @product.reviews.order(created_at: :desc).page(params[:page]).per(5)
-    @selected_color = params[:color]
+def show
+  @reviews = @product.reviews.order(created_at: :desc).page(params[:page]).per(5)
+  @selected_color = params[:color]
 
-    @variant_images =
-      if @selected_color.present?
-        @product.variants.where(name: "Color", value: @selected_color)
-                .map(&:image_urls).flatten
-      else
-        @product.variants.map(&:image_urls).flatten
-      end
-
-    respond_to do |format|
-      format.html
-      format.json do
-        image_url = @variant_images.first.presence || view_context.asset_path("placeholder.png")
-        render json: { image_url: image_url }
-      end
+  @variant_images =
+    if @selected_color.present?
+      @product.variants.where(name: "Color", value: @selected_color)
+              .flat_map { |variant| Array(variant.image_urls) }
+              .select { |url| url.is_a?(String) && url.present? }
+    else
+      @product.variants
+              .flat_map { |variant| Array(variant.image_urls) }
+              .select { |url| url.is_a?(String) && url.present? }
     end
-  rescue => e
-    Rails.logger.error "🔥 Products#show failed: #{e.message}"
-    Rails.logger.error e.backtrace.join("\n")
-    render plain: "Product display error: #{e.message}", status: 500
+
+  respond_to do |format|
+    format.html
+    format.json do
+      image_url = @variant_images.find { |url| url.is_a?(String) && url.present? } ||
+                  view_context.asset_path("placeholder.png")
+      render json: { image_url: image_url }
+    end
   end
+rescue => e
+  Rails.logger.error "🔥 Products#show failed: #{e.message}"
+  Rails.logger.error e.backtrace.join("\n")
+  render plain: "Product display error: #{e.message}", status: 500
+end
 
   def new
     @product = Product.new
