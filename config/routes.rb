@@ -1,5 +1,5 @@
 Rails.application.routes.draw do
-  # Devise / ActiveAdmin
+  # === Devise / ActiveAdmin ===
   devise_for :admin_users, ActiveAdmin::Devise.config
   ActiveAdmin.routes(self)
 
@@ -38,7 +38,7 @@ Rails.application.routes.draw do
     resources :payments, only: [:create] do
       collection do
         match :paystack_callback, via: [:get, :post]
-        get   :paypal_callback,  via: [:get, :post]
+        get   :paypal_callback,   via: [:get, :post]
       end
     end
 
@@ -58,10 +58,16 @@ Rails.application.routes.draw do
   resources :notifications, only: [:index] do
     patch :mark_read, on: :member
   end
-  resources :sellers, only: [:show, :edit, :update], param: :slug
-  get "sellers/:slug/subcategories", to: "sellers#subcategories_for_category"
+
+  # Sellers (slug-based)
+  resources :sellers, only: [:show, :edit, :update], param: :slug do
+    get :subcategories, on: :member
+  end
+
   resources :discounts, only: [:new, :create, :edit, :update, :destroy]
   resources :product_images, only: [:destroy]
+
+  # Categories
   resources :categories do
     get :subcategories, on: :member
   end
@@ -77,13 +83,13 @@ Rails.application.routes.draw do
     post 'update', to: 'carts#update', as: :update
   end
 
+  # === Webhooks ===
   post "/dhl/webhook", to: "webhooks#dhl"
 
- # === ActiveStorage for image variants ===
-mount ActiveStorage::Engine => "/rails/active_storage"
+  # === ActiveStorage (remove if fully on Supabase) ===
+  mount ActiveStorage::Engine => "/rails/active_storage"
 
-# === Health check and root ===
-get "up" => "rails/health#show", as: :rails_health_check
-root "products#index"
-
+  # === Health check and root ===
+  get "up" => "rails/health#show", as: :rails_health_check
+  root "products#index"
 end
