@@ -17,7 +17,8 @@
           </div>
         </section>
 
-        <%= form_with url: product_orders_path(@product), method: :post, local: true, data: { turbo: false }, class: "needs-validation" do |f| %>
+        <%= form_with url: product_orders_path(@product), method: :post, local: true, class: "needs-validation" do |f| %>
+
           <% if @product.variants.any? %>
             <div class="mb-4">
               <%= f.label :variant_id, "Choose Variant", class: "form-label fw-semibold" %>
@@ -41,43 +42,28 @@
           </div>
 
           <%= render "orders/shared_checkout_fields", f: f %>
-
-          <!-- Total Display -->
-          <div class="mb-4">
-            <p class="fs-5 fw-semibold text-success">Estimated Total: <%= display_price(@product.price + (@product.shipping_cost || 0), user: current_user) %></p>
-          </div>
-
-          <%= f.submit "Confirm & Pay", class: "btn btn-gradient w-100 py-3 fw-bold rounded-pill" %>
         <% end %>
 
       <% elsif @cart_items.present? %>
         <!-- CART CHECKOUT -->
         <section class="mb-5">
           <h4 class="border-start border-4 border-primary ps-3 mb-3 fw-semibold">Cart Summary</h4>
-          <% total = 0 %>
           <% @cart_items.each do |item| %>
-            <% item_total = item[:subtotal] + item[:shipping] %>
-            <% total += item_total %>
             <div class="p-3 bg-light rounded-3 mb-3">
               <p><strong>Product:</strong> <%= item[:product].title %></p>
-              <p><strong>Variant:</strong> <%= item[:variant] ? "#{item[:variant].name}: #{item[:variant].value}" : "—" %></p>
+              <p><strong>Variant:</strong>
+                <%= item[:variant] ? "#{item[:variant].name}: #{item[:variant].value}" : "—" %>
+              </p>
               <p><strong>Quantity:</strong> <%= item[:quantity] %></p>
               <p><strong>Unit Price:</strong> <%= display_price(item[:unit_price], user: current_user) %></p>
               <p><strong>Subtotal:</strong> <%= display_price(item[:subtotal], user: current_user) %></p>
               <p><strong>Shipping:</strong> <%= display_price(item[:shipping], user: current_user) %></p>
-              <p><strong>Item Total:</strong> <%= display_price(item_total, user: current_user) %></p>
             </div>
           <% end %>
-
-          <!-- Total Display -->
-          <div class="mb-4">
-            <p class="fs-5 fw-semibold text-success">Estimated Total: <%= display_price(total, user: current_user) %></p>
-          </div>
         </section>
 
-        <%= form_with url: orders_path, method: :post, local: true, data: { turbo: false }, class: "needs-validation" do |f| %>
+        <%= form_with url: orders_path, method: :post, local: true, class: "needs-validation" do |f| %>
           <%= render "orders/shared_checkout_fields", f: f %>
-          <%= f.submit "Confirm & Pay", class: "btn btn-gradient w-100 py-3 fw-bold rounded-pill" %>
         <% end %>
 
       <% else %>
