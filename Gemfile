@@ -55,6 +55,7 @@ gem 'httparty'
 gem "paypal-checkout-sdk", "~> 1.0"
 gem "aws-sdk-s3", "~> 1.136"
 
+gem 'prawn-table'
 
 gem "sprockets-rails"
 
