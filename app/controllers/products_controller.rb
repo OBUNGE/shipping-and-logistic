@@ -44,7 +44,7 @@ end
 
 
 def show
-  @product = Product.find(params[:id])
+  @product = Product.find(params[:id])  # ✅ This was missing
   @reviews = @product.reviews.order(created_at: :desc).page(params[:page]).per(5)
   @selected_color = params[:color]
 

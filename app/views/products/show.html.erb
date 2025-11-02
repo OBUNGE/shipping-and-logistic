@@ -149,10 +149,8 @@
               </div>
             <% end %>
 
-            <%= button_to "Add to Cart",
-              add_cart_path(product_id: product.id, variant_id: variant.id),
-              method: :post,
-              class: "btn btn-primary" %>
+            <%= f.submit "Add to Cart", class: "btn btn-primary" %>
+
 
           <% end %>
         <% else %>
