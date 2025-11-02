@@ -17,14 +17,18 @@ class PaypalGateway
     options
   end
 
-  def client
-    env = if Rails.env.production?
-            PayPal::LiveEnvironment.new(ENV["PAYPAL_CLIENT_ID"], ENV["PAYPAL_CLIENT_SECRET"])
-          else
-            PayPal::SandboxEnvironment.new(ENV["PAYPAL_CLIENT_ID"], ENV["PAYPAL_CLIENT_SECRET"])
-          end
-    PayPal::PayPalHttpClient.new(env)
-  end
+def client
+  Rails.logger.info("🔐 PAYPAL_CLIENT_ID: #{ENV['PAYPAL_CLIENT_ID']}")
+  Rails.logger.info("🔐 PAYPAL_CLIENT_SECRET: #{ENV['PAYPAL_CLIENT_SECRET']&.slice(0, 6)}...")
+
+  env = if Rails.env.production?
+          PayPal::LiveEnvironment.new(ENV["PAYPAL_CLIENT_ID"], ENV["PAYPAL_CLIENT_SECRET"])
+        else
+          PayPal::SandboxEnvironment.new(ENV["PAYPAL_CLIENT_ID"], ENV["PAYPAL_CLIENT_SECRET"])
+        end
+  PayPal::PayPalHttpClient.new(env)
+end
+
 
   def initiate
     request = PayPalCheckoutSdk::Orders::OrdersCreateRequest.new
