@@ -1,0 +1,50 @@
+<!-- Currency Selection -->
+<div class="mb-5">
+  <%= f.label :currency, "Currency", class: "form-label fw-semibold" %>
+  <%= f.select :currency,
+      options_for_select([["USD", "USD"], ["KES", "KES"]], selected: "USD"),
+      {},
+      class: "form-select shadow-sm rounded-pill" %>
+</div>
+
+<!-- Delivery Info -->
+<h4 class="border-start border-4 border-success ps-3 mb-3 fw-semibold">Delivery Information</h4>
+<div class="row">
+  <div class="col-md-6 mb-3">
+    <%= f.label :first_name, "First Name", class: "form-label" %>
+    <%= f.text_field :first_name, class: "form-control shadow-sm rounded-pill", required: true %>
+  </div>
+  <div class="col-md-6 mb-3">
+    <%= f.label :last_name, "Last Name", class: "form-label" %>
+    <%= f.text_field :last_name, class: "form-control shadow-sm rounded-pill", required: true %>
+  </div>
+</div>
+<div class="mb-4">
+  <%= f.label :delivery_address, "Delivery Address", class: "form-label" %>
+  <%= f.text_area :delivery_address, class: "form-control shadow-sm rounded-4", rows: 3, required: true %>
+</div>
+
+<!-- Payment Section -->
+<h4 class="border-start border-4 border-warning ps-3 mb-3 fw-semibold">Payment Method</h4>
+<div class="p-3 bg-light rounded-3 mb-4">
+  <div class="form-check mb-2">
+    <%= f.radio_button :provider, "mpesa", checked: true, class: "form-check-input", id: "provider_mpesa" %>
+    <%= f.label :provider_mpesa, "M-PESA (STK Push)", class: "form-check-label fw-semibold" %>
+  </div>
+  <div id="mpesa_phone_field" class="mt-2">
+    <%= f.label :phone_number, "M-PESA Phone Number", class: "form-label" %>
+    <%= f.telephone_field :phone_number, value: current_user.phone, class: "form-control shadow-sm rounded-pill", placeholder: "e.g. 2547XXXXXXXX" %>
+  </div>
+
+  <div class="form-check mt-3">
+    <%= f.radio_button :provider, "paypal", class: "form-check-input", id: "provider_paypal" %>
+    <%= f.label :provider_paypal, "PayPal", class: "form-check-label fw-semibold" %>
+  </div>
+
+  <div class="form-check mt-2">
+    <%= f.radio_button :provider, "paystack", class: "form-check-input", id: "provider_paystack" %>
+    <%= f.label :provider_paystack, "Credit/Debit Card", class: "form-check-label fw-semibold" %>
+  </div>
+</div>
+
+<%= f.submit "Confirm & Pay", class: "btn btn-gradient w-100 py-3 fw-bold rounded-pill" %>
