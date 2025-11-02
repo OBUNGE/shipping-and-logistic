@@ -12,29 +12,35 @@ class OrdersController < ApplicationController
   def show; end
 
   # === GET /orders/new ===
-  def new
-    if params[:product_id].present?
-      # Single product checkout
-      @order = current_user.orders_as_buyer.new
-    else
-      # Cart checkout
-      @cart_items = (session[:cart] || []).map do |item|
-        product = Product.find(item["product_id"])
-        variant = item["variant_id"].present? ? Variant.find_by(id: item["variant_id"]) : nil
-        final_price = product.price + (variant&.price_modifier || 0)
-
-        {
-          product: product,
-          variant: variant,
-          quantity: item["quantity"].to_i,
-          unit_price: final_price,
-          subtotal: final_price * item["quantity"].to_i,
-          shipping: (product.shipping_cost || 0) * item["quantity"].to_i
-        }
-      end
-      @order = current_user.orders_as_buyer.new
+def new
+  if params[:product_id].present?
+    # Single product checkout
+    @product = Product.find(params[:product_id])
+    @order = current_user.orders_as_buyer.new
+  else
+    # Cart checkout
+    if session[:cart].blank?
+      redirect_to cart_path, alert: "Your cart is empty." and return
     end
+
+    @cart_items = session[:cart].map do |item|
+      product = Product.find(item["product_id"])
+      variant = item["variant_id"].present? ? Variant.find_by(id: item["variant_id"]) : nil
+      final_price = product.price + (variant&.price_modifier || 0)
+
+      {
+        product: product,
+        variant: variant,
+        quantity: item["quantity"].to_i,
+        unit_price: final_price,
+        subtotal: final_price * item["quantity"].to_i,
+        shipping: (product.shipping_cost || 0) * item["quantity"].to_i
+      }
+    end
+
+    @order = current_user.orders_as_buyer.new
   end
+end
 
   # === POST /orders ===
   def create
