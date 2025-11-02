@@ -1,0 +1,9 @@
+<% cart_count = (session[:cart] || []).sum { |i| i["quantity"].to_i } %>
+<%= link_to cart_path, class: "nav-link position-relative", id: "cart-badge" do %>
+  🛒 Cart
+  <% if cart_count > 0 %>
+    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+      <%= cart_count %>
+    </span>
+  <% end %>
+<% end %>
