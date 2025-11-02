@@ -101,8 +101,14 @@
                 <div class="mt-auto d-flex gap-2">
                   <%= link_to "View", product_path(product), class: "btn btn-sm btn-outline-primary flex-fill" %>
                   <% if product.stock.to_i > 0 %>
-                    <%= button_to "Add to Cart", add_cart_path, method: :post,
-                        params: { product_id: product.id }, class: "btn btn-sm btn-success flex-fill" %>
+                    <%= button_to "Add to Cart", add_cart_path,
+    method: :post,
+    params: { product_id: product.id },
+    remote: true,
+    form: { data: { turbo_stream: true } },
+    class: "btn btn-sm btn-success flex-fill" %>
+                  <% else %>
+                    <button class="btn btn-sm btn-secondary flex-fill" disabled>Out of Stock</button>
                   <% end %>
                 </div>
               </div>

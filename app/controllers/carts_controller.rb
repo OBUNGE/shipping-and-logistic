@@ -43,7 +43,11 @@ class CartsController < ApplicationController
     end
 
     Rails.logger.info "🛒 Cart After Add: #{session[:cart].inspect}"
-    redirect_to cart_path, notice: "Product(s) added to cart."
+
+    respond_to do |format|
+      format.turbo_stream
+      format.html { redirect_to cart_path, notice: "Product(s) added to cart." }
+    end
   end
 
   def remove

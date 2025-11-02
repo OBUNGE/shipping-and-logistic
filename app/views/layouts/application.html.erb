@@ -22,7 +22,7 @@
 
     <style>
       .navbar.sticky-top { z-index: 1030; }
-      .dropdown-menu { z-index: 2000 !important; } /* ensure dropdown always above sticky bars */
+      .dropdown-menu { z-index: 2000 !important; }
     </style>
   </head>
 
@@ -95,25 +95,26 @@
               <li class="nav-item"><%= link_to "Sign Up", new_user_registration_path, class: "nav-link" %></li>
             <% end %>
 
-            <!-- Cart -->
-            <% cart_count = (session[:cart] || []).sum { |item| item["quantity"].to_i } %>
-            <li class="nav-item">
-              <%= link_to cart_path, class: "nav-link" do %>
-                🛒 Cart (<%= cart_count %>)
-              <% end %>
+            <!-- Cart Badge (Turbo Stream Target) -->
+            <li class="nav-item" id="cart-badge">
+              <%= render "layouts/cart_badge" %>
             </li>
           </ul>
         </div>
       </div>
     </nav>
 
-    <div class="container-fluid px-0">
+    <!-- Flash Messages (Turbo Target) -->
+    <div id="flash-messages" class="px-3 pt-2">
       <% flash.each do |key, value| %>
-        <div class="alert alert-<%= key == "notice" ? "success" : "danger" %> mx-3">
+        <div class="alert alert-<%= key == "notice" ? "success" : "danger" %> alert-dismissible fade show" role="alert">
           <%= value %>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
       <% end %>
+    </div>
 
+    <div class="container-fluid px-0">
       <%= yield %>
     </div>
   </body>

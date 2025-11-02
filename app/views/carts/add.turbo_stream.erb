@@ -1,0 +1,14 @@
+<turbo-stream action="update" target="cart-badge">
+  <template>
+    <%= render partial: "layouts/cart_badge" %>
+  </template>
+</turbo-stream>
+
+<turbo-stream action="append" target="flash-messages">
+  <template>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+       Product added to cart.
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  </template>
+</turbo-stream>
