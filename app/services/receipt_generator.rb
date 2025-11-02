@@ -67,7 +67,7 @@ class ReceiptGenerator
       end
 
       pdf.move_down 10
-      pdf.text "Total Amount: ", style: :bold, size: 12
+      pdf.text "calculate_subtotal: ", style: :bold, size: 12
       pdf.text "KES #{@order.total}", size: 14, style: :bold, color: "008000"
       pdf.move_down 15
 
