@@ -232,7 +232,8 @@ def handle_payment(order, provider, phone_number)
     phone_number: phone_number,
     currency: order.currency,
     return_url: order_url(order),
-    callback_url: mpesa_callback_url(order_id: order.id, host: ENV["APP_HOST"])
+    callback_url: mpesa_callback_url(order_id: order.id, host: ENV["APP_HOST"] || "shipping-and-logistic-wuo1.onrender.com")
+
   )
 
   respond_to do |format|

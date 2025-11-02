@@ -49,9 +49,10 @@ class PaystackGateway
 
   private
 
-  def callback_url
-    paystack_callback_order_payments_url(@order)
-  end
+def callback_url
+  paystack_callback_order_payments_url(@order, host: ENV["APP_HOST"] || "shipping-and-logistic-wuo1.onrender.com")
+end
+
 
 def default_url_options
   uri = URI.parse(ENV["APP_HOST"] || "http://localhost:3000")
