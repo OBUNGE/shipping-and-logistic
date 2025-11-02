@@ -138,7 +138,7 @@
           <h4 class="text-success fw-bold">Grand Total: <%= display_price(grand_total, user: current_user) %></h4>
         </div>
 
-        <%= form_with url: orders_path, method: :post, local: true, html: { class: "checkout-form" } do |f| %>
+       <%= form_with url: orders_path, method: :post, local: true, data: { turbo: false }, html: { class: "checkout-form" } do |f| %>
           <!-- Currency -->
           <div class="mb-3">
             <%= f.label :currency, "Choose Currency", class: "form-label fw-semibold" %>
@@ -168,7 +168,7 @@
           <h4 class="mt-4 fw-semibold text-secondary border-bottom pb-2">Payment Method</h4>
           <div class="form-check mb-3">
             <%= f.radio_button :provider, "mpesa", checked: true, class: "form-check-input", id: "provider_mpesa_cart" %>
-            <%= f.label :provider_mpesa_cart, "M-PESA (STK Push)", class: "form-check-label fw-semibold" %>
+            <%= f.label :provider_mpesa_cart, "Pay with Mpesa", class: "form-check-label fw-semibold" %>
           </div>
           <div class="mb-3" id="mpesa_phone_field_cart">
             <%= f.label :phone_number, "M-PESA Phone Number", class: "form-label fw-semibold" %>
