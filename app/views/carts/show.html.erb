@@ -44,7 +44,7 @@
 
                   <!-- Image (variant > product > placeholder) -->
                   <td class="text-center">
-                    <% image_url = variant&.image_url.presence || product.image_url.presence %>
+                    <% image_url = variant&.variant_images&.first&.image_url.presence || product.image_url.presence %>
                     <% if image_url.present? %>
                       <%= image_tag image_url,
                             class: "img-thumbnail border-0 rounded-3 shadow-sm",

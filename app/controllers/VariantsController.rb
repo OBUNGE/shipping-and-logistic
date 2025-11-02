@@ -38,7 +38,12 @@ class VariantsController < ApplicationController
     @variant = Variant.find(params[:id])
   end
 
-  def variant_params
-    params.require(:variant).permit(:name, :value, :price_modifier)
-  end
+def variant_params
+  params.require(:variant).permit(
+    :name,
+    :value,
+    :price_modifier,
+    variant_images_attributes: [:id, :image_url, :_destroy]
+  )
+end
 end

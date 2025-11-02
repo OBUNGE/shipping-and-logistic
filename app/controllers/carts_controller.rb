@@ -15,6 +15,7 @@ class CartsController < ApplicationController
       }
     end
   end
+  
 
   def add
     session[:cart] ||= []
