@@ -9,7 +9,7 @@
  * Consider organizing styles into separate files for maintainability.
  */
  body {
-  background-color: rgb(156, 169, 170);
+  background-color: rgba(239, 243, 243, 1);
 }
 .dropdown-menu {
   z-index: 10000; /* higher than navbar and filter sections */

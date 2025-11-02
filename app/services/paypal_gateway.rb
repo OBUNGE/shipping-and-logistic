@@ -34,7 +34,7 @@ class PaypalGateway
       purchase_units: [{
         amount: {
           currency_code: @currency,
-          value: sprintf("%.2f", @order.total)
+          value: sprintf("%.2f", @order.total.to_f.round(2))
         }
       }],
       application_context: {
