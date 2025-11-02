@@ -69,7 +69,7 @@ class PaypalGateway
 
   private
 
- def callback_url
+def callback_url(success: false, cancel: false)
   paypal_callback_order_payments_url(@order, host: ENV["APP_HOST"] || "shipping-and-logistic-wuo1.onrender.com")
 end
 end
