@@ -1,4 +1,6 @@
 # app/services/receipt_generator.rb
+require 'prawn/table'
+
 class ReceiptGenerator
   def initialize(order, downloaded_at = Time.current)
     @order = order
