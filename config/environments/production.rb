@@ -4,15 +4,19 @@ Rails.application.configure do
   # ✅ Use Supabase for Active Storage
   config.active_storage.service = :supabase
 
-  # ✅ Host for ActiveStorage signed URLs
+  # ✅ Host for ActiveStorage signed URLs and all URL helpers
   config.action_controller.default_url_options = {
     host: "shipping-and-logistic-wuo1.onrender.com",
     protocol: "https"
   }
-
-  # ✅ Ensure URL helpers (like rails_blob_url) generate full URLs
-  Rails.application.routes.default_url_options[:host] = "shipping-and-logistic-wuo1.onrender.com"
-  Rails.application.routes.default_url_options[:protocol] = "https"
+  config.action_mailer.default_url_options = {
+    host: "shipping-and-logistic-wuo1.onrender.com",
+    protocol: "https"
+  }
+  config.routes.default_url_options = {
+    host: "shipping-and-logistic-wuo1.onrender.com",
+    protocol: "https"
+  }
 
   # ✅ Secret key fallback
   config.secret_key_base = ENV["SECRET_KEY_BASE"] || Rails.application.credentials.secret_key_base
@@ -68,12 +72,6 @@ Rails.application.configure do
 
   # ✅ I18n fallback
   config.i18n.fallbacks = true
-
-  # ✅ Mailer host (for Devise or ActionMailer)
-  config.action_mailer.default_url_options = {
-    host: "shipping-and-logistic-wuo1.onrender.com",
-    protocol: "https"
-  }
 
   # ✅ Active Storage: serve via proxy (for Supabase)
   config.active_storage.resolve_model_to_route = :rails_storage_proxy
