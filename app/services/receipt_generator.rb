@@ -12,7 +12,7 @@ class ReceiptGenerator
   def generate
     Prawn::Document.new(page_size: 'A4', margin: 50) do |pdf|
       # === Header ===
-      pdf.text "SHIPING RECEIPT", size: 22, style: :bold, align: :center, color: "333333"
+      pdf.text "AfriXpress RECEIPT", size: 22, style: :bold, align: :center, color: "333333"
       pdf.move_down 5
       pdf.stroke_horizontal_rule
       pdf.move_down 15

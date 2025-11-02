@@ -138,7 +138,7 @@
           <h4 class="text-success fw-bold">Grand Total: <%= display_price(grand_total, user: current_user) %></h4>
         </div>
 
-       <%= form_with url: orders_path, method: :post, local: true, data: { turbo: false }, html: { class: "checkout-form" } do |f| %>
+        <%= form_with url: orders_path, method: :post, local: true, html: { class: "checkout-form" } do |f| %>
           <!-- Currency -->
           <div class="mb-3">
             <%= f.label :currency, "Choose Currency", class: "form-label fw-semibold" %>
