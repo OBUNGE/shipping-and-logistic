@@ -1,12 +1,14 @@
 <h2>Storefront Settings</h2>
 <p>Update your store name, logo, banner, and description.</p>
 
-<%= form_with model: seller, local: true, html: { id: "storefront-form" } do |f| %>
+<%= form_with model: seller, url: account_path, method: :patch, local: true, html: { id: "storefront-form" } do |f| %>
+  <!-- Store Name -->
   <div class="mb-3">
     <%= f.label :store_name, "Store Name", class: "form-label" %>
     <%= f.text_field :store_name, class: "form-control" %>
   </div>
 
+  <!-- Store Logo -->
   <div class="mb-3">
     <%= f.label :store_logo_url, "Store Logo", class: "form-label" %>
     <% if seller.store_logo_url.present? %>
@@ -15,11 +17,18 @@
             class: "rounded-circle border",
             style: "width: 80px; height: 80px; object-fit: cover;" %>
       </div>
+    <% else %>
+      <div class="mb-2">
+        <%= image_tag "placeholder.jpg",
+            class: "rounded-circle border",
+            style: "width: 80px; height: 80px; object-fit: cover;" %>
+      </div>
     <% end %>
     <input type="file" id="store_logo" class="form-control" />
     <%= f.hidden_field :store_logo_url, id: "store_logo_url" %>
   </div>
 
+  <!-- Store Banner -->
   <div class="mb-3">
     <%= f.label :store_banner_url, "Store Banner", class: "form-label" %>
     <% if seller.store_banner_url.present? %>
@@ -28,11 +37,18 @@
             class: "img-fluid rounded",
             style: "max-height: 200px; object-fit: cover;" %>
       </div>
+    <% else %>
+      <div class="mb-2">
+        <%= image_tag "banner-placeholder.jpg",
+            class: "img-fluid rounded",
+            style: "max-height: 200px; object-fit: cover;" %>
+      </div>
     <% end %>
     <input type="file" id="store_banner" class="form-control" />
     <%= f.hidden_field :store_banner_url, id: "store_banner_url" %>
   </div>
 
+  <!-- Store Description -->
   <div class="mb-3">
     <%= f.label :store_description, "Description", class: "form-label" %>
     <%= f.text_area :store_description, class: "form-control", rows: 3 %>
@@ -41,6 +57,7 @@
   <%= f.submit "Save Changes", class: "btn btn-primary" %>
 <% end %>
 
+<!-- Supabase Upload Script -->
 <script type="module">
   import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
