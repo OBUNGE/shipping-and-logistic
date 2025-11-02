@@ -56,7 +56,7 @@ class ReceiptGenerator
 
       data = [["Product", "Quantity", "Price (KES)"]]
       @order.order_items.each do |item|
-        data << [item.product.title, item.quantity.to_s, item.total_price.to_s]
+        data << [item.product.title, item.quantity.to_s,item.subtotal.to_s]
       end
 
       pdf.table(data, header: true, width: 480) do
@@ -67,7 +67,7 @@ class ReceiptGenerator
       end
 
       pdf.move_down 10
-      pdf.text "calculate_subtotal: ", style: :bold, size: 12
+      pdf.text "Total Amount: ", style: :bold, size: 12
       pdf.text "KES #{@order.total}", size: 14, style: :bold, color: "008000"
       pdf.move_down 15
 
