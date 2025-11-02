@@ -4,16 +4,14 @@ Rails.application.configure do
   # ✅ Use Supabase for Active Storage
   config.active_storage.service = :supabase
 
-  # ✅ Host for ActiveStorage signed URLs and all URL helpers
+  # ✅ Host for ActiveStorage signed URLs
   config.action_controller.default_url_options = {
     host: "shipping-and-logistic-wuo1.onrender.com",
     protocol: "https"
   }
+
+  # ✅ Mailer host (for Devise or ActionMailer)
   config.action_mailer.default_url_options = {
-    host: "shipping-and-logistic-wuo1.onrender.com",
-    protocol: "https"
-  }
-  config.routes.default_url_options = {
     host: "shipping-and-logistic-wuo1.onrender.com",
     protocol: "https"
   }
@@ -48,13 +46,12 @@ Rails.application.configure do
   stdout_logger.formatter = Logger::Formatter.new
   config.logger = ActiveSupport::TaggedLogging.new(stdout_logger)
 
-  # Optional: File logger for debugging (does not break Rails 7)
+  # Optional: File logger for debugging
   begin
     file_logger = Logger.new(Rails.root.join("log/production.log"))
     file_logger.level = Logger::DEBUG
     file_logger.formatter = stdout_logger.formatter
 
-    # Dual logging if broadcast exists
     if ActiveSupport::Logger.respond_to?(:broadcast)
       stdout_logger.extend(ActiveSupport::Logger.broadcast(file_logger))
     end
@@ -76,3 +73,7 @@ Rails.application.configure do
   # ✅ Active Storage: serve via proxy (for Supabase)
   config.active_storage.resolve_model_to_route = :rails_storage_proxy
 end
+
+# ✅ Ensure URL helpers (like *_url) generate full URLs
+Rails.application.routes.default_url_options[:host] = "shipping-and-logistic-wuo1.onrender.com"
+Rails.application.routes.default_url_options[:protocol] = "https"
