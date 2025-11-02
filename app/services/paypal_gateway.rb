@@ -61,10 +61,11 @@ class PaypalGateway
     else
       { error: "PayPal did not return approval link" }
     end
-  rescue => e
-    Rails.logger.error("PaypalGateway error: #{e.message}")
-    Rails.logger.error(e.backtrace.join("\n"))
-    { error: "PayPal initiation failed" }
+  rescue PayPalHttp::HttpError => e
+  Rails.logger.error("❌ PayPal API Error: #{e.status_code}")
+  Rails.logger.error("📦 PayPal Response: #{e.result.inspect}")
+  { error: "PayPal initiation failed" }
+
   end
 
   private
