@@ -44,7 +44,7 @@ Rails.application.routes.draw do
     resources :payments, only: [:create] do
       collection do
         match :paystack_callback, via: [:get, :post]
-        get   :paypal_callback,   via: [:get, :post]
+        match :paypal_callback,   via: [:get, :post] # ✅ Fixed: match instead of get
       end
     end
 
@@ -65,7 +65,7 @@ Rails.application.routes.draw do
     patch :mark_read, on: :member
   end
 
-  # Sellers (slug-based)
+  # === Sellers (slug-based) ===
   resources :sellers, only: [:show, :edit, :update], param: :slug do
     get :subcategories, on: :member
   end
@@ -73,7 +73,7 @@ Rails.application.routes.draw do
   resources :discounts, only: [:new, :create, :edit, :update, :destroy]
   resources :product_images, only: [:destroy]
 
-  # Categories
+  # === Categories ===
   resources :categories do
     get :subcategories, on: :member
   end
@@ -86,7 +86,7 @@ Rails.application.routes.draw do
     post 'add',    to: 'carts#add'
     post 'remove', to: 'carts#remove'
     post 'clear',  to: 'carts#clear'
-    post 'update', to: 'carts#update', as: :update
+    post 'update', to: 'carts#update', as: :update_cart # ✅ Optional: clearer route name
   end
 
   # === Webhooks ===
@@ -99,3 +99,4 @@ Rails.application.routes.draw do
   get "up" => "rails/health#show", as: :rails_health_check
   root "products#index"
 end
+
