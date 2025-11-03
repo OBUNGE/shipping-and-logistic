@@ -1,3 +1,4 @@
+<!-- 📄 File: app/views/sellers/show.html.erb -->
 <style>
   @media (min-width: 992px) {
     .col-lg-5th {
@@ -90,7 +91,24 @@
           <h5 class="card-title">
             <%= link_to product.title, product_path(product), class: "text-decoration-none link-hover" %>
           </h5>
-          <p class="card-text">KSh <%= product.price %></p>
+
+          <!-- ✅ Currency-aware price with discount -->
+          <% if product.discount.present? && product.discount.percentage.to_f > 0 %>
+            <% discounted_price = product.price * (1 - product.discount.percentage / 100.0) %>
+            <p class="card-text fw-semibold mb-1">
+              <span class="text-muted text-decoration-line-through me-2">
+                <%= display_price(product.price) %>
+              </span>
+              <span class="text-danger">
+                <%= display_price(discounted_price) %>
+              </span>
+            </p>
+            <span class="badge bg-success">-<%= product.discount.percentage.to_i %>% Off</span>
+          <% else %>
+            <p class="card-text fw-semibold">
+              <%= display_price(product.price) %>
+            </p>
+          <% end %>
 
           <div class="mt-2">
             <% if product.category.present? %>
@@ -121,7 +139,6 @@
       const selectedCategory = categorySelect.value;
       const slug = "<%= @seller.store_slug %>";
 
-      // ✅ Corrected endpoint to match routes.rb
       fetch(`/sellers/${slug}/subcategories?category=${encodeURIComponent(selectedCategory)}`)
         .then(response => response.json())
         .then(data => {
@@ -136,4 +153,13 @@
     });
   });
 </script>
-<!-- End of file: app/views/sellers/show.html.erb -->
+      e.preventDefault();
+
+      const bannerUploaded = await uploadFile("store_banner", "store_banner_url", "store-banners");
+      if (!bannerUploaded) {
+        return;
+      }
+
+      this.submit();
+    });
+</script>

@@ -1,3 +1,4 @@
+<!-- 📄 File: app/views/products/index.html.erb -->
 <div class="container-fluid py-4 bg-light">
 
   <!-- 🧭 Sticky Category Bar -->
@@ -86,9 +87,23 @@
                       class: "text-dark text-decoration-none hover-link" %>
                 </h6>
 
-                <p class="text-primary fw-bold small mb-1">
-                  <%= display_price(product.price, user: current_user) %>
-                </p>
+                <!-- 💸 Price with discount -->
+                <% if product.discount.present? && product.discount.percentage.to_f > 0 %>
+                  <% discounted_price = product.price * (1 - product.discount.percentage / 100.0) %>
+                  <p class="small mb-1">
+                    <span class="text-muted text-decoration-line-through me-2">
+                      <%= display_price(product.price, user: current_user) %>
+                    </span>
+                    <span class="text-danger fw-bold">
+                      <%= display_price(discounted_price, user: current_user) %>
+                    </span>
+                  </p>
+                  <span class="badge bg-success mb-1">-<%= product.discount.percentage.to_i %>% Off</span>
+                <% else %>
+                  <p class="text-primary fw-bold small mb-1">
+                    <%= display_price(product.price, user: current_user) %>
+                  </p>
+                <% end %>
 
                 <p class="small mb-1 <%= product.stock.to_i > 0 ? 'text-success' : 'text-danger' %>">
                   <%= product.stock.to_i > 0 ? "✅ In Stock" : "❌ Out of Stock" %>
