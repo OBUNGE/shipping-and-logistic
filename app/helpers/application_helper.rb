@@ -34,5 +34,9 @@ def display_price(price, user: nil)
     number_to_currency(price, unit: "$")
   end
 end
+# 📄 File: app/helpers/application_helper.rb
+def user_country
+  session[:user_country] ||= request.location&.country.to_s.downcase.presence || "unknown"
+end
 
 end
