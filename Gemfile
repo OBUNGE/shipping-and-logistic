@@ -63,6 +63,9 @@ gem 'prawn'
 
 gem 'geocoder'
 
+gem 'rqrcode'
+gem 'bootstrap', '~> 5.2.3'
+
 
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
 gem "rails", "~> 8.0.3"
