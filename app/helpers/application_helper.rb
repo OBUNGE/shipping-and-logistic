@@ -25,18 +25,21 @@ module ApplicationHelper
 
     exchange_rate = 130.0
     country = user_country
-
-    case session[:payment_method]
-    when "mpesa", "paystack"
-      number_to_currency(price * exchange_rate, unit: "KES ")
-    when "paypal"
-      number_to_currency(price, unit: "$")
-    else
-      if country == "kenya"
-        number_to_currency(price * exchange_rate, unit: "KES ")
+    currency = session[:currency] || (
+      case session[:payment_method]
+      when "mpesa", "paystack"
+        "KES"
+      when "paypal"
+        "USD"
       else
-        number_to_currency(price, unit: "$")
+        country == "kenya" ? "KES" : "USD"
       end
+    )
+
+    if currency == "KES"
+      number_to_currency(price * exchange_rate, unit: "KES ")
+    else
+      number_to_currency(price, unit: "$")
     end
   end
 end

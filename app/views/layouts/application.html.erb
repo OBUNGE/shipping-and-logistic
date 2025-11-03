@@ -1,3 +1,4 @@
+<!-- 📄 File: app/views/layouts/application.html.erb -->
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -42,7 +43,18 @@
             </li>
           </ul>
 
-          <ul class="navbar-nav">
+          <ul class="navbar-nav align-items-center gap-2">
+            <!-- 🌍 Currency Selector -->
+            <li class="nav-item dropdown">
+              <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                Currency: <%= session[:currency] || "USD" %>
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li><%= link_to "KES", set_currency_path(currency: "KES"), method: :post, class: "dropdown-item" %></li>
+                <li><%= link_to "USD", set_currency_path(currency: "USD"), method: :post, class: "dropdown-item" %></li>
+              </ul>
+            </li>
+
             <% if user_signed_in? %>
               <% unread_count = current_user.notifications.where(read: false).count %>
 
@@ -95,7 +107,7 @@
               <li class="nav-item"><%= link_to "Sign Up", new_user_registration_path, class: "nav-link" %></li>
             <% end %>
 
-            <!-- Cart Badge (Turbo Stream Target) -->
+            <!-- 🛒 Cart Badge -->
             <li class="nav-item" id="cart-badge">
               <%= render "layouts/cart_badge" %>
             </li>
@@ -104,7 +116,7 @@
       </div>
     </nav>
 
-    <!-- Flash Messages (Turbo Target) -->
+    <!-- 🔔 Flash Messages -->
     <div id="flash-messages" class="px-3 pt-2">
       <% flash.each do |key, value| %>
         <div class="alert alert-<%= key == "notice" ? "success" : "danger" %> alert-dismissible fade show" role="alert">
@@ -114,6 +126,7 @@
       <% end %>
     </div>
 
+    <!-- 🔄 Page Content -->
     <div class="container-fluid px-0">
       <%= yield %>
     </div>
