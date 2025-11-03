@@ -1,4 +1,9 @@
 GEM
+  remote: https://rails-assets.org/
+  specs:
+    rails-assets-bootstrap (5.2.3)
+
+GEM
   remote: https://rubygems.org/
   specs:
     actioncable (8.0.3)
@@ -618,6 +623,7 @@ DEPENDENCIES
   prawn-table
   puma (>= 5.0)
   rails (~> 8.0.3)
+  rails-assets-bootstrap (~> 5.2.3)!
   rqrcode
   rspec-rails
   rubocop-rails-omakase
