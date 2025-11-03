@@ -24,6 +24,9 @@
     <style>
       .navbar.sticky-top { z-index: 1030; }
       .dropdown-menu { z-index: 2000 !important; }
+      .navbar-collapse {
+        text-align: left !important;
+      }
     </style>
   </head>
 
@@ -36,7 +39,7 @@
           <span class="navbar-toggler-icon"></span>
         </button>
 
-        <div class="collapse navbar-collapse px-3" id="navbarNav">
+        <div class="collapse navbar-collapse px-3 text-start" id="navbarNav">
           <ul class="navbar-nav me-auto mb-2 mb-lg-0">
             <li class="nav-item">
               <%= link_to "Products", products_path, class: "nav-link" %>
@@ -50,8 +53,18 @@
                 Currency: <%= session[:currency] || "USD" %>
               </button>
               <ul class="dropdown-menu dropdown-menu-end">
-                <li><%= link_to "KES", set_currency_path(currency: "KES"), method: :post, class: "dropdown-item" %></li>
-                <li><%= link_to "USD", set_currency_path(currency: "USD"), method: :post, class: "dropdown-item" %></li>
+                <li>
+                  <%= button_to "KES", set_currency_path(currency: "KES"),
+                      method: :post,
+                      class: "dropdown-item btn btn-link p-0",
+                      form: { "data-turbo" => "false" } %>
+                </li>
+                <li>
+                  <%= button_to "USD", set_currency_path(currency: "USD"),
+                      method: :post,
+                      class: "dropdown-item btn btn-link p-0",
+                      form: { "data-turbo" => "false" } %>
+                </li>
               </ul>
             </li>
 
