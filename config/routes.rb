@@ -36,7 +36,7 @@ Rails.application.routes.draw do
 
   # === M-PESA Callback (single global route) ===
   post "/mpesa/callback/:order_id", to: "payments#mpesa_callback", as: :mpesa_callback
-  # 📄 File: config/routes.rb
+  
 post "set_currency", to: "settings#set_currency", as: :set_currency
 
 

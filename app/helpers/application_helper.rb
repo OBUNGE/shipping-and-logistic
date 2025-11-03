@@ -24,7 +24,8 @@ module ApplicationHelper
     return "Price on request" unless price.present?
 
     exchange_rate = 130.0
-    country = user_country
+
+    # ✅ Default to KES unless overridden
     currency = session[:currency] || (
       case session[:payment_method]
       when "mpesa", "paystack"
@@ -32,7 +33,7 @@ module ApplicationHelper
       when "paypal"
         "USD"
       else
-        country == "kenya" ? "KES" : "USD"
+        user_country == "kenya" ? "KES" : "USD"
       end
     )
 
