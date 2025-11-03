@@ -58,6 +58,7 @@ gem "aws-sdk-s3", "~> 1.136"
 gem 'prawn-table'
 
 gem "sprockets-rails"
+gem 'mini_racer'
 
 gem 'prawn'
 

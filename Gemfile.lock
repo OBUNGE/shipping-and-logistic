@@ -268,6 +268,10 @@ GEM
     kaminari-core (1.2.2)
     lazy_high_charts (1.6.1)
       hash-deep-merge
+    libv8-node (24.1.0.0)
+    libv8-node (24.1.0.0-aarch64-linux)
+    libv8-node (24.1.0.0-x86_64-linux)
+    libv8-node (24.1.0.0-x86_64-linux-musl)
     logger (1.7.0)
     loofah (2.24.1)
       crass (~> 1.0.2)
@@ -282,6 +286,8 @@ GEM
     mini_magick (5.3.1)
       logger
     mini_mime (1.1.5)
+    mini_racer (0.19.1)
+      libv8-node (~> 24.1.0.0)
     minitest (5.26.0)
     monetize (1.13.0)
       money (~> 6.12)
@@ -604,6 +610,7 @@ DEPENDENCIES
   kaminari
   lazy_high_charts
   mini_magick
+  mini_racer
   money-rails
   paypal-checkout-sdk (~> 1.0)
   pg
