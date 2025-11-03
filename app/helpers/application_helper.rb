@@ -1,3 +1,4 @@
+# 📄 File: app/helpers/application_helper.rb
 module ApplicationHelper
   # ⭐ Render star ratings (full, half, empty)
   def render_stars(rating)
@@ -13,30 +14,29 @@ module ApplicationHelper
     stars_html.html_safe
   end
 
+  # 🌍 Cache user's country to avoid repeated GeoIP lookups
+  def user_country
+    session[:user_country] ||= request.location&.country.to_s.downcase.presence || "unknown"
+  end
+
   # 💱 Display price in correct currency
-def display_price(price, user: nil)
-  return "Price on request" unless price.present?
+  def display_price(price, user: nil)
+    return "Price on request" unless price.present?
 
-  exchange_rate = 130.0
+    exchange_rate = 130.0
+    country = user_country
 
-  case session[:payment_method]
-  when "mpesa", "paystack"
-    return number_to_currency(price * exchange_rate, unit: "KES ")
-  when "paypal"
-    return number_to_currency(price, unit: "$")
+    case session[:payment_method]
+    when "mpesa", "paystack"
+      number_to_currency(price * exchange_rate, unit: "KES ")
+    when "paypal"
+      number_to_currency(price, unit: "$")
+    else
+      if country == "kenya"
+        number_to_currency(price * exchange_rate, unit: "KES ")
+      else
+        number_to_currency(price, unit: "$")
+      end
+    end
   end
-
-  # Default by country (GeoIP only)
-  country = request.location&.country
-  if country&.downcase == "kenya"
-    number_to_currency(price * exchange_rate, unit: "KES ")
-  else
-    number_to_currency(price, unit: "$")
-  end
-end
-# 📄 File: app/helpers/application_helper.rb
-def user_country
-  session[:user_country] ||= request.location&.country.to_s.downcase.presence || "unknown"
-end
-
 end
