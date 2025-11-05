@@ -322,6 +322,10 @@
         ratesBox.innerHTML = `<span class="text-danger">Error fetching rates.</span>`;
       }
     }
+    countrySelect.addEventListener("change", fetchRates);
+    cityField.addEventListener("blur", fetchRates);
+  });
+</script>
 <style>
   .checkout-form label { color: #444; }
   .checkout-form input, .checkout-form textarea, .checkout-form select {
