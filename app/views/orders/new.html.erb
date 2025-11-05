@@ -185,80 +185,77 @@
           <h5>Shipping: <%= display_price(shipping_total, user: current_user) %></h5>
           <h4 class="text-success fw-bold">Grand Total: <%= display_price(grand_total, user: current_user) %></h4>
         </div>
+<%= form_with model: @order, local: true, html: { class: "checkout-form" } do |f| %>
+  <h4 class="mt-4 fw-semibold text-secondary border-bottom pb-2">Delivery Information</h4>
 
-        <%= form_with model: @order, local: true, html: { class: "checkout-form" } do |f| %>
-          <h4 class="mt-4 fw-semibold text-secondary border-bottom pb-2">Delivery Information</h4>
+  <div class="row">
+    <div class="col-md-6 mb-3">
+      <%= f.label :first_name, "First Name", class: "form-label fw-semibold" %>
+      <%= f.text_field :first_name, class: "form-control shadow-sm", required: true %>
+    </div>
+    <div class="col-md-6 mb-3">
+      <%= f.label :last_name, "Last Name", class: "form-label fw-semibold" %>
+      <%= f.text_field :last_name, class: "form-control shadow-sm", required: true %>
+    </div>
+  </div>
 
-          <%# *** FIXED: Re-added f.fields_for :shipment *** %>
-          <%= f.fields_for :shipment do |s| %>
-            <div class="row">
-              <div class="col-md-6 mb-3">
-                <%= s.label :first_name, "First Name", class: "form-label fw-semibold" %>
-                <%= s.text_field :first_name, class: "form-control shadow-sm", required: true %>
-              </div>
-              <div class="col-md-6 mb-3">
-                <%= s.label :last_name, "Last Name", class: "form-label fw-semibold" %>
-                <%= s.text_field :last_name, class: "form-control shadow-sm", required: true %>
-              </div>
-            </div>
+  <div class="row">
+    <div class="col-md-6 mb-3">
+      <%= f.label :phone_number, "Phone Number", class: "form-label fw-semibold" %>
+      <%= f.telephone_field :phone_number, value: current_user.phone, class: "form-control shadow-sm", placeholder: "e.g. 2547XXXXXXXX", required: true %>
+    </div>
+    <div class="col-md-6 mb-3">
+      <%= f.label :alternate_contact, "Alternate Contact (optional)", class: "form-label fw-semibold" %>
+      <%= f.telephone_field :alternate_contact, class: "form-control shadow-sm", placeholder: "e.g. 2547XXXXXXXX" %>
+    </div>
+  </div>
 
-            <div class="row">
-              <div class="col-md-6 mb-3">
-                <%= s.label :phone_number, "Phone Number", class: "form-label fw-semibold" %>
-                <%= s.telephone_field :phone_number, value: current_user.phone, class: "form-control shadow-sm", placeholder: "e.g. 2547XXXXXXXX", required: true %>
-              </div>
-              <div class="col-md-6 mb-3">
-                <%= s.label :alternate_contact, "Alternate Contact (optional)", class: "form-label fw-semibold" %>
-                <%= s.telephone_field :alternate_contact, class: "form-control shadow-sm", placeholder: "e.g. 2547XXXXXXXX" %>
-              </div>
-            </div>
+  <div class="row">
+    <div class="col-md-6 mb-3">
+      <%= f.label :city, "City / Town", class: "form-label fw-semibold" %>
+      <%= f.text_field :city, class: "form-control shadow-sm", id: "city-field-cart", required: true %>
+    </div>
+    <div class="col-md-6 mb-3">
+      <%= f.label :country, "Country", class: "form-label fw-semibold" %>
+      <%= f.select :country,
+            options_for_select(["Kenya", "Uganda", "Tanzania", "Other"], f.object&.country || "Kenya"),
+            {}, class: "form-select shadow-sm", id: "country-select-cart", required: true %>
+    </div>
+  </div>
 
-            <div class="row">
-              <div class="col-md-6 mb-3">
-                <%= s.label :city, "City / Town", class: "form-label fw-semibold" %>
-                <%= s.text_field :city, class: "form-control shadow-sm", id: "city-field-cart", required: true %>
-              </div>
-              <div class="col-md-6 mb-3">
-                <%= s.label :country, "Country", class: "form-label fw-semibold" %>
-                <%= s.select :country,
-                      options_for_select(["Kenya", "Uganda", "Tanzania", "Other"], s.object&.country || "Kenya"),
-                      {}, class: "form-select shadow-sm", id: "country-select-cart", required: true %>
-              </div>
-            </div>
+  <div class="row">
+    <div class="col-md-6 mb-3" id="county-wrapper-cart">
+      <%= f.label :county, "County (Kenya only)", class: "form-label fw-semibold" %>
+      <%= f.select :county,
+            options_for_select([
+              "Nairobi", "Mombasa", "Kisumu", "Nakuru", "Kiambu", "Machakos", "Uasin Gishu"
+            ], f.object&.county),
+            { prompt: "Select County" },
+            class: "form-select shadow-sm" %>
+    </div>
+    <div class="col-md-6 mb-3" id="region-wrapper-cart" style="display:none;">
+      <%= f.label :region, "Region / State", class: "form-label fw-semibold" %>
+      <%= f.text_field :region, class: "form-control shadow-sm", placeholder: "Enter your region" %>
+    </div>
+  </div>
 
-            <div class="row">
-              <div class="col-md-6 mb-3" id="county-wrapper-cart">
-                <%= s.label :county, "County (Kenya only)", class: "form-label fw-semibold" %>
-                <%= s.select :county,
-                      options_for_select([
-                        "Nairobi", "Mombasa", "Kisumu", "Nakuru", "Kiambu", "Machakos", "Uasin Gishu"
-                      ], s.object&.county),
-                      { prompt: "Select County" },
-                      class: "form-select shadow-sm" %>
-              </div>
-              <div class="col-md-6 mb-3" id="region-wrapper-cart" style="display:none;">
-                <%= s.label :region, "Region / State", class: "form-label fw-semibold" %>
-                <%= s.text_field :region, class: "form-control shadow-sm", placeholder: "Enter your region" %>
-              </div>
-            </div>
+  <div class="mb-3">
+    <%= f.label :address, "Delivery Address", class: "form-label fw-semibold" %>
+    <%= f.text_area :address, class: "form-control shadow-sm", rows: 3, required: true %>
+  </div>
 
-            <div class="mb-3">
-              <%= s.label :address, "Delivery Address", class: "form-label fw-semibold" %>
-              <%= s.text_area :address, class: "form-control shadow-sm", rows: 3, required: true %>
-            </div>
+  <div class="mb-3">
+    <%= f.label :delivery_notes, "Delivery Notes (optional)", class: "form-label fw-semibold" %>
+    <%= f.text_area :delivery_notes, class: "form-control shadow-sm", rows: 2, placeholder: "Gate code, floor, landmark..." %>
+  </div>
 
-            <div class="mb-3">
-              <%= s.label :delivery_notes, "Delivery Notes (optional)", class: "form-label fw-semibold" %>
-              <%= s.text_area :delivery_notes, class: "form-control shadow-sm", rows: 2, placeholder: "Gate code, floor, landmark..." %>
-            </div>
-          <% end %> <%# --- Closes f.fields_for :shipment --- %>
-
-          <div class="mb-3">
-            <h5 class="fw-semibold text-secondary">Available Shipping Rates</h5>
-            <div id="shipping-rates-cart" class="p-2 border rounded bg-light text-muted">
-              Select country and city to fetch DHL rates...
-            </div>
-          </div>
+  <div class="mb-3">
+    <h5 class="fw-semibold text-secondary">Available Shipping Rates</h5>
+    <div id="shipping-rates-cart" class="p-2 border rounded bg-light text-muted">
+      Select country and city to fetch DHL rates...
+    </div>
+  </div>
+<% end %>
 
           <h4 class="mt-4 fw-semibold text-secondary border-bottom pb-2">Payment Method</h4>
           <div class="form-check mb-3">
