@@ -1,14 +1,21 @@
+# app/controllers/shipments_controller.rb
 class ShipmentsController < ApplicationController
   before_action :authenticate_user!
   before_action :require_seller_or_admin, only: [:index]
   before_action :set_order, only: [:create, :show, :edit, :update, :track]
   before_action :set_shipment, only: [:show, :edit, :update, :track]
 
+  require 'httparty'
+
   # === GET /shipments ===
   def index
-    base_scope = current_user.admin? ? Shipment.includes(:order) : Shipment.joins(:order).where(orders: { seller_id: current_user.id })
-    @shipments = base_scope
+    base_scope = if current_user.admin?
+                   Shipment.includes(:order)
+                 else
+                   Shipment.joins(:order).where(orders: { seller_id: current_user.id })
+                 end
 
+    @shipments = base_scope
     @shipments = @shipments.where(status: params[:status]) if params[:status].present?
 
     if params[:query].present?
@@ -17,7 +24,9 @@ class ShipmentsController < ApplicationController
     end
 
     if params[:from].present? && params[:to].present?
-      @shipments = @shipments.where(created_at: params[:from]..params[:to])
+      from = Date.parse(params[:from]) rescue nil
+      to   = Date.parse(params[:to]) rescue nil
+      @shipments = @shipments.where(created_at: from.beginning_of_day..to.end_of_day) if from && to
     end
   end
 
@@ -37,7 +46,7 @@ class ShipmentsController < ApplicationController
     end
 
     @shipment = @order.build_shipment(
-      tracking_number: SecureRandom.hex(6).upcase,
+      tracking_number: SecureRandom.hex(6).upcase, # TODO: replace with DHL API response
       carrier: carrier,
       status: "pending",
       first_name: @order.first_name,
@@ -48,7 +57,6 @@ class ShipmentsController < ApplicationController
 
     if @shipment.save
       log_status_change(@shipment.status)
-      # ✅ Redirect to shipment details page instead of order page
       redirect_to order_shipment_path(@order), notice: "Shipment created successfully with #{carrier.upcase}!"
     else
       redirect_to order_shipment_path(@order), alert: "Shipment could not be created."
@@ -83,8 +91,7 @@ class ShipmentsController < ApplicationController
       end
 
     else
-      redirect_to order_shipment_path(@order), alert: "You are not authorized to create a shipment for this order."
-
+      redirect_to order_shipment_path(@order), alert: "You are not authorized to update this shipment."
     end
   end
 
@@ -103,8 +110,48 @@ class ShipmentsController < ApplicationController
     else
       flash[:alert] = "Tracking failed. Please try again later."
     end
-    # ✅ Always land on shipment details page
     redirect_to order_shipment_path(@order)
+  end
+
+  # === GET /shipments/rates ===
+  def rates
+    country = params[:country]
+    city    = params[:city]
+
+    response = HTTParty.post(
+      "https://api-mock.dhl.com/mydhlapi/rates", # replace with live endpoint
+      headers: {
+        "Content-Type"  => "application/json",
+        "DHL-API-Key"   => Rails.application.credentials.dhl[:api_key]
+      },
+      body: {
+        customerDetails: {
+          shipperDetails: {
+            postalCode: "00100",
+            cityName: "Nairobi",
+            countryCode: "KE"
+          },
+          receiverDetails: {
+            postalCode: "00000",
+            cityName: city,
+            countryCode: country
+          }
+        },
+        accounts: [
+          { number: Rails.application.credentials.dhl[:account_number], typeCode: "shipper" }
+        ],
+        productCode: "P", # Express Worldwide
+        plannedShippingDateAndTime: Time.now.utc.iso8601,
+        unitOfMeasurement: "metric",
+        isCustomsDeclarable: false
+      }.to_json
+    )
+
+    if response.success?
+      render json: response.parsed_response
+    else
+      render json: { error: "Unable to fetch DHL rates" }, status: :bad_request
+    end
   end
 
   private
@@ -116,16 +163,14 @@ class ShipmentsController < ApplicationController
       changed_by: current_user,
       changed_at: Time.current
     )
-
     ShipmentMailer.status_update(@shipment, new_status).deliver_later
   end
 
- def require_seller_or_admin
-  unless current_user.admin? || current_user.seller?
-    redirect_to root_path, alert: "You are not authorized to view shipments."
+  def require_seller_or_admin
+    unless current_user.admin? || current_user.seller?
+      redirect_to root_path, alert: "You are not authorized to view shipments."
+    end
   end
-end
-
 
   def set_order
     @order = Order.find(params[:order_id])
@@ -136,6 +181,7 @@ end
   end
 
   def shipment_params
-    params.require(:shipment).permit(:carrier, :tracking_number, :cost, :status, :first_name, :last_name, :address)
+    params.require(:shipment).permit(:carrier, :cost, :status, :first_name, :last_name, :address)
+    # tracking_number excluded if you want DHL to generate it
   end
 end
