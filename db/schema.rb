@@ -151,7 +151,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_05_124549) do
     t.string "mpesa_receipt"
     t.string "first_name"
     t.string "last_name"
-    t.text "delivery_address"
+    t.text "address"
     t.string "currency", default: "USD", null: false
     t.string "country"
     t.string "region"
