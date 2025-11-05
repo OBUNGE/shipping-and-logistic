@@ -146,7 +146,8 @@
               options_for_select([["USD", "USD"], ["KES", "KES"]], selected: "USD"),
               {}, class: "form-select shadow-sm" %>
           </div>
-<%= form_with model: @order, local: true do |f| %>
+<% if @cart.present? %>
+  <%= form_with model: @order, local: true do |f| %>
   <!-- 🧾 Delivery Info -->
   <h4 class="mt-4 fw-semibold text-secondary border-bottom pb-2">Delivery Information</h4>
 
