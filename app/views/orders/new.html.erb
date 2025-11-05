@@ -211,8 +211,8 @@
     </div>
 
     <%= f.submit "Confirm & Pay", class: "btn btn-success w-100 fw-bold py-2 shadow-sm" %>
-  <% end %>
- <!-- closes the outer if/elsif -->
+ 
+
 <% elsif @order.present? %>
   <!-- ================== CART CHECKOUT FORM ================== -->         
           
@@ -298,6 +298,8 @@
         Select country and city to fetch DHL rates...
       </div>
     </div>
+    <% end %>
+    
 
     <!-- 💳 Payment Method -->
     <h4 class="mt-4 fw-semibold text-secondary border-bottom pb-2">Payment Method</h4>
