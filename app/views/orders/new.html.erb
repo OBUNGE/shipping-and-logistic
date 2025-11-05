@@ -207,7 +207,7 @@
           <div class="mb-3">
             <%= f.label :currency, "Choose Currency", class: "form-label fw-semibold" %>
             <%= f.select :currency,
-              options_for_select([["USD", "USD"], ["KES", "KES"]], selected: "USD"),
+              options_for_select([["USD", "USD"], ["KES", "KES"]], selected: "KES"),
               {}, class: "form-select shadow-sm" %>
           </div>
           <%= f.submit "Confirm & Pay", class: "btn btn-success w-100 fw-bold py-2 shadow-sm" %>

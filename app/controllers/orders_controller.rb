@@ -14,12 +14,12 @@ class OrdersController < ApplicationController
   # === GET /orders/new ===
   def new
     if params[:product_id].present?
-      # Single product checkout
+      # --- Single product checkout ---
       @product = Product.find(params[:product_id])
-      @order = current_user.orders_as_buyer.new
+      @order   = current_user.orders_as_buyer.new
       @order.build_shipment
     else
-      # Cart checkout
+      # --- Cart checkout ---
       if session[:cart].blank?
         redirect_to cart_path, alert: "Your cart is empty." and return
       end
@@ -30,12 +30,12 @@ class OrdersController < ApplicationController
         final_price = product.price + (variant&.price_modifier || 0)
 
         {
-          product: product,
-          variant: variant,
-          quantity: item["quantity"].to_i,
+          product:   product,
+          variant:   variant,
+          quantity:  item["quantity"].to_i,
           unit_price: final_price,
-          subtotal: final_price * item["quantity"].to_i,
-          shipping: (product.shipping_cost || 0) * item["quantity"].to_i
+          subtotal:   final_price * item["quantity"].to_i,
+          shipping:  (product.shipping_cost || 0) * item["quantity"].to_i
         }
       end
 
@@ -46,7 +46,7 @@ class OrdersController < ApplicationController
 
   # === POST /orders ===
   def create
-    @order = current_user.orders_as_buyer.build(order_params)
+    @order       = current_user.orders_as_buyer.build(order_params)
     provider     = order_params[:provider] || "mpesa"
     phone_number = order_params[:phone_number].presence || current_user.phone
 
@@ -104,7 +104,8 @@ class OrdersController < ApplicationController
     end
   rescue ActiveRecord::RecordInvalid => e
     Rails.logger.error("⚠️ Order Creation Failed: #{e.record.errors.full_messages.join(', ')}")
-    redirect_to new_order_path(product_id: params[:product_id]), alert: "Failed to create order: #{e.record.errors.full_messages.join(', ')}"
+    redirect_to new_order_path(product_id: params[:product_id]),
+                alert: "Failed to create order: #{e.record.errors.full_messages.join(', ')}"
   end
 
   # === GET /orders/:id/receipt ===
@@ -159,12 +160,14 @@ class OrdersController < ApplicationController
 
   def build_order_items(order, product, variant, quantity)
     base_price = product.price + (variant&.price_modifier || 0)
-    subtotal   = ExchangeRateService.convert(base_price * quantity, from: product.currency, to: order.currency)
+    subtotal   = ExchangeRateService.convert(base_price * quantity,
+                                             from: product.currency,
+                                             to: order.currency)
     shipping   = (product.shipping_cost || 0) * quantity
 
     order.order_items.build(
-      product: product,
-      variant: variant,
+      product:  product,
+      variant:  variant,
       quantity: quantity,
       subtotal: subtotal,
       shipping: shipping
@@ -189,7 +192,8 @@ class OrdersController < ApplicationController
       phone_number: phone_number,
       currency: order.currency,
       return_url: order_url(order),
-      callback_url: mpesa_callback_url(order_id: order.id, host: ENV["APP_HOST"] || "shipping-and-logistic-wuo1.onrender.com")
+      callback_url: mpesa_callback_url(order_id: order.id,
+                                       host: ENV["APP_HOST"] || "shipping-and-logistic-wuo1.onrender.com")
     )
 
     respond_to do |format|
