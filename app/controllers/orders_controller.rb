@@ -17,7 +17,7 @@ class OrdersController < ApplicationController
       # --- Single product checkout ---
       @product = Product.find(params[:product_id])
       @order   = current_user.orders_as_buyer.new
-      @order.build_shipment
+      # no shipment built here; seller will create shipment later
     else
       # --- Cart checkout ---
       if session[:cart].blank?
@@ -40,7 +40,7 @@ class OrdersController < ApplicationController
       end
 
       @order = current_user.orders_as_buyer.new
-      @order.build_shipment
+      # no shipment built here either
     end
   end
 
@@ -49,13 +49,6 @@ class OrdersController < ApplicationController
     @order       = current_user.orders_as_buyer.build(order_params)
     provider     = order_params[:provider] || "mpesa"
     phone_number = order_params[:phone_number].presence || current_user.phone
-
-      # Ensure shipment exists
-  @order.build_shipment unless @order.shipment
-
-  # ✅ Set required shipment fields
-  @order.shipment.carrier ||= "dhl"
-  @order.shipment.tracking_number ||= SecureRandom.hex(6).upcase
 
     if params[:product_id].present?
       # --- Single product checkout ---
@@ -185,10 +178,9 @@ class OrdersController < ApplicationController
   def order_params
     params.require(:order).permit(
       :currency, :provider, :phone_number,
-      shipment_attributes: [
-        :first_name, :last_name, :phone_number, :alternate_contact,
-        :city, :county, :country, :region, :address, :delivery_notes
-      ]
+      # no shipment_attributes here, since seller creates shipment later
+      :first_name, :last_name, :phone_number, :alternate_contact,
+      :city, :county, :country, :region, :address, :delivery_notes
     )
   end
 
