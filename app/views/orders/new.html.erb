@@ -174,7 +174,7 @@
 <div class="row">
   <div class="col-md-6 mb-3">
     <%= f.label :city, "City / Town", class: "form-label fw-semibold" %>
-    <%= f.text_field :city, class: "form-control shadow-sm", required: true %>
+    <%= f.text_field :city, class: "form-control shadow-sm", id: "city-field", required: true %>
   </div>
   <div class="col-md-6 mb-3">
     <%= f.label :county, "County / Region", class: "form-label fw-semibold" %>
@@ -214,6 +214,14 @@
 <div class="mb-3">
   <%= f.label :delivery_notes, "Delivery Notes (optional)", class: "form-label fw-semibold" %>
   <%= f.text_area :delivery_notes, class: "form-control shadow-sm", rows: 2, placeholder: "Gate code, floor, landmark..." %>
+</div>
+
+<!-- 🚚 DHL Rates Preview -->
+<div class="mb-3">
+  <h5 class="fw-semibold text-secondary">Available Shipping Rates</h5>
+  <div id="shipping-rates" class="p-2 border rounded bg-light text-muted">
+    Select country and city to fetch DHL rates...
+  </div>
 </div>
 
 <!-- 💳 Payment Method -->
@@ -264,7 +272,6 @@
         phoneField.style.display = "none";
       }
     }
-
     [mpesaRadio, paypalRadio, paystackRadio].forEach(radio => {
       if (radio) radio.addEventListener("change", togglePhoneField);
     });
@@ -284,9 +291,40 @@
         regionWrapper.style.display = "block";
       }
     }
-
     countrySelect.addEventListener("change", toggleFields);
-    toggleFields(); // run once on page load
+    toggleFields();
+
+    // DHL Rates Fetch
+    const cityField = document.getElementById("city-field");
+    const ratesBox = document.getElementById("shipping-rates");
+
+    async function fetchRates() {
+      const country = countrySelect.value;
+      const city = cityField.value;
+      if (!country || !city) return;
+
+      ratesBox.innerHTML = "Fetching DHL rates...";
+      try {
+        const response = await fetch(`/shipping/rates?country=${country}&city=${city}`);
+        const data = await response.json();
+        if (data.error) {
+          ratesBox.innerHTML = `<span class="text-danger">${data.error}</span>`;
+        } else {
+          // Simplify display: show first few services
+          let html = "<ul class='list-unstyled mb-0'>";
+          (data.products || []).forEach(rate => {
+            html += `<li><strong>${rate.productName}</strong>: ${rate.totalPrice[0].price} ${rate.totalPrice[0].currency}</li>`;
+          });
+          html += "</ul>";
+          ratesBox.innerHTML = html || "No rates available.";
+        }
+      } catch (err) {
+        ratesBox.innerHTML = "<span class='text-danger'>Error fetching rates.</span>";
+      }
+    }
+
+    countrySelect.addEventListener("change", fetchRates);
+    cityField.addEventListener("blur", fetchRates);
   });
 </script>
 
