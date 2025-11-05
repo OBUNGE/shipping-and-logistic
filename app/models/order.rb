@@ -5,13 +5,12 @@ class Order < ApplicationRecord
   has_many   :order_items, dependent: :destroy
   has_one    :payment,     dependent: :destroy
   has_one    :shipment,    dependent: :destroy
-  has_many :payments, dependent: :destroy
 
+  accepts_nested_attributes_for :shipment
 
   # === Validations ===
   validates :buyer, :seller, presence: true
   validates :total, numericality: { greater_than: 0 }
-  validates :delivery_address, presence: true
   validates :currency, inclusion: { in: %w[USD KES] }
 
   # === Searchable attributes for Ransack (Admin filtering) ===
@@ -61,7 +60,6 @@ class Order < ApplicationRecord
   end
 
   # === Currency helpers ===
-  # Store totals in USD internally, convert when needed
   def total_in_usd
     total
   end
