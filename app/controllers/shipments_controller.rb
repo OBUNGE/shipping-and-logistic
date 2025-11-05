@@ -51,7 +51,7 @@ class ShipmentsController < ApplicationController
       status: "pending",
       first_name: @order.first_name,
       last_name:  @order.last_name,
-      address:    @order.delivery_address,
+      address:    @order.address,
       cost:       params[:cost]
     )
 
