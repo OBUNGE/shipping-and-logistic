@@ -181,6 +181,30 @@
               <%= f.text_field :county, class: "form-control shadow-sm" %>
             </div>
           </div>
+          <div class="row">
+  <div class="col-md-6 mb-3">
+    <%= f.label :country, "Country", class: "form-label fw-semibold" %>
+    <%= f.select :country,
+          options_for_select(["Kenya", "Uganda", "Tanzania", "Other"], f.object.country || "Kenya"),
+          {}, class: "form-select shadow-sm", id: "country-select", required: true %>
+  </div>
+
+  <div class="col-md-6 mb-3" id="county-wrapper">
+    <%= f.label :county, "County (Kenya only)", class: "form-label fw-semibold" %>
+    <%= f.select :county,
+          options_for_select([
+            "Nairobi", "Mombasa", "Kisumu", "Nakuru", "Kiambu", "Machakos", "Uasin Gishu"
+          ], f.object.county),
+          { prompt: "Select County" },
+          class: "form-select shadow-sm" %>
+  </div>
+</div>
+
+<div class="mb-3" id="region-wrapper" style="display:none;">
+  <%= f.label :region, "Region / State", class: "form-label fw-semibold" %>
+  <%= f.text_field :region, class: "form-control shadow-sm", placeholder: "Enter your region" %>
+</div>
+
 
           <div class="mb-3">
             <%= f.label :delivery_address, "Delivery Address", class: "form-label fw-semibold" %>
@@ -227,6 +251,7 @@
   
 <!-- Payment method toggle script -->
 <script>
+
   document.addEventListener("DOMContentLoaded", function() {
     const mpesaRadio = document.getElementById("provider_mpesa") || document.getElementById("provider_mpesa_cart");
     const paypalRadio = document.getElementById("provider_paypal") || document.getElementById("provider_paypal_cart");
@@ -247,7 +272,23 @@
 
     togglePhoneField();
   });
-</script>
+  // Country and County/Region toggle
+  document.addEventListener("DOMContentLoaded", function() {
+    const countrySelect = document.getElementById("country-select");
+    const countyWrapper = document.getElementById("county-wrapper");
+    const regionWrapper = document.getElementById("region-wrapper");
+    countrySelect.addEventListener("change", function() {
+      if (this.value === "Kenya") {
+        countyWrapper.style.display = "block";
+        regionWrapper.style.display = "none";
+      } else {
+        countyWrapper.style.display = "none";
+        regionWrapper.style.display = "block";
+      }
+    });
+    // Trigger change event on page load to set initial state
+    countrySelect.dispatchEvent(new Event("change"));
+  });
 
 <style>
   .checkout-form label { color: #444; }

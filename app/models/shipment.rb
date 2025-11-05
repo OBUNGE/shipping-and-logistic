@@ -27,7 +27,7 @@ class Shipment < ApplicationRecord
   validates :status, presence: true
   validates :carrier, presence: true
   validates :tracking_number, presence: true, uniqueness: true
-  validates :first_name, :last_name, :address, presence: true
+   validates :first_name, :last_name, :phone_number, :country, :city, :delivery_address, presence: true
 
   # ✅ Fix for Formtastic error: use greater_than_or_equal_to
   validates :cost, numericality: { greater_than_or_equal_to: 0.01 }, allow_nil: true
