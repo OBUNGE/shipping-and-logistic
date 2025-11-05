@@ -48,7 +48,7 @@
           <div class="mb-3">
             <%= f.label :currency, "Choose Currency", class: "form-label fw-semibold" %>
             <%= f.select :currency,
-              options_for_select([["USD", "USD"], ["KES", "KES"]], selected: "USD"),
+              options_for_select([["USD", "USD"], ["KES", "KES"]], selected: "KES"),
               {}, class: "form-select shadow-sm" %>
           </div>
 
@@ -154,65 +154,6 @@
     
 
 
-
-      <% elsif @cart_items.present? %>
-        <!-- ================== CART CHECKOUT ================== -->
-        <div class="table-responsive mb-4">
-          <table class="table table-bordered align-middle">
-            <thead class="table-light">
-              <tr>
-                <th>Product</th>
-                <th>Variant</th>
-                <th>Qty</th>
-                <th>Unit Price</th>
-                <th>Subtotal</th>
-                <th>Shipping</th>
-              </tr>
-            </thead>
-            <tbody>
-              <% @cart_items.each do |item| %>
-                <% product = item[:product] %>
-                <% variant = item[:variant] %>
-                <% shipping_cost = item[:shipping] || 0 %>
-                <tr>
-                  <td><%= product.title %></td>
-                  <td>
-                    <% if variant %>
-                      <span class="badge bg-info text-dark"><%= "#{variant.name}: #{variant.value}" %></span>
-                    <% else %>
-                      <span class="text-muted">—</span>
-                    <% end %>
-                  </td>
-                  <td><%= item[:quantity] %></td>
-                  <td><%= display_price(item[:unit_price], user: current_user) %></td>
-                  <td><%= display_price(item[:subtotal], user: current_user) %></td>
-                  <td><%= display_price(shipping_cost, user: current_user) %></td>
-                </tr>
-              <% end %>
-            </tbody>
-          </table>
-        </div>
-
-        <% subtotal = @cart_items.sum { |i| i[:subtotal] } %>
-        <% shipping_total = @cart_items.sum { |i| i[:shipping] || 0 } %>
-        <% grand_total = subtotal + shipping_total %>
-
-        <div class="mb-4">
-          <h5>Subtotal: <%= display_price(subtotal, user: current_user) %></h5>
-          <h5>Shipping: <%= display_price(shipping_total, user: current_user) %></h5>
-          <h4 class="text-success fw-bold">Grand Total: <%= display_price(grand_total, user: current_user) %></h4>
-        </div>
-
-        <%= form_with url: orders_path, method: :post, local: true, html: { class: "checkout-form" } do |f| %>
-          <div class="mb-3">
-            <%= f.label :currency, "Choose Currency", class: "form-label fw-semibold" %>
-            <%= f.select :currency,
-              options_for_select([["USD", "USD"], ["KES", "KES"]], selected: "KES"),
-              {}, class: "form-select shadow-sm" %>
-          </div>
-          <%= f.submit "Confirm & Pay", class: "btn btn-success w-100 fw-bold py-2 shadow-sm" %>
-        <% end %>
-
       <% elsif @order.present? && @cart.present? %>
         <!-- ================== CART CHECKOUT FORM WITH SHIPMENT ================== -->
         <%= form_with model: @order, local: true do |f| %>
@@ -314,7 +255,7 @@
 
           <%= f.submit "Confirm & Pay", class: "btn btn-success w-100 fw-bold py-2 shadow-sm" %>
         <% end %> <!-- closes form_with @order -->
-      
+
       <% else %>
         <!-- ================== EMPTY CART ================== -->
         <p class="text-muted fs-5">Your cart is empty.</p>
@@ -324,6 +265,7 @@
     </div>
   </div>
 </div>
+
 
 
 <!-- ✅ Clean JavaScript -->
