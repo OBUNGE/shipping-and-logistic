@@ -295,7 +295,7 @@
     countrySelect.addEventListener("change", toggleFields);
     toggleFields();
 
-    // DHL Rates Fetch
+       // DHL Rates Fetch
     const cityField = document.getElementById("city-field");
     const ratesBox = document.getElementById("shipping-rates");
 
@@ -313,19 +313,21 @@
         } else {
           let html = "<ul class='list-unstyled mb-0'>";
           (data.products || []).forEach(rate => {
-            html += `<li><strong>${rate.productName}</strong>: ${rate.totalPrice[0].price} ${rate.totalPrice[0].currency} (Delivery: ${rate.deliveryTime})</li>`;
+            html += `<li><strong>${rate.productName}</strong>: ${rate.totalPrice[0].price} ${rate.totalPrice[0].currency}</li>`;
           });
           html += "</ul>";
-          ratesBox.innerHTML = html;
+          ratesBox.innerHTML = html || "No rates available.";
         }
-      } catch (error) {
-        ratesBox.innerHTML = `<span class="text-danger">Error fetching rates.</span>`;
+      } catch (err) {
+        ratesBox.innerHTML = "<span class='text-danger'>Error fetching rates.</span>";
       }
     }
+
     countrySelect.addEventListener("change", fetchRates);
     cityField.addEventListener("blur", fetchRates);
   });
 </script>
+
 <style>
   .checkout-form label { color: #444; }
   .checkout-form input, .checkout-form textarea, .checkout-form select {
