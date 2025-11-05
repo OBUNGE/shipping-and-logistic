@@ -30,12 +30,12 @@ class OrdersController < ApplicationController
         final_price = product.price + (variant&.price_modifier || 0)
 
         {
-          product:   product,
-          variant:   variant,
-          quantity:  item["quantity"].to_i,
+          product:    product,
+          variant:    variant,
+          quantity:   item["quantity"].to_i,
           unit_price: final_price,
           subtotal:   final_price * item["quantity"].to_i,
-          shipping:  (product.shipping_cost || 0) * item["quantity"].to_i
+          shipping:   (product.shipping_cost || 0) * item["quantity"].to_i
         }
       end
 
