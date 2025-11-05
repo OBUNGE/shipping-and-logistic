@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_05_070331) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_05_120957) do
   create_schema "auth"
   create_schema "extensions"
   create_schema "graphql"
@@ -254,6 +254,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_05_070331) do
     t.string "first_name"
     t.string "last_name"
     t.text "address"
+    t.string "alternate_contact"
     t.index ["order_id"], name: "index_shipments_on_order_id"
   end
 
