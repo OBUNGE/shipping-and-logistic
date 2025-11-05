@@ -150,6 +150,52 @@
 
           <%= f.submit "Confirm & Pay", class: "btn btn-success w-100 fw-bold py-2 shadow-sm" %>
         <% end %>
+
+
+
+
+      <% if @cart_items.present? %>
+        <!-- ================== CART SUMMARY ================== -->
+        <div class="table-responsive mb-4">
+          <table class="table table-bordered align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>Product</th>
+                <th>Variant</th>
+                <th>Qty</th>
+                <th>Unit Price</th>
+                <th>Subtotal</th>
+                <th>Shipping</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @cart_items.each do |item| %>
+                <% product = item[:product] %>
+                <% variant = item[:variant] %>
+                <% shipping_cost = item[:shipping] || 0 %>
+                <tr>
+                  <td><%= product.title %></td>
+                  <td><%= variant ? "#{variant.name}: #{variant.value}" : "—" %></td>
+                  <td><%= item[:quantity] %></td>
+                  <td><%= display_price(item[:unit_price], user: current_user) %></td>
+                  <td><%= display_price(item[:subtotal], user: current_user) %></td>
+                  <td><%= display_price(shipping_cost, user: current_user) %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+
+        <% subtotal = @cart_items.sum { |i| i[:subtotal] } %>
+        <% shipping_total = @cart_items.sum { |i| i[:shipping] || 0 } %>
+        <% grand_total = subtotal + shipping_total %>
+
+        <div class="mb-4">
+          <h5>Subtotal: <%= display_price(subtotal, user: current_user) %></h5>
+          <h5>Shipping: <%= display_price(shipping_total, user: current_user) %></h5>
+          <h4 class="text-success fw-bold">Grand Total: <%= display_price(grand_total, user: current_user) %></h4>
+        </div>
+      <% end %>
       
     
 <% elsif @order.present? %>
