@@ -50,6 +50,13 @@ class OrdersController < ApplicationController
     provider     = order_params[:provider] || "mpesa"
     phone_number = order_params[:phone_number].presence || current_user.phone
 
+      # Ensure shipment exists
+  @order.build_shipment unless @order.shipment
+
+  # ✅ Set required shipment fields
+  @order.shipment.carrier ||= "dhl"
+  @order.shipment.tracking_number ||= SecureRandom.hex(6).upcase
+
     if params[:product_id].present?
       # --- Single product checkout ---
       product  = Product.find(params[:product_id])
