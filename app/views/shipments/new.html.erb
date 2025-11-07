@@ -1,0 +1,23 @@
+<h2>New Shipment for Order <%= @order.id %></h2>
+
+<%= form_with model: [@order, @shipment], local: true do |f| %>
+  <div class="mb-3">
+    <%= f.label :carrier %>
+    <%= f.select :carrier, Shipment.carriers.keys.map { |c| [c.titleize, c] }, {}, class: "form-select" %>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :cost %>
+    <%= f.number_field :cost, step: 0.01, class: "form-control" %>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :address %>
+    <%= f.text_area :address, value: @order.address, class: "form-control" %>
+  </div>
+
+  <%= f.submit "Create Shipment", class: "btn btn-primary" %>
+<% end %>
+<div class="mt-4">
+  <%= link_to "← Back to Orders", orders_path, class: "btn btn-sm btn-outline-secondary" %>
+</div>

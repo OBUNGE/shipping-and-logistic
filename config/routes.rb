@@ -41,25 +41,26 @@ post "set_currency", to: "settings#set_currency", as: :set_currency
 
 
   # === Orders and nested payment/shipment routes ===
-  resources :orders, only: [:index, :show, :new, :create] do
-    resources :order_items, only: [:create, :destroy]
+resources :orders, only: [:index, :show, :new, :create] do
+  resources :order_items, only: [:create, :destroy]
 
-    resources :payments, only: [:create] do
-      collection do
-        match :paystack_callback, via: [:get, :post]
-        get   :paypal_callback,   via: [:get, :post]
-      end
-    end
-
-    resource :shipment, only: [:create, :show, :edit, :update] do
-      post :track, on: :member
-    end
-
-    resources :notifications, only: [:index]
-    member do
-      get :receipt
+  resources :payments, only: [:create] do
+    collection do
+      match :paystack_callback, via: [:get, :post]
+      get   :paypal_callback,   via: [:get, :post]
     end
   end
+
+  resource :shipment, only: [:new, :create, :show, :edit, :update] do
+    post :track, on: :member
+  end
+
+  resources :notifications, only: [:index]
+  member do
+    get :receipt
+  end
+end
+
 
   # === Other resources ===
   resources :shipments, only: [:index]

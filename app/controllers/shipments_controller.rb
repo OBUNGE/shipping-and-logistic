@@ -155,6 +155,9 @@ Rails.logger.info "DEBUG: @order.attributes = #{@order.attributes.inspect}" if @
       render json: { error: "Unable to fetch DHL rates" }, status: :bad_request
     end
   end
+def new
+  @shipment = @order.build_shipment
+end
 
   private
 
