@@ -47,15 +47,19 @@ class ShipmentsController < ApplicationController
 Rails.logger.info "DEBUG: @order.class = #{@order.class}"
 Rails.logger.info "DEBUG: @order.attributes = #{@order.attributes.inspect}" if @order.respond_to?(:attributes)
 
-    @shipment = @order.build_shipment(
-      tracking_number: SecureRandom.hex(6).upcase, # TODO: replace with DHL API response
-      carrier: carrier,
-      status: "pending",
-      first_name: @order.first_name,
-      last_name:  @order.last_name,
-      address:    @order.address,
-      cost:       params[:cost]
-    )
+@shipment = @order.build_shipment(
+  tracking_number: SecureRandom.hex(6).upcase,
+  carrier: carrier,
+  status: "pending",
+  first_name: @order.first_name,
+  last_name:  @order.last_name,
+  phone_number: @order.phone_number,   # <-- add this
+  country: @order.country,             # <-- add this
+  city: @order.city,                   # <-- add this
+  address: @order.address,
+  cost: params[:cost]
+)
+
 
     if @shipment.save
       log_status_change(@shipment.status)
