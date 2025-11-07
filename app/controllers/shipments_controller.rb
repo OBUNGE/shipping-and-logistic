@@ -61,12 +61,13 @@ Rails.logger.info "DEBUG: @order.attributes = #{@order.attributes.inspect}" if @
 )
 
 
-    if @shipment.save
-      log_status_change(@shipment.status)
-      redirect_to order_shipment_path(@order), notice: "Shipment created successfully with #{carrier.upcase}!"
-    else
-      redirect_to order_shipment_path(@order), alert: "Shipment could not be created."
-    end
+if @shipment.save
+  redirect_to order_shipment_path(@order), notice: "Shipment created successfully!"
+else
+  Rails.logger.debug "Shipment errors: #{@shipment.errors.full_messages}"
+  redirect_to order_shipment_path(@order), alert: "Shipment could not be created: #{@shipment.errors.full_messages.join(', ')}"
+end
+
   end
 
   # === GET /orders/:order_id/shipment ===
