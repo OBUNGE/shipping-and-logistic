@@ -51,7 +51,7 @@ resources :orders, only: [:index, :show, :new, :create] do
     end
   end
 
-  resource :shipment, only: [:new, :create, :show, :edit, :update] do
+  resource :shipments, only: [:new, :create, :show, :edit, :update] do
     post :track, on: :member
   end
 
