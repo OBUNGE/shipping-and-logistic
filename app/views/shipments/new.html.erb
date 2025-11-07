@@ -1,6 +1,6 @@
 <h2>New Shipment for Order <%= @order.id %></h2>
 
-<%= form_with model: [@order, @shipment], local: true do |f| %>
+<%= form_with model: @shipment, url: order_shipment_path(@order), local: true do |f| %>
   <div class="mb-3">
     <%= f.label :carrier %>
     <%= f.select :carrier, Shipment.carriers.keys.map { |c| [c.titleize, c] }, {}, class: "form-select" %>
