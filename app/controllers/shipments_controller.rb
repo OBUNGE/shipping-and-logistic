@@ -44,6 +44,8 @@ class ShipmentsController < ApplicationController
     unless Shipment.carriers.keys.include?(carrier)
       redirect_to order_shipment_path(@order), alert: "Invalid carrier. Only DHL is supported." and return
     end
+Rails.logger.info "DEBUG: @order.class = #{@order.class}"
+Rails.logger.info "DEBUG: @order.attributes = #{@order.attributes.inspect}" if @order.respond_to?(:attributes)
 
     @shipment = @order.build_shipment(
       tracking_number: SecureRandom.hex(6).upcase, # TODO: replace with DHL API response
