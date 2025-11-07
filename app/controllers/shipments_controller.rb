@@ -3,7 +3,7 @@ class ShipmentsController < ApplicationController
   before_action :authenticate_user!
   before_action :require_seller_or_admin, only: [:index]
   before_action :set_order, only: [:create, :show, :edit, :update, :track]
-  before_action :set_shipment, only: [:show, :edit, :update, :track]
+  before_action :set_order, only: [:new, :create, :show, :edit, :update, :track]
 
   require 'httparty'
 
