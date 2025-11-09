@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_09_124105) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_09_135607) do
   create_schema "auth"
   create_schema "extensions"
   create_schema "graphql"
@@ -177,7 +177,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_09_124105) do
 
   create_table "payments", force: :cascade do |t|
     t.bigint "order_id", null: false
-    t.bigint "user_id", null: false
+    t.bigint "user_id"
     t.decimal "amount", precision: 12, scale: 2
     t.string "provider"
     t.string "status", default: "pending"
@@ -187,6 +187,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_09_124105) do
     t.string "checkout_request_id"
     t.string "mpesa_receipt_number"
     t.string "currency", default: "USD", null: false
+    t.string "guest_email"
+    t.string "guest_phone"
     t.index ["checkout_request_id"], name: "index_payments_on_checkout_request_id", unique: true
     t.index ["mpesa_receipt_number"], name: "index_payments_on_mpesa_receipt_number", unique: true
     t.index ["order_id"], name: "index_payments_on_order_id"
