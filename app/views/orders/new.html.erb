@@ -270,7 +270,11 @@
 
 <div class="mb-3" id="mpesa_phone_field_cart">
   <%= f.label :mpesa_phone, "M-PESA Phone Number", class: "form-label fw-semibold" %>
-  <%= f.telephone_field :mpesa_phone, value: current_user.phone, class: "form-control shadow-sm", placeholder: "e.g. 2547XXXXXXXX" %>
+  <%= f.telephone_field :mpesa_phone,
+      value: (current_user&.phone || ""),
+      class: "form-control shadow-sm",
+      placeholder: "e.g. 2547XXXXXXXX" %>
+
 </div>
 
 <div class="form-check mb-3">
