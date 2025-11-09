@@ -3,7 +3,7 @@ class Order < ApplicationRecord
   belongs_to :buyer,  class_name: "User"
   belongs_to :seller, class_name: "User"
   has_many   :order_items, dependent: :destroy
-  has_one    :payments,     dependent: :destroy
+  has_many   :payments, class_name: "Payment", dependent: :destroy 
   has_one    :shipment,    dependent: :destroy
 
   accepts_nested_attributes_for :shipment
