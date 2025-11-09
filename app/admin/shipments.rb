@@ -13,7 +13,7 @@ ActiveAdmin.register Shipment do
     column :cost
     column :first_name
     column :last_name
-    column :phone_number
+   
     column :address
     column :city
     column :county
