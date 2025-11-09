@@ -3,6 +3,7 @@ class ShipmentsController < ApplicationController
   before_action :authenticate_user!
   before_action :require_seller_or_admin, only: [:index]
   before_action :set_order, only: [:new, :create, :show, :edit, :update, :track]
+  before_action :set_shipment, only: [:show, :edit, :update, :track]
 
   require 'httparty'
 
@@ -29,54 +30,58 @@ class ShipmentsController < ApplicationController
     end
   end
 
+  # === GET /orders/:order_id/shipment/new ===
+  def new
+    @shipment = @order.build_shipment
+  end
+
   # === POST /orders/:order_id/shipment ===
   def create
     unless current_user == @order.seller
       redirect_to order_shipment_path(@order), alert: "You are not authorized to create a shipment for this order." and return
     end
 
-latest_payment = @order.payments.last
-
-if latest_payment.nil? || latest_payment.status != "paid"
-  redirect_to order_shipment_path(@order), alert: "Shipment can only be created after payment." and return
-end
+    latest_payment = @order.payments.last
+    if latest_payment.nil? || latest_payment.status != "paid"
+      redirect_to order_shipment_path(@order), alert: "Shipment can only be created after payment." and return
+    end
 
     carrier = params[:carrier].to_s.strip.downcase.presence || "dhl"
     unless Shipment.carriers.keys.include?(carrier)
       redirect_to order_shipment_path(@order), alert: "Invalid carrier. Only DHL is supported." and return
     end
-Rails.logger.info "DEBUG: @order.class = #{@order.class}"
-Rails.logger.info "DEBUG: @order.attributes = #{@order.attributes.inspect}" if @order.respond_to?(:attributes)
 
-@shipment = @order.build_shipment(
-  tracking_number: SecureRandom.hex(6).upcase,
-  carrier: carrier,
-  status: "pending",
-  first_name: @order.first_name,
-  last_name:  @order.last_name,
-  phone_number: @order.phone_number,   # <-- add this
-  country: @order.country,             # <-- add this
-  city: @order.city,                   # <-- add this
-  address: @order.address,
-  cost: params[:cost]
-)
+    @shipment = @order.build_shipment(
+      tracking_number: SecureRandom.hex(6).upcase,
+      carrier: carrier,
+      status: "pending",
+      first_name: @order.first_name,
+      last_name:  @order.last_name,
+      phone_number: @order.phone_number,
+      country: @order.country,
+      city: @order.city,
+      address: @order.address,
+      cost: params[:cost]
+    )
 
-
-if @shipment.save
-  redirect_to order_shipment_path(@order), notice: "Shipment created successfully!"
-else
-  Rails.logger.debug "Shipment errors: #{@shipment.errors.full_messages}"
-  redirect_to order_shipment_path(@order), alert: "Shipment could not be created: #{@shipment.errors.full_messages.join(', ')}"
-end
-
+    if @shipment.save
+      redirect_to order_shipment_path(@order), notice: "Shipment created successfully!"
+    else
+      Rails.logger.debug "Shipment errors: #{@shipment.errors.full_messages}"
+      redirect_to order_shipment_path(@order), alert: "Shipment could not be created: #{@shipment.errors.full_messages.join(', ')}"
+    end
   end
 
   # === GET /orders/:order_id/shipment ===
-  def show; end
+  def show
+    # @shipment is set by before_action
+  end
 
   # === GET /orders/:order_id/shipment/edit ===
   def edit
-    redirect_to order_shipment_path(@order), alert: "You are not authorized to edit this shipment." unless current_user == @order.seller
+    unless current_user == @order.seller
+      redirect_to order_shipment_path(@order), alert: "You are not authorized to edit this shipment."
+    end
   end
 
   # === PATCH/PUT /orders/:order_id/shipment ===
@@ -161,9 +166,6 @@ end
       render json: { error: "Unable to fetch DHL rates" }, status: :bad_request
     end
   end
-def new
-  @shipment = @order.build_shipment
-end
 
   private
 
@@ -191,8 +193,11 @@ end
     @shipment = @order.shipment
   end
 
- def shipment_params
-  params.require(:shipment).permit(:carrier, :cost, :address, :first_name, :last_name, :phone_number, :country, :city)
-end
-
+  def shipment_params
+    params.require(:shipment).permit(
+      :carrier, :cost, :address, :first_name, :last_name,
+      :phone_number, :country, :city, :status, :tracking_number,
+      :alternate_contact, :county, :region, :delivery_notes
+    )
+  end
 end

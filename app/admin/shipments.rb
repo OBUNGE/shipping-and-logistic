@@ -27,7 +27,7 @@ ActiveAdmin.register Shipment do
   filter :order
   filter :status, as: :select, collection: Shipment.statuses.keys
   filter :carrier
-  filter :phone_number
+  filter :phone_number, as: :string
   filter :city
   filter :country
   filter :region
