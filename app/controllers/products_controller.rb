@@ -44,7 +44,7 @@ end
 
 
 def show
-  @product = Product.find(params[:id])  # ✅ This was missing
+  # @product is already set by set_product
   @reviews = @product.reviews.order(created_at: :desc).page(params[:page]).per(5)
   @selected_color = params[:color]
 
@@ -67,11 +67,8 @@ def show
       render json: { image_url: image_url }
     end
   end
-rescue => e
-  Rails.logger.error "🔥 Products#show failed: #{e.message}"
-  Rails.logger.error e.backtrace.join("\n")
-  render plain: "Product display error: #{e.message}", status: 500
 end
+
 
   def new
     @product = Product.new
@@ -171,8 +168,9 @@ end
 private
 
 def set_product
-  @product = Product.friendly.find(params[:slug] || params[:id])
-  redirect_to products_path, alert: "Product not found" unless @product
+  @product = Product.friendly.find(params[:id])
+rescue ActiveRecord::RecordNotFound
+  redirect_to products_path, alert: "Product not found"
 end
 
 
