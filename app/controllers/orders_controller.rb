@@ -1,6 +1,6 @@
 class OrdersController < ApplicationController
   # Allow guest checkout (no login required for new/create)
-  before_action :authenticate_user!, except: [:new, :create]
+  before_action :authenticate_user!, except: [:new, :create, :pay, :receipt]
   before_action :set_product, only: [:new, :create], if: -> { params[:product_id].present? }
   before_action :set_order, only: [:show, :receipt]
 
@@ -181,7 +181,7 @@ class OrdersController < ApplicationController
 
   def order_params
     params.require(:order).permit(
-      :currency, :provider, :phone_number,
+      :currency, :provider, :phone_number, :email,
       :first_name, :last_name, :alternate_contact,
       :city, :county, :country, :region, :address, :delivery_notes
     )

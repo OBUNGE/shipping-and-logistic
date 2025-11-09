@@ -198,6 +198,14 @@
       <%= f.text_field :last_name, class: "form-control shadow-sm", required: true %>
     </div>
   </div>
+<div class="col-md-6 mb-3">
+  <%= f.label :email, "Email Address", class: "form-label fw-semibold" %>
+  <%= f.email_field :email,
+        value: (current_user&.email || ""),
+        class: "form-control shadow-sm",
+        placeholder: "e.g. guest@example.com",
+        required: true %>
+</div>
 
   <div class="row">
     <div class="col-md-6 mb-3">
