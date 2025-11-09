@@ -1,5 +1,6 @@
 class OrdersController < ApplicationController
-  before_action :authenticate_user!
+  # Allow guest checkout (no login required for new/create)
+  before_action :authenticate_user!, except: [:new, :create]
   before_action :set_product, only: [:new, :create], if: -> { params[:product_id].present? }
   before_action :set_order, only: [:show, :receipt]
 
@@ -16,8 +17,7 @@ class OrdersController < ApplicationController
     if params[:product_id].present?
       # --- Single product checkout ---
       @product = Product.find(params[:product_id])
-      @order   = current_user.orders_as_buyer.new
-      # no shipment built here; seller will create shipment later
+      @order   = user_signed_in? ? current_user.orders_as_buyer.new : Order.new
     else
       # --- Cart checkout ---
       if session[:cart].blank?
@@ -39,16 +39,15 @@ class OrdersController < ApplicationController
         }
       end
 
-      @order = current_user.orders_as_buyer.new
-      # no shipment built here either
+      @order = user_signed_in? ? current_user.orders_as_buyer.new : Order.new
     end
   end
 
   # === POST /orders ===
   def create
-    @order       = current_user.orders_as_buyer.build(order_params)
+    @order       = user_signed_in? ? current_user.orders_as_buyer.build(order_params) : Order.new(order_params)
     provider     = order_params[:provider] || "mpesa"
-    phone_number = order_params[:phone_number].presence || current_user.phone
+    phone_number = order_params[:phone_number].presence || current_user&.phone
 
     if params[:product_id].present?
       # --- Single product checkout ---
@@ -63,6 +62,7 @@ class OrdersController < ApplicationController
       build_order_items(@order, product, variant, quantity)
 
       ActiveRecord::Base.transaction do
+        @order.seller = product.seller
         @order.save!
         decrement_stock!(@order)
       end
@@ -77,7 +77,8 @@ class OrdersController < ApplicationController
       orders = []
       ActiveRecord::Base.transaction do
         grouped_items.each do |seller_id, items|
-          order = current_user.orders_as_buyer.build(order_params.merge(seller_id: seller_id, status: :pending))
+          order = user_signed_in? ? current_user.orders_as_buyer.build(order_params.merge(seller_id: seller_id, status: :pending)) :
+                                    Order.new(order_params.merge(seller_id: seller_id, status: :pending))
 
           items.each do |item|
             product       = Product.find(item["product_id"])
@@ -109,20 +110,20 @@ class OrdersController < ApplicationController
   end
 
   # === GET /orders/:id/receipt ===
-def receipt
-  order = Order.find(params[:id])
-  latest_payment = order.payments.last
+  def receipt
+    order = Order.find(params[:id])
+    latest_payment = order.payments.last
 
-  unless latest_payment&.status == "paid"
-    redirect_to order, alert: "Receipt is only available after payment." and return
+    unless latest_payment&.status == "paid"
+      redirect_to order, alert: "Receipt is only available after payment." and return
+    end
+
+    pdf = ReceiptGenerator.new(order, latest_payment, Time.current).generate
+    send_data pdf,
+              filename: "receipt_order_#{order.id}.pdf",
+              type: "application/pdf",
+              disposition: "inline"
   end
-
-  pdf = ReceiptGenerator.new(order, latest_payment, Time.current).generate
-  send_data pdf,
-            filename: "receipt_order_#{order.id}.pdf",
-            type: "application/pdf",
-            disposition: "inline"
-end
 
   # === POST /orders/:id/pay ===
   def pay
@@ -145,7 +146,7 @@ end
 
   def set_order
     @order = Order.find(params[:id])
-    unless @order.buyer == current_user || @order.seller == current_user
+    unless @order.buyer == current_user || @order.seller == current_user || @order.buyer.nil?
       redirect_to root_path, alert: "You are not authorized to view this order."
     end
   end
@@ -181,8 +182,7 @@ end
   def order_params
     params.require(:order).permit(
       :currency, :provider, :phone_number,
-      # no shipment_attributes here, since seller creates shipment later
-      :first_name, :last_name, :phone_number, :alternate_contact,
+      :first_name, :last_name, :alternate_contact,
       :city, :county, :country, :region, :address, :delivery_notes
     )
   end

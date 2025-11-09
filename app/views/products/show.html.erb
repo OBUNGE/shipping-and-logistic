@@ -61,7 +61,7 @@
       <h1 class="fw-bold mb-2 lh-1"><%= @product.title %></h1>
 
       <div class="mb-3 text-muted small">
-        Sold by <span class="fw-semibold"><%= @product.seller_name %></span> |
+        <span class="fw-semibold"><%= @product.seller_name %></span> |
         <%= render_stars(@product.average_rating) %> (<%= @product.average_rating %>/5)
         <% if @product.average_rating >= 4.5 %>
           <span class="badge bg-success ms-2">Highly Rated</span>
@@ -76,46 +76,77 @@
       </div>
 
       <div class="rounded-4 bg-light p-4 shadow-sm mb-4">
-        <h5 class="fw-semibold mb-3">Purchase Options</h5>
+  <h5 class="fw-semibold mb-3">Purchase Options</h5>
 
-        <% if user_signed_in? && current_user.buyer? %>
-          <% if @order.present? %>
-            <% if @order.payment.nil? %>
-              <%= button_to "Pay Now", order_payment_path(@order), method: :post, class: "btn btn-success w-100 py-2 fw-semibold" %>
-            <% else %>
-              <p><strong>Order Status:</strong> <%= @order.status.capitalize %></p>
-              <p><strong>Payment Status:</strong> <%= @order.payment.status.capitalize %></p>
-            <% end %>
-          <% else %>
-            <%= link_to "Buy Now", new_product_order_path(@product), class: "btn btn-gradient w-100 mb-3" %>
+  <% if user_signed_in? && current_user.buyer? %>
+    <!-- Logged-in buyer flow -->
+    <% if @order.present? %>
+      <% if @order.payment.nil? %>
+        <%= button_to "Pay Now", order_payment_path(@order), method: :post, class: "btn btn-success w-100 py-2 fw-semibold" %>
+      <% else %>
+        <p><strong>Order Status:</strong> <%= @order.status.capitalize %></p>
+        <p><strong>Payment Status:</strong> <%= @order.payment.status.capitalize %></p>
+      <% end %>
+    <% else %>
+      <%= link_to "Buy Now", new_product_order_path(@product), class: "btn btn-gradient w-100 mb-3" %>
+    <% end %>
+
+    <%= form_with url: add_cart_path, method: :post, local: true, data: { turbo: false } do |f| %>
+      <%= f.hidden_field :product_id, value: @product.id %>
+      <% if @product.variants.any? %>
+        <div class="mb-3">
+          <label class="form-label small fw-semibold">Choose Variants & Quantities</label>
+          <% @product.variants.each do |variant| %>
+            <div class="d-flex align-items-center mb-2">
+              <span><%= variant.name %>: <%= variant.value %></span>
+              <%= number_field_tag "variants[#{variant.id}]", 0, min: 0, class: "form-control form-control-sm ms-auto", style: "width: 80px;" %>
+            </div>
           <% end %>
+        </div>
+      <% else %>
+        <div class="mb-3">
+          <%= f.label :quantity, "Quantity", class: "form-label small fw-semibold" %>
+          <%= f.number_field :quantity, value: @product.min_order || 1, min: @product.min_order || 1, class: "form-control form-control-sm" %>
+        </div>
+      <% end %>
+      <%= f.submit "Add to Cart", class: "btn btn-outline-primary w-100 fw-semibold py-2" %>
+    <% end %>
 
-          <%= form_with url: add_cart_path, method: :post, local: true, data: { turbo: false } do |f| %>
-            <%= f.hidden_field :product_id, value: @product.id %>
+  <% else %>
+    <!-- Guest checkout flow -->
+    <%= form_with url: product_orders_path(@product), method: :post, local: true do |f| %>
+      <%= f.hidden_field :product_id, value: @product.id %>
 
-            <% if @product.variants.any? %>
-              <div class="mb-3">
-                <label class="form-label small fw-semibold">Choose Variants & Quantities</label>
-                <% @product.variants.each do |variant| %>
-                  <div class="d-flex align-items-center mb-2">
-                    <span><%= variant.name %>: <%= variant.value %></span>
-                    <%= number_field_tag "variants[#{variant.id}]", 0, min: 0, class: "form-control form-control-sm ms-auto", style: "width: 80px;" %>
-                  </div>
-                <% end %>
-              </div>
-            <% else %>
-              <div class="mb-3">
-                <%= f.label :quantity, "Quantity", class: "form-label small fw-semibold" %>
-                <%= f.number_field :quantity, value: @product.min_order || 1, min: @product.min_order || 1, class: "form-control form-control-sm" %>
-              </div>
-            <% end %>
-
-            <%= f.submit "Add to Cart", class: "btn btn-outline-primary w-100 fw-semibold py-2" %>
-          <% end %>
-        <% else %>
-          <p class="text-muted">Please <%= link_to "log in as a buyer", new_user_session_path %> to purchase.</p>
-        <% end %>
+      <div class="mb-3">
+        <%= f.label :first_name, "First Name", class: "form-label small fw-semibold" %>
+        <%= f.text_field :first_name, class: "form-control" %>
       </div>
+
+      <div class="mb-3">
+        <%= f.label :last_name, "Last Name", class: "form-label small fw-semibold" %>
+        <%= f.text_field :last_name, class: "form-control" %>
+      </div>
+
+      <div class="mb-3">
+        <%= f.label :phone_number, "Phone Number", class: "form-label small fw-semibold" %>
+        <%= f.telephone_field :phone_number, class: "form-control" %>
+      </div>
+
+      <div class="mb-3">
+        <%= f.label :address, "Delivery Address", class: "form-label small fw-semibold" %>
+        <%= f.text_area :address, rows: 2, class: "form-control" %>
+      </div>
+
+      <div class="mb-3">
+        <%= f.label :quantity, "Quantity", class: "form-label small fw-semibold" %>
+        <%= f.number_field :quantity, value: @product.min_order || 1, min: @product.min_order || 1, class: "form-control" %>
+      </div>
+
+      <%= f.submit "Checkout as Guest", class: "btn btn-primary w-100 fw-semibold py-2" %>
+    <% end %>
+  <% end %>
+</div>
+
 
       <div class="small text-muted">
         <div class="row">

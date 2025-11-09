@@ -174,8 +174,6 @@ rescue ActiveRecord::RecordNotFound
   redirect_to products_path, alert: "Product not found"
 end
 
-
-
   def build_nested_fields(product)
     product.variants.build if product.variants.empty?
     product.variants.select { |v| v.name == "Color" }.each do |color_variant|
