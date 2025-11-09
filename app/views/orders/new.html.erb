@@ -202,7 +202,11 @@
   <div class="row">
     <div class="col-md-6 mb-3">
       <%= f.label :phone_number, "Phone Number", class: "form-label fw-semibold" %>
-      <%= f.telephone_field :phone_number, value: current_user.phone, class: "form-control shadow-sm", placeholder: "e.g. 2547XXXXXXXX", required: true %>
+      <%= f.telephone_field :phone_number,
+      value: (current_user&.phone || ""),
+      class: "form-control shadow-sm",
+      placeholder: "e.g. 2547XXXXXXXX",
+      required: true %>
     </div>
     <div class="col-md-6 mb-3">
       <%= f.label :alternate_contact, "Alternate Contact (optional)", class: "form-label fw-semibold" %>
