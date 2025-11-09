@@ -100,21 +100,22 @@
         </div>
 
         <!-- Payment Info -->
+        <% latest_payment = @order.payments.last %>
         <div class="border rounded-3 p-4 bg-light mb-3">
           <h5 class="fw-semibold text-primary mb-3">💳 Payment Details</h5>
-          <% if @order.payment.present? %>
-            <p class="mb-1"><strong>Provider:</strong> <%= @order.payment.provider.capitalize %></p>
+          <% if latest_payment.present? %>
+            <p class="mb-1"><strong>Provider:</strong> <%= latest_payment.provider.capitalize %></p>
             <p class="mb-1"><strong>Status:</strong>
-              <span class="badge bg-<%= @order.payment.status == 'paid' ? 'success' : 'warning' %>">
-                <%= @order.payment.status.capitalize %>
+              <span class="badge bg-<%= latest_payment.status == 'paid' ? 'success' : 'warning' %>">
+                <%= latest_payment.status.capitalize %>
               </span>
             </p>
-            <p class="mb-1"><strong>Transaction ID:</strong> <%= @order.payment.transaction_id %></p>
-            <p class="mb-2"><strong>Amount Paid:</strong> <%= number_to_currency(@order.payment.amount, unit: "#{@order.payment.currency.presence || currency} ") %></p>
+            <p class="mb-1"><strong>Transaction ID:</strong> <%= latest_payment.transaction_id %></p>
+            <p class="mb-2"><strong>Amount Paid:</strong> <%= number_to_currency(latest_payment.amount, unit: "#{latest_payment.currency.presence || currency} ") %></p>
 
-            <% if @order.payment.paid? %>
-              <% if @order.payment.mpesa_receipt_number.present? %>
-                <p><strong>Receipt:</strong> <%= @order.payment.mpesa_receipt_number %></p>
+            <% if latest_payment.paid? %>
+              <% if latest_payment.mpesa_receipt_number.present? %>
+                <p><strong>Receipt:</strong> <%= latest_payment.mpesa_receipt_number %></p>
               <% end %>
               <%= link_to "Download Receipt", receipt_order_path(@order), class: "btn btn-outline-primary mt-2 rounded-pill" %>
             <% else %>

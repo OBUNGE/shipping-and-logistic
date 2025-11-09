@@ -20,6 +20,7 @@
             </thead>
             <tbody>
               <% @orders.each do |order| %>
+                <% latest_payment = order.payments.last %>
                 <tr>
                   <td>
                     <% order.order_items.each do |item| %>
@@ -32,8 +33,8 @@
                     </span>
                   </td>
                   <td>
-                    <span class="badge bg-<%= order.payment&.status == 'completed' ? 'success' : 'secondary' %>">
-                      <%= order.payment&.status&.capitalize || "Pending" %>
+                    <span class="badge bg-<%= latest_payment&.status == 'paid' ? 'success' : 'secondary' %>">
+                      <%= latest_payment&.status&.capitalize || "Pending" %>
                     </span>
                   </td>
                   <td>
