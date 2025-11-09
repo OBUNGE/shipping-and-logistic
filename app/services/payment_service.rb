@@ -28,14 +28,16 @@ class PaymentService
         currency: currency
       ).initiate
 
-    when "paystack"
-      amount_in_minor_units = (order.total * 100).to_i
-      PaystackGateway.new(
-        order: order,
-        return_url: return_url,
-        amount: amount_in_minor_units,
-        currency: currency
-      ).initiate
+when "paystack"
+  amount_in_minor_units = (order.total * 100).to_i
+  PaystackGateway.new(
+    order: order,
+    return_url: return_url,
+    amount: amount_in_minor_units,
+    currency: currency,
+    email: order.email || phone_number # fallback if needed
+  ).initiate
+
 
     else
       raise ArgumentError, "Unsupported payment provider: #{provider}"
