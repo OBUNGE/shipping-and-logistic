@@ -1,5 +1,5 @@
 class PaymentService
-  def self.process(order, provider:, phone_number: nil, return_url: nil, callback_url: nil, currency: nil)
+  def self.process(order, provider:, phone_number: nil, email: nil, return_url: nil, callback_url: nil, currency: nil)
     provider = provider.to_s.downcase
     currency ||= order.currency || "USD"
 
@@ -28,16 +28,15 @@ class PaymentService
         currency: currency
       ).initiate
 
-when "paystack"
-  amount_in_minor_units = (order.total * 100).to_i
-  PaystackGateway.new(
-    order: order,
-    return_url: return_url,
-    amount: amount_in_minor_units,
-    currency: currency,
-    email: order.email || phone_number # fallback if needed
-  ).initiate
-
+    when "paystack"
+      amount_in_minor_units = (order.total * 100).to_i
+      PaystackGateway.new(
+        order: order,
+        return_url: return_url,
+        amount: amount_in_minor_units,
+        currency: currency,
+        email: email || order.email || order.buyer&.email # ✅ pass guest/buyer email
+      ).initiate
 
     else
       raise ArgumentError, "Unsupported payment provider: #{provider}"
