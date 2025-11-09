@@ -10,6 +10,10 @@
   <p><strong>Tracking Number:</strong> <%= @shipment.tracking_number.presence || "Not assigned" %></p>
   <p><strong>Carrier:</strong> <%= @shipment.carrier.presence || "Not specified" %></p>
   <p><strong>Cost:</strong> <%= number_to_currency(@shipment.cost) if @shipment.cost.present? %></p>
+  <h3>Delivery Information</h3>
+<p><strong>Recipient:</strong> <%= @shipment.first_name %> <%= @shipment.last_name %></p>
+<p><strong>Phone:</strong> <%= @shipment.phone_number %></p>
+<p><strong>Address:</strong> <%= @shipment.address %>, <%= @shipment.city %>, <%= @shipment.country %></p>
 
   <% if estimated_delivery(@shipment) %>
     <p><strong>Estimated Delivery:</strong> <%= estimated_delivery(@shipment) %></p>
