@@ -109,17 +109,20 @@ class OrdersController < ApplicationController
   end
 
   # === GET /orders/:id/receipt ===
-  def receipt
-    unless @order.payment&.paid?
-      redirect_to @order, alert: "Receipt is only available after payment." and return
-    end
+def receipt
+  order = Order.find(params[:id])
+  latest_payment = order.payments.last
 
-    pdf = ReceiptGenerator.new(@order, Time.current).generate
-    send_data pdf,
-              filename: "receipt_order_#{@order.id}.pdf",
-              type: "application/pdf",
-              disposition: "inline"
+  unless latest_payment&.status == "paid"
+    redirect_to order, alert: "Receipt is only available after payment." and return
   end
+
+  pdf = ReceiptGenerator.new(order, latest_payment, Time.current).generate
+  send_data pdf,
+            filename: "receipt_order_#{order.id}.pdf",
+            type: "application/pdf",
+            disposition: "inline"
+end
 
   # === POST /orders/:id/pay ===
   def pay

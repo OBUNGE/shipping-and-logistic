@@ -1,4 +1,3 @@
-# 📄 File: app/services/receipt_generator.rb
 require 'prawn/table'
 require 'open-uri'
 require 'rqrcode'
@@ -7,9 +6,9 @@ require 'chunky_png'
 class ReceiptGenerator
   include ActionView::Helpers::NumberHelper # for number_to_currency
 
-  def initialize(order, downloaded_at = Time.current)
+  def initialize(order, payment = nil, downloaded_at = Time.current)
     @order = order
-    @payment = order.payment
+    @payment = payment || order.payments.last   # ✅ FIXED: use latest payment or passed-in payment
     @buyer = order.buyer
     @downloaded_at = downloaded_at
     @currency = determine_currency
@@ -29,13 +28,15 @@ class ReceiptGenerator
       end
 
       # === QR Code ===
-      begin
-        qr = RQRCode::QRCode.new("Order ##{@order.id} - #{@payment.transaction_id}")
-        png = qr.as_png(size: 120)
-        pdf.image StringIO.new(png.to_s), position: :center
-        pdf.move_down 10
-      rescue
-        # silently skip if QR fails
+      if @payment&.transaction_id.present?
+        begin
+          qr = RQRCode::QRCode.new("Order ##{@order.id} - #{@payment.transaction_id}")
+          png = qr.as_png(size: 120)
+          pdf.image StringIO.new(png.to_s), position: :center
+          pdf.move_down 10
+        rescue
+          # silently skip if QR fails
+        end
       end
 
       # === Header ===
@@ -71,10 +72,17 @@ class ReceiptGenerator
       pdf.text "Payment Details", style: :bold, size: 12, color: "0070C0"
       pdf.stroke_horizontal_rule
       pdf.move_down 5
-      pdf.text "Payment Method: #{@payment.provider.to_s.capitalize}"
-      pdf.text "Payment Status: #{@payment.status.capitalize}"
-      pdf.text "Transaction ID: #{@payment.transaction_id || '—'}"
-      pdf.text "M-PESA Receipt #: #{@payment.mpesa_receipt_number || '—'}"
+
+      if @payment.present?
+        pdf.text "Payment Method: #{@payment.provider.to_s.capitalize}"
+        pdf.text "Payment Status: #{@payment.status.capitalize}"
+        pdf.text "Transaction ID: #{@payment.transaction_id || '—'}"
+        pdf.text "M-PESA Receipt #: #{@payment.mpesa_receipt_number || '—'}"
+        pdf.text "Amount Paid: #{format_price(@payment.amount)}"
+      else
+        pdf.text "No payment record found."
+      end
+
       pdf.move_down 10
 
       # === Order Items ===
@@ -136,15 +144,20 @@ class ReceiptGenerator
   private
 
   def determine_currency
-    method = @payment.provider.to_s.downcase
-    case method
-    when "mpesa", "paystack" then "KES"
-    when "paypal" then "USD"
-    else "KES"
+    if @payment.present?
+      method = @payment.provider.to_s.downcase
+      case method
+      when "mpesa", "paystack" then "KES"
+      when "paypal" then "USD"
+      else "KES"
+      end
+    else
+      "KES"
     end
   end
 
   def format_price(amount)
+    return "—" unless amount.present?
     if @currency == "KES"
       number_to_currency(amount * @exchange_rate, unit: "KES ")
     else
