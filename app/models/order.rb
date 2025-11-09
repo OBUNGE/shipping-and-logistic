@@ -11,6 +11,8 @@ class Order < ApplicationRecord
   validates :total, numericality: { greater_than: 0 }
   validates :currency, inclusion: { in: %w[USD KES] }
   validate  :buyer_or_guest_present
+  validates :email, presence: true, format: { with: URI::MailTo::EMAIL_REGEXP }
+
 
   enum :status, {
     pending:   "pending",
