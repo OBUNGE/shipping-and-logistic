@@ -6,7 +6,7 @@ class DashboardsController < ApplicationController
     # Orders for the current user as buyer
     @orders = current_user
       .orders_as_buyer
-      .includes(:order_items, :payment, :shipment, :seller)
+      .includes(:order_items, :payments, :shipment, :seller)
       .order(created_at: :desc)
   end
 
@@ -18,7 +18,7 @@ class DashboardsController < ApplicationController
     # Orders where the current user is the seller
     @orders = current_user
       .orders_as_seller
-      .includes(:order_items, :buyer, :shipment, :payment)
+      .includes(:order_items, :buyer, :shipment, :payments)
 
     # === Analytics data for charts and reports ===
 
