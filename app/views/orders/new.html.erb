@@ -257,46 +257,47 @@
   </div>
 
 
-          <h4 class="mt-4 fw-semibold text-secondary border-bottom pb-2">Payment Method</h4>
-          <div class="form-check mb-3">
-            <%= f.radio_button :provider, "mpesa", checked: true, class: "form-check-input", id: "provider_mpesa_cart" %>
-            <%= f.label :provider_mpesa_cart, "Pay with M-PESA", class: "form-check-label fw-semibold" %>
-          </div>
-          <div class="mb-3" id="mpesa_phone_field_cart">
-            <%= f.label :mpesa_phone, "M-PESA Phone Number", class: "form-label fw-semibold" %>
-            <%= f.telephone_field :mpesa_phone, value: current_user.phone, class: "form-control shadow-sm", placeholder: "e.g. 2547XXXXXXXX" %>
-          </div>
-          <div class="form-check mb-3">
-            <%= f.radio_button :provider, "paypal", class: "form-check-input", id: "provider_paypal_cart" %>
-            <%= f.label :provider_paypal_cart, "PayPal", class: "form-check-label fw-semibold" %>
-          </div>
-          <div class="form-check mb-4">
-            <%= f.radio_button :provider, "paystack", class: "form-check-input", id: "provider_paystack_cart" %>
-            <%= f.label :provider_paystack_cart, "Credit/Debit Card", class: "form-check-label fw-semibold" %>
-          </div>
+<h4 class="mt-4 fw-semibold text-secondary border-bottom pb-2">Payment Method</h4>
 
-          <%= f.submit "Confirm & Pay", class: "btn btn-success w-100 fw-bold py-2 shadow-sm" %>
-        <% end %>
+<div class="form-check mb-3">
+  <%= f.radio_button :provider, "mpesa", checked: true, class: "form-check-input", id: "provider_mpesa_cart" %>
+  <%= f.label :provider_mpesa_cart, "Pay with M-PESA", class: "form-check-label fw-semibold" %>
+</div>
 
-      <%# --- 3. EMPTY CART --- %>
-      <%# *** FIXED: This 'else' is now INSIDE the card-body *** %>
-      <% else %>
-        <p class="text-muted fs-5">Your cart is empty.</p>
-        <%= link_to "Back to Products", products_path, class: "btn btn-primary fw-semibold" %>
-      <% end %>
+<div class="mb-3" id="mpesa_phone_field_cart">
+  <%= f.label :mpesa_phone, "M-PESA Phone Number", class: "form-label fw-semibold" %>
+  <%= f.telephone_field :mpesa_phone, value: current_user.phone, class: "form-control shadow-sm", placeholder: "e.g. 2547XXXXXXXX" %>
+</div>
 
+<div class="form-check mb-3">
+  <%= f.radio_button :provider, "paypal", class: "form-check-input", id: "provider_paypal_cart" %>
+  <%= f.label :provider_paypal_cart, "PayPal", class: "form-check-label fw-semibold" %>
+</div>
+
+<div class="form-check mb-4">
+  <%= f.radio_button :provider, "paystack", class: "form-check-input", id: "provider_paystack_cart" %>
+  <%= f.label :provider_paystack_cart, "Credit/Debit Card", class: "form-check-label fw-semibold" %>
+</div>
+
+<%= f.submit "Confirm & Pay", class: "btn btn-success w-100 fw-bold py-2 shadow-sm" %>
+<% end %>
+
+<% else %>
+  <p class="text-muted fs-5">Your cart is empty.</p>
+  <%= link_to "Back to Products", products_path, class: "btn btn-primary fw-semibold" %>
+<% end %>
 
     
     
-    <script>
+<script>
   document.addEventListener("DOMContentLoaded", function() {
     
     // Helper function to set up payment toggles
     function setupPaymentToggle(mpesaRadioId, paypalRadioId, paystackRadioId, phoneFieldId) {
-      const mpesaRadio = document.getElementById(mpesaRadioId);
-      const paypalRadio = document.getElementById(paypalRadioId);
-      const paystackRadio = document.getElementById(paystackRadioId);
-      const phoneField = document.getElementById(phoneFieldId);
+      const mpesaRadio   = document.getElementById(mpesaRadioId);
+      const paypalRadio  = document.getElementById(paypalRadioId);
+      const paystackRadio= document.getElementById(paystackRadioId);
+      const phoneField   = document.getElementById(phoneFieldId);
 
       function togglePhoneField() {
         if (mpesaRadio && mpesaRadio.checked) {
@@ -305,11 +306,14 @@
           phoneField.style.display = "none";
         }
       }
-      
+
       [mpesaRadio, paypalRadio, paystackRadio].forEach(radio => {
         if (radio) radio.addEventListener("change", togglePhoneField);
       });
-      togglePhoneField(); // Run on page load
+
+      // Hide by default, then run toggle on page load
+      if (phoneField) phoneField.style.display = "none";
+      togglePhoneField();
     }
 
     // Helper function to set up country/region toggles
@@ -336,14 +340,14 @@
     // Helper function to set up DHL rate fetching
     async function fetchRates(countrySelectId, cityFieldId, ratesBoxId) {
       const countrySelect = document.getElementById(countrySelectId);
-      const cityField = document.getElementById(cityFieldId);
-      const ratesBox = document.getElementById(ratesBoxId);
+      const cityField     = document.getElementById(cityFieldId);
+      const ratesBox      = document.getElementById(ratesBoxId);
 
       if (!countrySelect || !cityField || !ratesBox) return; // Exit if elements aren't here
 
       async function getRates() {
         const country = countrySelect.value;
-        const city = cityField.value;
+        const city    = cityField.value;
         if (!country || !city) return;
 
         ratesBox.innerHTML = "Fetching DHL rates...";

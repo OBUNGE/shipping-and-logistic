@@ -79,41 +79,23 @@ class PaymentsController < ApplicationController
     Rails.logger.info("✅ Paystack verification response: #{body.inspect}")
 
     if body["status"] && body.dig("data", "status") == "success"
-      payment = @order.payments.find_by(transaction_id: reference)
-
-      if payment
-        payment.update!(status: :paid)
-      else
-        payment = @order.payments.create!(
-          provider: "Paystack",
-          user: @order.buyer,
-          transaction_id: reference,
-          amount: body.dig("data", "amount").to_f / 100.0,
-          currency: body.dig("data", "currency") || @order.currency,
-          status: :paid
-        )
-      end
+      payment = @order.payments.find_or_initialize_by(transaction_id: reference, provider: "Paystack")
+      payment.update!(
+        user: @order.buyer,
+        amount: body.dig("data", "amount").to_f / 100.0,
+        currency: body.dig("data", "currency") || @order.currency,
+        status: :paid
+      )
 
       @order.update!(status: :paid)
-
       OrderMailer.payment_confirmation(@order).deliver_later
       OrderMailer.seller_notification(@order).deliver_later
 
       redirect_to @order, notice: "✅ Paystack payment successful"
     else
       error_msg = body["message"] || "Verification failed"
-      payment = @order.payments.find_by(transaction_id: reference)
-
-      if payment
-        payment.update!(status: :failed)
-      else
-        @order.payments.create!(
-          provider: "Paystack",
-          user: @order.buyer,
-          transaction_id: reference,
-          status: :failed
-        )
-      end
+      payment = @order.payments.find_or_initialize_by(transaction_id: reference, provider: "Paystack")
+      payment.update!(status: :failed, user: @order.buyer)
 
       redirect_to @order, alert: "❌ Paystack payment failed: #{error_msg}"
     end
@@ -144,22 +126,22 @@ class PaymentsController < ApplicationController
 
       if result.status == "COMPLETED"
         capture = result.purchase_units.first.payments.captures.first
-        payment = @order.payments.find_or_initialize_by(provider: "PayPal")
+        payment = @order.payments.find_or_initialize_by(transaction_id: result.id, provider: "PayPal")
         payment.update!(
+          user: @order.buyer,
           status: :paid,
-          transaction_id: result.id,
           amount: capture.amount.value.to_f,
           currency: capture.amount.currency_code
         )
-        @order.update!(status: :paid)
 
+        @order.update!(status: :paid)
         OrderMailer.payment_confirmation(@order).deliver_later
         OrderMailer.seller_notification(@order).deliver_later
 
         redirect_to @order, notice: "✅ PayPal payment successful"
       else
-        payment = @order.payments.find_or_initialize_by(provider: "PayPal")
-        payment.update!(status: :failed, transaction_id: result.id)
+        payment = @order.payments.find_or_initialize_by(transaction_id: result.id, provider: "PayPal")
+        payment.update!(status: :failed, user: @order.buyer)
         redirect_to @order, alert: "❌ PayPal payment not completed (#{result.status})"
       end
     rescue => e
@@ -184,21 +166,19 @@ class PaymentsController < ApplicationController
     result_code = body.dig("Body", "stkCallback", "ResultCode")
     checkout_id = body.dig("Body", "stkCallback", "CheckoutRequestID")
 
-    payment = @order.payments.find_by(checkout_request_id: checkout_id)
+    payment = @order.payments.find_or_initialize_by(checkout_request_id: checkout_id, provider: "Mpesa")
 
-    if payment && result_code.to_i == 0
-      payment.update!(status: :paid)
+    if result_code.to_i == 0
+      payment.update!(status: :paid, user: @order.buyer)
       @order.update!(status: :paid)
 
       OrderMailer.payment_confirmation(@order).deliver_later
       OrderMailer.seller_notification(@order).deliver_later
 
       Rails.logger.info("✅ M-PESA payment confirmed for Order ##{@order.id}")
-    elsif payment
-      payment.update!(status: :failed)
-      Rails.logger.warn("❌ M-PESA payment failed for Order ##{@order.id}")
     else
-      Rails.logger.error("⚠️ M-PESA callback received for unknown CheckoutRequestID: #{checkout_id}")
+      payment.update!(status: :failed, user: @order.buyer)
+      Rails.logger.warn("❌ M-PESA payment failed for Order ##{@order.id}")
     end
 
     head :ok
