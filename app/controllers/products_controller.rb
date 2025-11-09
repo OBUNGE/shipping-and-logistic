@@ -168,10 +168,12 @@ end
 private
 
 def set_product
-  @product = Product.friendly.find(params[:id])
+  slug = params[:slug] || params[:id]
+  @product = Product.friendly.find(slug)
 rescue ActiveRecord::RecordNotFound
   redirect_to products_path, alert: "Product not found"
 end
+
 
 
   def build_nested_fields(product)
