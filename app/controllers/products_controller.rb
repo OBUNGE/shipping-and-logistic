@@ -168,12 +168,13 @@ end
     end
   end
 
-  private
+private
 
-  def set_product
-    @product = Product.find_by(id: params[:id] || params[:product_id])
-    redirect_to products_path, alert: "Product not found" unless @product
-  end
+def set_product
+  @product = Product.friendly.find(params[:slug] || params[:id])
+  redirect_to products_path, alert: "Product not found" unless @product
+end
+
 
   def build_nested_fields(product)
     product.variants.build if product.variants.empty?

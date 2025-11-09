@@ -1,11 +1,11 @@
 class Product < ApplicationRecord
   # === Associations ===
-    belongs_to :category, optional: true
+  belongs_to :category, optional: true
   belongs_to :seller, class_name: "User", foreign_key: "user_id"
   belongs_to :subcategory, optional: true
 
   has_many :reviews, dependent: :destroy
-  has_many :order_items
+  has_many :order_items, dependent: :destroy
   has_many :orders, through: :order_items
   has_many :variants, dependent: :destroy
   has_many :inventories, dependent: :destroy
@@ -13,9 +13,7 @@ class Product < ApplicationRecord
   has_one  :discount, dependent: :destroy
 
   # === Supabase Image Fields ===
-  # These are stored as plain URLs
   store_accessor :gallery_image_urls
-
 
   # === Nested Attributes ===
   accepts_nested_attributes_for :variants,
@@ -33,18 +31,28 @@ class Product < ApplicationRecord
 
   # === Validations ===
   validates :title, :price, :stock, presence: true
+  validates :title, uniqueness: true
   validates :price, numericality: { greater_than_or_equal_to: 0 }
   validates :stock, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
   validates :min_order, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
 
+  # === Slugging (SEO URLs) ===
+  extend FriendlyId
+  friendly_id :title, use: :slugged
+
+  def should_generate_new_friendly_id?
+    title_changed?
+  end
+
   # === Scopes ===
   scope :available, -> { where("stock > 0") }
   scope :recent,    -> { order(created_at: :desc) }
+  scope :by_category, ->(category_id) { where(category_id: category_id) }
 
   # === Searchable Attributes (Ransack) ===
   def self.ransackable_attributes(_auth_object = nil)
     %w[
-      id title description price stock min_order user_id category
+      id slug title description price stock min_order user_id category_id subcategory_id
       estimated_delivery_range created_at updated_at
     ]
   end
@@ -94,6 +102,24 @@ class Product < ApplicationRecord
 
   def total_inventory
     inventories.sum(:quantity)
+  end
+
+  # === SEO Helpers ===
+  def seo_title
+    "#{title} | AfriXpress Marketplace"
+  end
+
+  def seo_description
+    description.to_s.truncate(160)
+  end
+
+  def canonical_url
+    Rails.application.routes.url_helpers.product_url(self)
+  end
+
+  # === Currency Formatting ===
+  def formatted_price(view_context)
+    view_context.display_price(discounted_price)
   end
 
   private

@@ -194,6 +194,8 @@ GEM
     formtastic (5.0.0)
       actionpack (>= 6.0.0)
     formtastic_i18n (0.7.0)
+    friendly_id (5.4.2)
+      activerecord (>= 4.0.0)
     fugit (1.11.2)
       et-orbi (~> 1, >= 1.2.11)
       raabro (~> 1.4)
@@ -602,6 +604,7 @@ DEPENDENCIES
   factory_bot_rails
   faker
   faraday
+  friendly_id (~> 5.4.0)
   geocoder
   gon
   googlecharts

@@ -38,6 +38,7 @@ gem "mini_magick"
 gem "blazer"
 
 
+gem "friendly_id", "~> 5.4.0"
 
 
 

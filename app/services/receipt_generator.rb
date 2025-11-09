@@ -8,12 +8,12 @@ class ReceiptGenerator
 
   def initialize(order, payment = nil, downloaded_at = Time.current)
     @order = order
-    @payment = payment || order.payments.last   # ✅ FIXED: use latest payment or passed-in payment
+    @payment = payment || order.payments.last
     @buyer = order.buyer
     @downloaded_at = downloaded_at
     @currency = determine_currency
     @exchange_rate = 130.0
-    @logo_url = "https://yourdomain.com/assets/afrixpress-logo.png" # ✅ Replace with your actual logo URL
+    @logo_url = "https://yourdomain.com/assets/afrixpress-logo.png"
   end
 
   def generate
@@ -24,7 +24,7 @@ class ReceiptGenerator
         pdf.image logo_io, width: 100, position: :center
         pdf.move_down 10
       rescue
-        # silently skip if logo fails
+        # skip if logo fails
       end
 
       # === QR Code ===
@@ -35,7 +35,7 @@ class ReceiptGenerator
           pdf.image StringIO.new(png.to_s), position: :center
           pdf.move_down 10
         rescue
-          # silently skip if QR fails
+          # skip if QR fails
         end
       end
 
@@ -60,6 +60,11 @@ class ReceiptGenerator
       pdf.text "Email: #{@buyer.email}"
       pdf.text "Delivery Address: #{@order.shipment&.address || '—'}"
       pdf.text "Recipient: #{@order.shipment&.first_name} #{@order.shipment&.last_name}"
+      pdf.text "Phone: #{@order.shipment&.phone_number || '—'}"
+      pdf.text "City: #{@order.shipment&.city || '—'}"
+      pdf.text "Country: #{@order.shipment&.country || '—'}"
+      pdf.text "Region: #{@order.shipment&.region || '—'}"
+      pdf.text "Notes: #{@order.shipment&.delivery_notes || '—'}"
       pdf.move_down 10
 
       pdf.text "Seller Information", style: :bold, size: 12, color: "0070C0"
@@ -95,16 +100,9 @@ class ReceiptGenerator
         price = item.subtotal
         discounted = if item.product.discount.present? && item.product.discount.percentage.to_f > 0
           price * (1 - item.product.discount.percentage / 100.0)
-        else
-          nil
         end
 
-        price_display = if discounted
-          "#{format_price(price)} → #{format_price(discounted)}"
-        else
-          format_price(price)
-        end
-
+        price_display = discounted ? "#{format_price(price)} → #{format_price(discounted)}" : format_price(price)
         data << [item.product.title, item.quantity.to_s, price_display]
       end
 
@@ -145,8 +143,7 @@ class ReceiptGenerator
 
   def determine_currency
     if @payment.present?
-      method = @payment.provider.to_s.downcase
-      case method
+      case @payment.provider.to_s.downcase
       when "mpesa", "paystack" then "KES"
       when "paypal" then "USD"
       else "KES"

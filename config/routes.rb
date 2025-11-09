@@ -14,8 +14,8 @@ Rails.application.routes.draw do
     patch "/", to: "users#update_account"
   end
 
-  # === Products and nested resources ===
-  resources :products do
+  # === Products and nested resources (slug-based) ===
+  resources :products, param: :slug do
     resources :orders, only: [:new, :create]
     resources :reviews, only: [:create, :edit, :update, :destroy, :show] do
       resources :votes,   only: [:create]
@@ -36,31 +36,29 @@ Rails.application.routes.draw do
 
   # === M-PESA Callback (single global route) ===
   post "/mpesa/callback/:order_id", to: "payments#mpesa_callback", as: :mpesa_callback
-  
-post "set_currency", to: "settings#set_currency", as: :set_currency
 
+  post "set_currency", to: "settings#set_currency", as: :set_currency
 
   # === Orders and nested payment/shipment routes ===
-resources :orders, only: [:index, :show, :new, :create] do
-  resources :order_items, only: [:create, :destroy]
+  resources :orders, only: [:index, :show, :new, :create] do
+    resources :order_items, only: [:create, :destroy]
 
-  resources :payments, only: [:create] do
-    collection do
-      match :paystack_callback, via: [:get, :post]
-      get   :paypal_callback,   via: [:get, :post]
+    resources :payments, only: [:create] do
+      collection do
+        match :paystack_callback, via: [:get, :post]
+        get   :paypal_callback,   via: [:get, :post]
+      end
+    end
+
+    resource :shipment, only: [:new, :create, :show, :edit, :update] do
+      post :track, on: :member
+    end
+
+    resources :notifications, only: [:index]
+    member do
+      get :receipt
     end
   end
-
-  resource :shipment, only: [:new, :create, :show, :edit, :update] do
-    post :track, on: :member
-  end
-
-  resources :notifications, only: [:index]
-  member do
-    get :receipt
-  end
-end
-
 
   # === Other resources ===
   resources :shipments, only: [:index]

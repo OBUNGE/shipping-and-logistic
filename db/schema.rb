@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_09_030330) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_09_084136) do
   create_schema "auth"
   create_schema "extensions"
   create_schema "graphql"
@@ -97,6 +97,17 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_09_030330) do
     t.datetime "updated_at", null: false
     t.date "starts_at"
     t.index ["product_id"], name: "index_discounts_on_product_id"
+  end
+
+  create_table "friendly_id_slugs", force: :cascade do |t|
+    t.string "slug", null: false
+    t.integer "sluggable_id", null: false
+    t.string "sluggable_type", limit: 50
+    t.string "scope"
+    t.datetime "created_at"
+    t.index ["slug", "sluggable_type", "scope"], name: "index_friendly_id_slugs_on_slug_and_sluggable_type_and_scope", unique: true
+    t.index ["slug", "sluggable_type"], name: "index_friendly_id_slugs_on_slug_and_sluggable_type"
+    t.index ["sluggable_type", "sluggable_id"], name: "index_friendly_id_slugs_on_sluggable_type_and_sluggable_id"
   end
 
   create_table "inventories", force: :cascade do |t|
@@ -209,8 +220,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_09_030330) do
     t.string "currency", default: "USD", null: false
     t.string "image_url"
     t.text "gallery_image_urls"
+    t.string "slug"
     t.index ["category_id"], name: "index_products_on_category_id"
     t.index ["seller_id"], name: "index_products_on_seller_id"
+    t.index ["slug"], name: "index_products_on_slug", unique: true
     t.index ["user_id"], name: "index_products_on_user_id"
   end
 
