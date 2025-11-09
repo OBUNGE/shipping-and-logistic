@@ -37,7 +37,9 @@ class PaystackGateway
     body = JSON.parse(response.body) rescue {}
     if body["status"] && body.dig("data", "authorization_url")
       @order.payments.create!(
-        user:           @order.buyer, # ✅ may be nil now
+        user:           @order.buyer, # may be nil for guests
+        guest_email:    @email,       # ✅ capture guest email
+        guest_phone:    @order.phone_number, # ✅ capture guest phone
         provider:       "Paystack",
         amount:         @amount.to_f / 100.0, # store in major units
         currency:       @currency,
