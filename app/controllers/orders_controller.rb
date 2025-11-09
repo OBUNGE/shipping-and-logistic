@@ -1,5 +1,5 @@
 class OrdersController < ApplicationController
-  # Allow guest checkout (no login required for new/create)
+  # Allow guest checkout (no login required for new/create/pay/receipt)
   before_action :authenticate_user!, except: [:new, :create, :pay, :receipt]
   before_action :set_product, only: [:new, :create], if: -> { params[:product_id].present? }
   before_action :set_order, only: [:show, :receipt]
@@ -48,6 +48,7 @@ class OrdersController < ApplicationController
     @order       = user_signed_in? ? current_user.orders_as_buyer.build(order_params) : Order.new(order_params)
     provider     = order_params[:provider] || "mpesa"
     phone_number = order_params[:phone_number].presence || current_user&.phone
+    email        = order_params[:email].presence || current_user&.email
 
     if params[:product_id].present?
       # --- Single product checkout ---
@@ -68,7 +69,7 @@ class OrdersController < ApplicationController
       end
 
       notify_seller(product.seller)
-      handle_payment(@order, provider, phone_number)
+      handle_payment(@order, provider, phone_number, email)
 
     else
       # --- Cart checkout (grouped by seller) ---
@@ -101,7 +102,7 @@ class OrdersController < ApplicationController
       end
 
       session[:cart] = []
-      handle_payment(orders.first, provider, phone_number)
+      handle_payment(orders.first, provider, phone_number, email)
     end
   rescue ActiveRecord::RecordInvalid => e
     Rails.logger.error("⚠️ Order Creation Failed: #{e.record.errors.full_messages.join(', ')}")
@@ -129,7 +130,7 @@ class OrdersController < ApplicationController
   def pay
     order = Order.find(params[:id])
     service = MpesaStkPushService.new(
-      phone_number: params[:phone],
+      phone_number: params[:phone] || order.phone_number,
       amount: order.total,
       account_reference: "Order#{order.id}",
       description: "Payment for Order #{order.id}"
@@ -146,8 +147,13 @@ class OrdersController < ApplicationController
 
   def set_order
     @order = Order.find(params[:id])
-    unless @order.buyer == current_user || @order.seller == current_user || @order.buyer.nil?
-      redirect_to root_path, alert: "You are not authorized to view this order."
+    if user_signed_in?
+      unless @order.buyer == current_user || @order.seller == current_user
+        redirect_to root_path, alert: "You are not authorized to view this order."
+      end
+    else
+      # ✅ allow guests to view orders they just created
+      redirect_to root_path, alert: "You are not authorized to view this order." if @order.buyer.present?
     end
   end
 
@@ -187,11 +193,12 @@ class OrdersController < ApplicationController
     )
   end
 
-  def handle_payment(order, provider, phone_number)
+  def handle_payment(order, provider, phone_number, email)
     result = PaymentService.process(
       order,
       provider: provider,
       phone_number: phone_number,
+      email: email, # ✅ pass guest/buyer email into PaymentService
       currency: order.currency,
       return_url: order_url(order),
       callback_url: mpesa_callback_url(order_id: order.id,
