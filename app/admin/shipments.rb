@@ -1,18 +1,8 @@
 ActiveAdmin.register Shipment do
-  # === Strong parameters ===
-  permit_params :order_id,
-                :tracking_number,
-                :status,
-                :carrier,
-                :cost,
-                :first_name,
-                :last_name,
-                :phone_number,
-                :country,
-                :city,
-                :address
+  permit_params :order_id, :tracking_number, :status, :carrier, :cost,
+                :first_name, :last_name, :address, :alternate_contact,
+                :phone_number, :city, :county, :country, :region, :delivery_notes
 
-  # === Index page ===
   index do
     selectable_column
     id_column
@@ -24,23 +14,25 @@ ActiveAdmin.register Shipment do
     column :first_name
     column :last_name
     column :phone_number
-    column :country
-    column :city
     column :address
+    column :city
+    column :county
+    column :country
+    column :region
+    column :delivery_notes
     column :created_at
     actions
   end
 
-  # === Filters ===
   filter :order
   filter :status, as: :select, collection: Shipment.statuses.keys
   filter :carrier
   filter :phone_number
-  filter :country
   filter :city
+  filter :country
+  filter :region
   filter :created_at
 
-  # === Show page ===
   show do
     attributes_table do
       row :id
@@ -52,23 +44,18 @@ ActiveAdmin.register Shipment do
       row :first_name
       row :last_name
       row :phone_number
-      row :country
-      row :city
+      row :alternate_contact
       row :address
+      row :city
+      row :county
+      row :country
+      row :region
+      row :delivery_notes
       row :created_at
       row :updated_at
     end
-
-    panel "Status History" do
-      table_for shipment.shipment_status_logs.order(changed_at: :desc) do
-        column :status
-        column :changed_by
-        column :changed_at
-      end
-    end
   end
 
-  # === Form ===
   form do |f|
     f.inputs "Shipment Details" do
       f.input :order
@@ -79,9 +66,13 @@ ActiveAdmin.register Shipment do
       f.input :first_name
       f.input :last_name
       f.input :phone_number
-      f.input :country
-      f.input :city
+      f.input :alternate_contact
       f.input :address
+      f.input :city
+      f.input :county
+      f.input :country
+      f.input :region
+      f.input :delivery_notes
     end
     f.actions
   end
