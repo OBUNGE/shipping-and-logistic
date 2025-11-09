@@ -31,9 +31,10 @@
     <div class="col-md-4">
       <div class="card border-0 shadow-sm rounded-4 p-3 text-center bg-light">
         <h5 class="text-secondary mb-2">💰 Total Revenue</h5>
-        <h3 class="fw-bold text-success">
-          KES <%= number_to_currency(@orders.joins(:payments).where(payments: { status: "paid" }).sum(:total), unit: "", precision: 2) %>
-        </h3>
+<h3 class="fw-bold text-success">
+  <%= display_price(@orders.joins(:payments).where(payments: { status: "paid" }).sum(:total)) %>
+</h3>
+
       </div>
     </div>
   </div>
