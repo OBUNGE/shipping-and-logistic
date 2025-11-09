@@ -1,6 +1,6 @@
 class Payment < ApplicationRecord
   belongs_to :order
-  belongs_to :user
+  belongs_to :user, optional: true
 
   # === Status management ===
   enum :status, {
