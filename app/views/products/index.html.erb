@@ -111,7 +111,7 @@
 
                 <% if seller&.store_slug.present? %>
                   <p class="small text-muted mb-2">
-                    Sold by:
+                    
                     <%= link_to (seller.company_name || seller.name),
                         seller_path(seller.store_slug),
                         class: "fw-semibold text-decoration-none hover-link" %>

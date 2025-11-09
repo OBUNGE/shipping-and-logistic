@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_07_164158) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_09_025514) do
   create_schema "auth"
   create_schema "extensions"
   create_schema "graphql"
@@ -159,6 +159,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_07_164158) do
     t.string "city"
     t.string "provider"
     t.string "phone_number"
+    t.string "alternate_contact"
   end
 
   create_table "payments", force: :cascade do |t|

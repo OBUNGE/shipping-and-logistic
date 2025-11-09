@@ -190,8 +190,8 @@ end
     @shipment = @order.shipment
   end
 
-  def shipment_params
-    params.require(:shipment).permit(:carrier, :cost, :status, :first_name, :last_name, :address)
-    # tracking_number excluded if you want DHL to generate it
-  end
+ def shipment_params
+  params.require(:shipment).permit(:carrier, :cost, :address, :first_name, :last_name, :phone_number, :country, :city)
+end
+
 end
