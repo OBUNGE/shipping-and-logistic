@@ -36,9 +36,11 @@ class ShipmentsController < ApplicationController
       redirect_to order_shipment_path(@order), alert: "You are not authorized to create a shipment for this order." and return
     end
 
-    if @order.payment.nil? || @order.payment.status != "paid"
-      redirect_to order_shipment_path(@order), alert: "Shipment can only be created after payment." and return
-    end
+latest_payment = @order.payments.last
+
+if latest_payment.nil? || latest_payment.status != "paid"
+  redirect_to order_shipment_path(@order), alert: "Shipment can only be created after payment." and return
+end
 
     carrier = params[:carrier].to_s.strip.downcase.presence || "dhl"
     unless Shipment.carriers.keys.include?(carrier)
