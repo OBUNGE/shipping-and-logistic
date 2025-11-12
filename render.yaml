@@ -1,6 +1,6 @@
 version: "1"
 projects:
-- name: shipping and Logistics
+- name: shipping-and-logistics
   environments:
   - name: Production
     services:
@@ -12,6 +12,8 @@ projects:
       plan: free
       region: ohio
       autoDeployTrigger: "off"
+      buildCommand: bundle install && rails db:migrate   # ✅ run migrations automatically
+      startCommand: bundle exec puma -C config/puma.rb   # ✅ start Rails server
       build:
         args:
           RAILS_MASTER_KEY: ${RAILS_MASTER_KEY}
@@ -19,9 +21,9 @@ projects:
         - key: SUPABASE_STORAGE_ENDPOINT
           sync: false
         - key: RAILS_SERVE_STATIC_FILES
-          sync: false
+          value: "true"   # ✅ serve static assets in production
         - key: RAILS_ENV
-          sync: false
+          value: "production"
         - key: SUPABASE_BUCKET
           sync: false
         - key: SUPABASE_SECRET_ACCESS_KEY
