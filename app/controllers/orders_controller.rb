@@ -145,17 +145,19 @@ class OrdersController < ApplicationController
     @product = Product.find(params[:product_id])
   end
 
-  def set_order
-    @order = Order.find(params[:id])
-    if user_signed_in?
-      unless @order.buyer == current_user || @order.seller == current_user
-        redirect_to root_path, alert: "You are not authorized to view this order."
-      end
-    else
-      # ✅ allow guests to view orders they just created
-      redirect_to root_path, alert: "You are not authorized to view this order." if @order.buyer.present?
+def set_order
+  @order = Order.find(params[:id])
+
+  if user_signed_in?
+    unless @order.buyer == current_user || @order.seller == current_user
+      redirect_to root_path, alert: "You are not authorized to view this order."
     end
+  else
+    # Guests can view orders if buyer is nil (guest checkout)
+    redirect_to root_path, alert: "You are not authorized to view this order." if @order.buyer.present?
   end
+end
+
 
   def notify_seller(seller)
     Notification.create!(user: seller, message: "New order placed", read: false)
