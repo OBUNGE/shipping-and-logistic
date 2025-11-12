@@ -1,15 +1,14 @@
 require "active_support/core_ext/integer/time"
 
 Rails.application.configure do
-  # ✅ ActionMailer SMTP settings for Gmail
+  # ✅ ActionMailer SMTP settings for Brevo
 config.action_mailer.delivery_method = :smtp
 config.action_mailer.smtp_settings = {
-  address:              "smtp.gmail.com",
+  address:              "smtp-relay.brevo.com",
   port:                 587,
-  domain:               "gmail.com",
-  user_name:            ENV["GMAIL_USERNAME"],   # felixokiya10@gmail.com
-  password:             ENV["GMAIL_PASSWORD"],   # your Gmail App Password
-  authentication:       "plain",
+  user_name:            ENV["BREVO_USERNAME"],
+  password:             ENV["BREVO_PASSWORD"],
+  authentication:       "login",
   enable_starttls_auto: true
 }
 
