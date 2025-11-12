@@ -5,7 +5,7 @@ class PaymentsController < ApplicationController
   # === Create Payment (handles Mpesa, Paystack, PayPal) ===
   def create
     provider        = params[:provider].to_s.downcase
-    phone_number    = params[:phone_number].presence || current_user.phone
+    phone_number    = params[:phone_number].presence || current_user&.phone
     buyer_currency  = params[:currency].presence || @order.currency || "USD"
 
     if provider == "mpesa" && phone_number.blank?
@@ -88,8 +88,8 @@ class PaymentsController < ApplicationController
       )
 
       @order.update!(status: :paid)
-      OrderMailer.payment_confirmation(@order).deliver_later
-      OrderMailer.seller_notification(@order).deliver_later
+      OrderMailer.payment_confirmation(@order.id).deliver_later
+      OrderMailer.seller_notification(@order.id).deliver_later
 
       redirect_to @order, notice: "✅ Paystack payment successful"
     else
@@ -135,8 +135,8 @@ class PaymentsController < ApplicationController
         )
 
         @order.update!(status: :paid)
-        OrderMailer.payment_confirmation(@order).deliver_later
-        OrderMailer.seller_notification(@order).deliver_later
+        OrderMailer.payment_confirmation(@order.id).deliver_later
+        OrderMailer.seller_notification(@order.id).deliver_later
 
         redirect_to @order, notice: "✅ PayPal payment successful"
       else
@@ -172,8 +172,8 @@ class PaymentsController < ApplicationController
       payment.update!(status: :paid, user: @order.buyer)
       @order.update!(status: :paid)
 
-      OrderMailer.payment_confirmation(@order).deliver_later
-      OrderMailer.seller_notification(@order).deliver_later
+      OrderMailer.payment_confirmation(@order.id).deliver_later
+      OrderMailer.seller_notification(@order.id).deliver_later
 
       Rails.logger.info("✅ M-PESA payment confirmed for Order ##{@order.id}")
     else
