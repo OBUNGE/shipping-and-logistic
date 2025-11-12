@@ -1,17 +1,7 @@
 require "active_support/core_ext/integer/time"
 
 Rails.application.configure do
-  # ✅ ActionMailer SMTP settings for Brevo
-config.action_mailer.delivery_method = :smtp
-config.action_mailer.smtp_settings = {
-  address:              "smtp-relay.brevo.com",
-  port:                 587,
-  user_name:            ENV["BREVO_USERNAME"],
-  password:             ENV["BREVO_PASSWORD"],
-  authentication:       "login",
-  enable_starttls_auto: true
-}
-
+  
   # ✅ Use Supabase for Active Storage
   config.active_storage.service = :supabase
 
