@@ -1,7 +1,23 @@
-<h2>Hello <%= @order.seller.name %>,</h2>
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
+  </head>
+  <body>
+    <h2>Hello <%= @order.seller&.name || "Seller" %>,</h2>
 
-<p>Order ##<%= @order.id %> has been paid by <%= @order.buyer.name %>.</p>
-<p>Please prepare the shipment and update tracking when ready.</p>
+    <p>
+      Order ##<%= @order.id %> has been paid by
+      <%= @order.buyer&.name || @order.metadata["customer_name"] || "Guest" %>.
+    </p>
 
-<p><strong>Total:</strong> <%= number_to_currency(@order.total, unit: "#{@order.currency} ") %></p>
-<p>Thank you for using our platform.</p>
+    <p>Please prepare the shipment and update tracking when ready.</p>
+
+    <p>
+      <strong>Total:</strong>
+      <%= number_to_currency(@order.total, unit: "#{@order.currency} ") %>
+    </p>
+
+    <p>Thank you for using our platform.</p>
+  </body>
+</html>

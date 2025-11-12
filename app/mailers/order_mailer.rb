@@ -10,18 +10,32 @@ class OrderMailer < ApplicationMailer
       if @order.buyer.present?
         @order.buyer.email
       else
-        # fallback to guest email stored in payment or order
-        @order.payments.last&.guest_email || @order.email
+        # fallback to guest email stored in payment metadata or order record
+        @order.payments.last&.guest_email || @order.email || @order.metadata["customer_email"]
       end
 
-    mail(to: recipient_email, subject: "Payment Confirmation for Order ##{@order.id}")
+    mail(
+      to: recipient_email,
+      subject: "Payment Confirmation for Order ##{@order.id}"
+    )
   end
 
   # === Seller Notification ===
   def seller_notification(order)
     @order = order
 
-    # Seller is always a registered user
-    mail(to: @order.seller.email, subject: "Payment Received for Order ##{@order.id}")
+    # ✅ Handle both registered sellers and guest orders
+    recipient_email =
+      if @order.seller.present?
+        @order.seller.email
+      else
+        # fallback: notify platform admin/support if no seller is linked
+        "admin@yourdomain.com"
+      end
+
+    mail(
+      to: recipient_email,
+      subject: "Payment Received for Order ##{@order.id}"
+    )
   end
 end
