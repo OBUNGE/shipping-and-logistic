@@ -68,7 +68,7 @@ class OrdersController < ApplicationController
         decrement_stock!(@order)
       end
 
-      notify_seller(product.seller)
+      notify_seller(@order)
       handle_payment(@order, provider, phone_number, email)
 
     else
@@ -96,7 +96,7 @@ class OrdersController < ApplicationController
           order.total = order.order_items.sum { |oi| oi.subtotal + (oi.shipping || 0) }
           order.save!
           decrement_stock!(order)
-          notify_seller(order.seller)
+          notify_seller(order)
           orders << order
         end
       end
@@ -145,32 +145,33 @@ class OrdersController < ApplicationController
     @product = Product.find(params[:product_id])
   end
 
-def set_order
-  @order = Order.find(params[:id])
+  def set_order
+    @order = Order.find(params[:id])
 
-  if user_signed_in?
-    unless @order.buyer == current_user || @order.seller == current_user
-      redirect_to root_path, alert: "You are not authorized to view this order."
-    end
-  else
-    # Guests can view their order if buyer is nil (guest checkout)
-    if @order.buyer.present?
-      redirect_to root_path, alert: "You are not authorized to view this order."
-    elsif params[:email].present? && @order.email != params[:email]
-      redirect_to root_path, alert: "You are not authorized to view this order."
+    if user_signed_in?
+      unless @order.buyer == current_user || @order.seller == current_user
+        redirect_to root_path, alert: "You are not authorized to view this order."
+      end
+    else
+      # Guests can view their order if buyer is nil (guest checkout)
+      if @order.buyer.present?
+        redirect_to root_path, alert: "You are not authorized to view this order."
+      elsif params[:email].present? && @order.email != params[:email]
+        redirect_to root_path, alert: "You are not authorized to view this order."
+      end
     end
   end
-end
 
-def notify_seller(seller)
-  Notification.create!(user: seller, message: "New order placed", read: false)
-  OrderMailer.seller_notification(@order).deliver_later
-end
+  def notify_seller(order)
+    Notification.create!(user: order.seller, message: "New order placed", read: false)
+    # ✅ Pass order.id instead of unsaved object
+    OrderMailer.seller_notification(order.id).deliver_later
+  end
 
-def show
-  # For guests, render confirmation page
-  # @order is already set by set_order
-end
+  def show
+    # For guests, render confirmation page
+    # @order is already set by set_order
+  end
 
   def decrement_stock!(order)
     order.order_items.each do |item|
