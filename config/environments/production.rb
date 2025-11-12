@@ -1,7 +1,7 @@
+# config/environments/production.rb
 require "active_support/core_ext/integer/time"
 
 Rails.application.configure do
-  
   # ✅ Use Supabase for Active Storage
   config.active_storage.service = :supabase
 
@@ -17,11 +17,14 @@ Rails.application.configure do
     protocol: "https"
   }
 
+  # ❌ Disable SMTP (we’re using Brevo API instead)
+  config.action_mailer.delivery_method = :test
+
   # ✅ Secret key fallback
   config.secret_key_base = ENV["SECRET_KEY_BASE"] || Rails.application.credentials.secret_key_base
 
   # ✅ Serve static assets (CSS, JS, images, etc.)
-  config.public_file_server.enabled = ENV["RAILS_SERVE_STATIC_FILES"].present? || true
+  config.public_file_server.enabled = ENV["RAILS_SERVE_STATIC_FILES"].present?
   config.public_file_server.headers = {
     "Cache-Control" => "public, max-age=#{1.year.to_i}"
   }
