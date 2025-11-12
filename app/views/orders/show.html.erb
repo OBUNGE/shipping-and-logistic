@@ -25,9 +25,15 @@
           <div class="col-md-6">
             <div class="border rounded-3 p-3 bg-light">
               <h5 class="fw-semibold text-primary mb-2">Buyer Information</h5>
-              <p class="mb-1"><strong>Name:</strong> <%= @order.buyer.name %></p>
-              <p class="mb-1"><strong>Email:</strong> <%= @order.buyer.email %></p>
-              <p class="mb-0"><strong>Phone:</strong> <%= @order.buyer.phone.presence || "Not provided" %></p>
+              <p class="mb-1"><strong>Name:</strong>
+                <%= @order.buyer&.name || [@order.first_name, @order.last_name].compact.join(" ") %>
+              </p>
+              <p class="mb-1"><strong>Email:</strong>
+                <%= @order.buyer&.email || @order.email %>
+              </p>
+              <p class="mb-0"><strong>Phone:</strong>
+                <%= @order.buyer&.phone || @order.phone_number.presence || "Not provided" %>
+              </p>
             </div>
           </div>
           <div class="col-md-6">
@@ -68,9 +74,9 @@
                     <% end %>
                   </td>
                   <td><%= item.quantity %></td>
-                  <td><%= display_price(item.unit_price || item.product.price, user: @order.buyer) %></td>
-                  <td><%= display_price(item.shipping || 0, user: @order.buyer) %></td>
-                  <td class="fw-semibold"><%= display_price(item.subtotal, user: @order.buyer) %></td>
+                  <td><%= number_to_currency(item.unit_price || item.product.price, unit: "#{currency} ") %></td>
+                  <td><%= number_to_currency(item.shipping || 0, unit: "#{currency} ") %></td>
+                  <td class="fw-semibold"><%= number_to_currency(item.subtotal, unit: "#{currency} ") %></td>
                 </tr>
               <% end %>
             </tbody>
