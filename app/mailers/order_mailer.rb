@@ -1,6 +1,6 @@
 # app/mailers/order_mailer.rb
 class OrderMailer < ApplicationMailer
-  default from: 'no-reply@yourdomain.com'
+  # We’re bypassing ActionMailer’s SMTP delivery and using Brevo API directly
 
   # === Buyer / Guest Payment Confirmation ===
   def payment_confirmation(order_id)
@@ -15,9 +15,14 @@ class OrderMailer < ApplicationMailer
         @order.email
       end
 
-    mail(
-      to: recipient_email,
-      subject: "Payment Confirmation for Order ##{@order.id}"
+    BrevoEmailService.new.send_email(
+      to_email: recipient_email,
+      to_name: [@order.first_name, @order.last_name].compact.join(" "),
+      subject: "Payment Confirmation for Order ##{@order.id}",
+      html_content: ApplicationController.render(
+        template: "order_mailer/payment_confirmation",
+        assigns: { order: @order }
+      )
     )
   end
 
@@ -34,9 +39,14 @@ class OrderMailer < ApplicationMailer
         "admin@yourdomain.com"
       end
 
-    mail(
-      to: recipient_email,
-      subject: "Payment Received for Order ##{@order.id}"
+    BrevoEmailService.new.send_email(
+      to_email: recipient_email,
+      to_name: @order.seller&.name || "Admin",
+      subject: "Payment Received for Order ##{@order.id}",
+      html_content: ApplicationController.render(
+        template: "order_mailer/seller_notification",
+        assigns: { order: @order }
+      )
     )
   end
 end
