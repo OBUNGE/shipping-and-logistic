@@ -171,6 +171,8 @@ GEM
     erubi (1.13.1)
     et-orbi (1.4.0)
       tzinfo
+    ethon (0.15.0)
+      ffi (>= 1.15.0)
     execjs (2.10.0)
     factory_bot (6.5.5)
       activesupport (>= 6.1.0)
@@ -502,6 +504,10 @@ GEM
       rexml (~> 3.2, >= 3.2.5)
       rubyzip (>= 1.2.2, < 4.0)
       websocket (~> 1.0)
+    sib-api-v3-sdk (9.1.0)
+      addressable (~> 2.3, >= 2.3.0)
+      json (~> 2.1, >= 2.1.0)
+      typhoeus (~> 1.0, >= 1.0.1)
     sidekiq (7.3.9)
       base64
       connection_pool (>= 2.3.0)
@@ -554,6 +560,8 @@ GEM
     turbo-rails (2.0.17)
       actionpack (>= 7.1.0)
       railties (>= 7.1.0)
+    typhoeus (1.5.0)
+      ethon (>= 0.9.0, < 0.16.0)
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
     unicode-display_width (2.6.0)
@@ -633,6 +641,7 @@ DEPENDENCIES
   ruby-vips
   sassc-rails
   selenium-webdriver
+  sib-api-v3-sdk
   sidekiq
   solid_cable
   solid_cache

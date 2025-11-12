@@ -1,17 +1,18 @@
+# app/mailers/order_mailer.rb
 class OrderMailer < ApplicationMailer
   default from: 'no-reply@yourdomain.com'
 
   # === Buyer / Guest Payment Confirmation ===
-  def payment_confirmation(order)
-    @order = order
+  def payment_confirmation(order_id)
+    @order = Order.find(order_id)
 
     # ✅ Handle both logged-in buyers and guests
     recipient_email =
       if @order.buyer.present?
         @order.buyer.email
       else
-        # fallback to guest email stored in payment metadata or order record
-        @order.payments.last&.guest_email || @order.email || @order.metadata["customer_email"]
+        # fallback to guest email stored in the order record
+        @order.email
       end
 
     mail(
@@ -21,8 +22,8 @@ class OrderMailer < ApplicationMailer
   end
 
   # === Seller Notification ===
-  def seller_notification(order)
-    @order = order
+  def seller_notification(order_id)
+    @order = Order.find(order_id)
 
     # ✅ Handle both registered sellers and guest orders
     recipient_email =
