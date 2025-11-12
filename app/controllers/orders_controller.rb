@@ -153,15 +153,24 @@ def set_order
       redirect_to root_path, alert: "You are not authorized to view this order."
     end
   else
-    # Guests can view orders if buyer is nil (guest checkout)
-    redirect_to root_path, alert: "You are not authorized to view this order." if @order.buyer.present?
+    # Guests can view their order if buyer is nil (guest checkout)
+    if @order.buyer.present?
+      redirect_to root_path, alert: "You are not authorized to view this order."
+    elsif params[:email].present? && @order.email != params[:email]
+      redirect_to root_path, alert: "You are not authorized to view this order."
+    end
   end
 end
 
+def notify_seller(seller)
+  Notification.create!(user: seller, message: "New order placed", read: false)
+  OrderMailer.seller_notification(@order).deliver_later
+end
 
-  def notify_seller(seller)
-    Notification.create!(user: seller, message: "New order placed", read: false)
-  end
+def show
+  # For guests, render confirmation page
+  # @order is already set by set_order
+end
 
   def decrement_stock!(order)
     order.order_items.each do |item|
