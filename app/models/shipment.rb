@@ -79,6 +79,6 @@ class Shipment < ApplicationRecord
 
   def send_status_email
     return unless buyer&.email.present? && defined?(ShipmentMailer)
-    ShipmentMailer.status_update(self, status).deliver_later
+    ShipmentMailer.status_update(self, status)
   end
 end

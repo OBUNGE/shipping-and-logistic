@@ -15,7 +15,7 @@ def create
       format.js { render js: "alert('Error: #{@review.errors.full_messages.to_sentence}');" }
     end
   end
-  ReviewMailer.new_review(@review).deliver_later
+  ReviewMailer.new_review(@review)
 
 end
 def edit

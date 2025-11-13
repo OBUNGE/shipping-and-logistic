@@ -176,7 +176,7 @@ class ShipmentsController < ApplicationController
       changed_by: current_user,
       changed_at: Time.current
     )
-    ShipmentMailer.status_update(@shipment, new_status).deliver_later
+    ShipmentMailer.new.status_update(@shipment, new_status)
   end
 
   def require_seller_or_admin

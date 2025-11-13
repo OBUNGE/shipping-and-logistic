@@ -164,13 +164,8 @@ class OrdersController < ApplicationController
 
   def notify_seller(order)
     Notification.create!(user: order.seller, message: "New order placed", read: false)
-    # ✅ Pass order.id instead of unsaved object
-    OrderMailer.seller_notification(order.id).deliver_later
-  end
-
-  def show
-    # For guests, render confirmation page
-    # @order is already set by set_order
+    # ✅ Call Brevo directly
+    OrderMailer.new.seller_notification(order.id)
   end
 
   def decrement_stock!(order)
@@ -210,7 +205,7 @@ class OrdersController < ApplicationController
       order,
       provider: provider,
       phone_number: phone_number,
-      email: email, # ✅ pass guest/buyer email into PaymentService
+      email: email,
       currency: order.currency,
       return_url: order_url(order),
       callback_url: mpesa_callback_url(order_id: order.id,
