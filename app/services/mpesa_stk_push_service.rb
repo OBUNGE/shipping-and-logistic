@@ -1,18 +1,20 @@
 require "base64"
 require "httparty"
 
-MpesaStkPushService.new(
-  order: @order,
-  phone_number: params[:mpesa_phone].presence || @order.phone_number,
-  amount: @order.total,
-  account_reference: "Order_#{@order.id}",
-  description: "Payment for Order #{@order.id}"
-).call
+class MpesaStkPushService
+  def initialize(order:, mpesa_phone:, amount:, account_reference:, description:, callback_url: nil)
+    @order             = order
+    @mpesa_phone       = normalize_phone(mpesa_phone)
+    @amount            = amount
+    @account_reference = account_reference
+    @description       = description
+    @callback_url      = callback_url || default_callback_url
+  end
 
   def call
     gateway = MpesaGateway.new(
       order: @order,
-      phone_number: @phone_number,
+      phone_number: @mpesa_phone,
       amount: @amount,
       account_reference: @account_reference,
       description: @description,
@@ -21,7 +23,6 @@ MpesaStkPushService.new(
 
     response = gateway.initiate
 
-    # ✅ Create a Payment record immediately after STK Push initiation
     if response && response["ResponseCode"] == "0"
       Payment.create!(
         order:               @order,
@@ -44,11 +45,10 @@ MpesaStkPushService.new(
 
   private
 
-  # ✅ Normalize phone to Safaricom’s required format (2547XXXXXXXX)
   def normalize_phone(phone)
-    phone = phone.to_s.strip.gsub(/\D/, "") # remove non-digits
-    phone = phone.sub(/^0/, "254")          # replace leading 0 with 254
-    phone = phone.sub(/^\+254/, "254")      # remove leading +
+    phone = phone.to_s.strip.gsub(/\D/, "")
+    phone = phone.sub(/^0/, "254")
+    phone = phone.sub(/^\+254/, "254")
     phone.start_with?("254") ? phone : "254#{phone}"
   end
 
