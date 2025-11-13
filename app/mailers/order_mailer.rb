@@ -1,5 +1,7 @@
 # app/mailers/order_mailer.rb
 class OrderMailer < ApplicationMailer
+  layout false
+
   # We bypass ActionMailer’s SMTP delivery and use Brevo API directly
 
   # === Buyer / Guest Payment Confirmation ===
