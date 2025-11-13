@@ -2,26 +2,31 @@
 <html>
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
+    <style>
+      body { font-family: Arial, sans-serif; color: #333; }
+      h2 { color: #2c3e50; }
+      p { margin: 0 0 10px; }
+    </style>
   </head>
   <body>
-    <h2>Hello <%= @order.seller&.name || "Seller" %>,</h2>
+    <h2>Hello <%= order.seller&.name || "Seller" %>,</h2>
 
     <p>
-      Order ##<%= @order.id %> has been paid by
-      <%= [@order.first_name, @order.last_name].compact.join(" ") %>
-      (<%= @order.email %>).
+      Order ##<%= order.id %> has been paid by
+      <%= [order.first_name, order.last_name].compact.join(" ") %>
+      (<%= order.email %>).
     </p>
 
     <p>
-      Phone: <%= @order.phone_number || "N/A" %><br>
-      Address: <%= @order.address || "N/A" %>
+      Phone: <%= order.phone_number || "N/A" %><br>
+      Address: <%= order.address || "N/A" %>
     </p>
 
     <p>Please prepare the shipment and update tracking when ready.</p>
 
     <p>
       <strong>Total:</strong>
-      <%= number_to_currency(@order.total, unit: "#{@order.currency} ") %>
+      <%= number_to_currency(order.total, unit: "#{order.currency} ") %>
     </p>
 
     <p>Thank you for using our platform.</p>
