@@ -4,11 +4,11 @@ class PaymentsController < ApplicationController
 
   # === Create Payment (handles Mpesa, Paystack, PayPal) ===
   def create
-    provider        = params[:provider].to_s.downcase
-    phone_number    = params[:mpesa_phone].presence || params[:phone_number].presence || current_user&.phone
-    buyer_currency  = params[:currency].presence || @order.currency || "USD"
+    provider       = params[:provider].to_s.downcase
+    mpesa_phone    = params[:mpesa_phone].presence || params[:phone_number].presence || current_user&.phone
+    buyer_currency = params[:currency].presence || @order.currency || "USD"
 
-    if provider == "mpesa" && phone_number.blank?
+    if provider == "mpesa" && mpesa_phone.blank?
       redirect_to @order, alert: "Phone number is required for M-PESA payments." and return
     end
 
@@ -38,7 +38,7 @@ class PaymentsController < ApplicationController
     result = PaymentService.process(
       @order,
       provider: provider,
-      phone_number: phone_number,
+      phone_number: mpesa_phone, # ✅ pass payment phone
       currency: buyer_currency,
       return_url: order_url(@order),
       callback_url: callback_url
@@ -57,7 +57,7 @@ class PaymentsController < ApplicationController
       @payment.update(status: :failed)
       redirect_to @order, alert: result[:error]
     else
-      redirect_to @order, notice: "STK Push sent to #{phone_number}. Please complete payment on your phone."
+      redirect_to @order, notice: "STK Push sent to #{mpesa_phone}. Please complete payment on your phone."
     end
   end
 
@@ -96,7 +96,12 @@ class PaymentsController < ApplicationController
     else
       error_msg = body["message"] || "Verification failed"
       payment = @order.payments.find_or_initialize_by(transaction_id: reference, provider: "paystack")
-      payment.update!(status: :failed, user: @order.buyer)
+      payment.update!(
+        status: :failed,
+        user: @order.buyer,
+        amount: @order.total,
+        currency: @order.currency
+      )
 
       redirect_to @order, alert: "❌ Paystack payment failed: #{error_msg}"
     end
@@ -143,7 +148,12 @@ class PaymentsController < ApplicationController
         redirect_to @order, notice: "✅ PayPal payment successful"
       else
         payment = @order.payments.find_or_initialize_by(transaction_id: result.id, provider: "paypal")
-        payment.update!(status: :failed, user: @order.buyer)
+        payment.update!(
+          status: :failed,
+          user: @order.buyer,
+          amount: @order.total,
+          currency: @order.currency
+        )
         redirect_to @order, alert: "❌ PayPal payment not completed (#{result.status})"
       end
     rescue => e
@@ -167,11 +177,18 @@ class PaymentsController < ApplicationController
 
     result_code = body.dig("Body", "stkCallback", "ResultCode")
     checkout_id = body.dig("Body", "stkCallback", "CheckoutRequestID")
+    result_desc = body.dig("Body", "stkCallback", "ResultDesc")
 
     payment = @order.payments.find_or_initialize_by(checkout_request_id: checkout_id, provider: "mpesa")
 
     if result_code.to_i == 0
-      payment.update!(status: :paid, user: @order.buyer, amount: @order.total, currency: "KES")
+      payment.update!(
+        status:   :paid,
+        user:     @order.buyer,
+        amount:   @order.total,
+        currency: "KES",
+        message:  result_desc
+      )
       @order.update!(status: :paid)
 
       OrderMailer.payment_confirmation(@order.id).deliver_later
@@ -179,7 +196,13 @@ class PaymentsController < ApplicationController
 
       Rails.logger.info("✅ M-PESA payment confirmed for Order ##{@order.id}")
     else
-      payment.update!(status: :failed, user: @order.buyer)
+      payment.update!(
+        status:   :failed,
+        user:     @order.buyer,
+        amount:   @order.total,
+        currency: "KES",
+        message:  result_desc
+      )
       Rails.logger.warn("❌ M-PESA payment failed for Order ##{@order.id}")
     end
 

@@ -122,17 +122,21 @@ class OrdersController < ApplicationController
   # Explicit pay endpoint (if used)
   def pay
     # set_order already loaded via before_action
-    mpesa_phone = params[:mpesa_phone].presence || @order.phone_number
+    mpesa_phone = params[:mpesa_phone].presence || order_params[:phone_number].presence || current_user&.phone
 
-    result = MpesaStkPushService.new(
-      order: @order,
-      phone_number: mpesa_phone,
-      amount: @order.total,
-      account_reference: "Order_#{@order.id}",
-      description: "Payment for Order #{@order.id}",
-      callback_url: mpesa_callback_url(order_id: @order.id,
-                                       host: ENV["APP_HOST"] || "shipping-and-logistic-wuo1.onrender.com")
-    ).call
+
+result = MpesaStkPushService.new(
+  order: @order,
+  mpesa_phone: mpesa_phone,
+  amount: @order.total,
+  account_reference: "Order_#{@order.id}",
+  description: "Payment for Order #{@order.id}",
+  callback_url: mpesa_callback_url(
+    order_id: @order.id,
+    host: ENV["APP_HOST"] || "https://shipping-and-logistic-wuo1.onrender.com"
+  )
+).call
+
 
     respond_to do |format|
       if result.is_a?(Hash) && result[:error]
