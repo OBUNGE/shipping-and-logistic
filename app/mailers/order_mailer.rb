@@ -2,19 +2,14 @@
 class OrderMailer < ApplicationMailer
   layout false
 
-  # We bypass ActionMailer’s SMTP delivery and use Brevo API directly
-
-  # === Buyer / Guest Payment Confirmation ===
   def payment_confirmation(order_id)
     order = Order.find(order_id)
-
     recipient_email = order.buyer&.email || order.email
 
     begin
       html_content = ApplicationController.renderer.render(
-        template: "order_mailer/payment_confirmation",
-        assigns: { order: order },
-        formats: [:html]
+        partial: "order_mailer/payment_confirmation",
+        locals: { order: order }
       )
 
       BrevoEmailService.new.send_email(
@@ -28,18 +23,15 @@ class OrderMailer < ApplicationMailer
     end
   end
 
-  # === Seller Notification ===
   def seller_notification(order_id)
     order = Order.find(order_id)
-
     recipient_email = order.seller&.email || "admin@yourdomain.com"
     recipient_name  = order.seller&.name || "Seller"
 
     begin
       html_content = ApplicationController.renderer.render(
-        template: "order_mailer/seller_notification",
-        assigns: { order: order },
-        formats: [:html]
+        partial: "order_mailer/seller_notification",
+        locals: { order: order }
       )
 
       BrevoEmailService.new.send_email(
