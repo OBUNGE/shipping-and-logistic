@@ -22,11 +22,10 @@
     <%= javascript_importmap_tags %>
 
     <style>
-      .navbar.sticky-top { z-index: 1030; }
-      .dropdown-menu { z-index: 2000 !important; }
-      .navbar-collapse {
-        text-align: left !important;
-      }
+      /* Ensure navbar and dropdowns always sit above sticky search bars */
+      .navbar.sticky-top { z-index: 3000 !important; }
+      .dropdown-menu { z-index: 3100 !important; }
+      .navbar-collapse { text-align: left !important; }
     </style>
   </head>
 
@@ -34,6 +33,12 @@
     <nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top shadow-sm">
       <div class="container-fluid px-0">
         <a class="navbar-brand px-3" href="<%= root_path %>">AfriXpress</a>
+
+        <!-- Cart always visible -->
+        <div class="ms-auto me-3" id="cart-badge">
+          <%= render "layouts/cart_badge" %>
+        </div>
+
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
@@ -119,11 +124,6 @@
               <li class="nav-item"><%= link_to "Login", new_user_session_path, class: "nav-link" %></li>
               <li class="nav-item"><%= link_to "Sign Up", new_user_registration_path, class: "nav-link" %></li>
             <% end %>
-
-            <!-- 🛒 Cart Badge -->
-            <li class="nav-item" id="cart-badge">
-              <%= render "layouts/cart_badge" %>
-            </li>
           </ul>
         </div>
       </div>
