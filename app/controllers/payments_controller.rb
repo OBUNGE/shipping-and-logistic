@@ -88,8 +88,10 @@ class PaymentsController < ApplicationController
       )
 
       @order.update!(status: :paid)
-      OrderMailer.payment_confirmation(@order.id).deliver_later
-      OrderMailer.seller_notification(@order.id).deliver_later
+
+      # ✅ Call Brevo directly
+      OrderMailer.new.payment_confirmation(@order.id)
+      OrderMailer.new.seller_notification(@order.id)
 
       redirect_to @order, notice: "✅ Paystack payment successful"
     else
@@ -135,8 +137,10 @@ class PaymentsController < ApplicationController
         )
 
         @order.update!(status: :paid)
-        OrderMailer.payment_confirmation(@order.id).deliver_later
-        OrderMailer.seller_notification(@order.id).deliver_later
+
+        # ✅ Call Brevo directly
+        OrderMailer.new.payment_confirmation(@order.id)
+        OrderMailer.new.seller_notification(@order.id)
 
         redirect_to @order, notice: "✅ PayPal payment successful"
       else
@@ -172,8 +176,9 @@ class PaymentsController < ApplicationController
       payment.update!(status: :paid, user: @order.buyer)
       @order.update!(status: :paid)
 
-      OrderMailer.payment_confirmation(@order.id).deliver_later
-      OrderMailer.seller_notification(@order.id).deliver_later
+      # ✅ Call Brevo directly
+      OrderMailer.new.payment_confirmation(@order.id)
+      OrderMailer.new.seller_notification(@order.id)
 
       Rails.logger.info("✅ M-PESA payment confirmed for Order ##{@order.id}")
     else
