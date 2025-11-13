@@ -85,8 +85,8 @@
         <p><strong>Payment Status:</strong> <%= @order.payment.status.capitalize %></p>
       <% end %>
     <% else %>
-      <!-- ✅ Buy Now adds product to cart and redirects -->
-      <%= form_with url: add_cart_path, method: :post, local: true do |f| %>
+      <!-- ✅ Buy Now → Single product checkout -->
+      <%= form_with url: new_order_path, method: :get, local: true do |f| %>
         <%= f.hidden_field :product_id, value: @product.id %>
         <%= f.hidden_field :quantity, value: @product.min_order || 1 %>
         <%= f.submit "Buy Now", class: "btn btn-gradient w-100 mb-3 fw-semibold py-2" %>

@@ -12,6 +12,11 @@ class PaymentService
                          order.total
                        end
 
+      callback_url ||= Rails.application.routes.url_helpers.mpesa_callback_url(
+        order_id: order.id,
+        host: ENV.fetch("APP_HOST", "http://localhost:3000")
+      )
+
       MpesaGateway.new(
         order: order,
         phone_number: phone_number,
@@ -35,7 +40,7 @@ class PaymentService
         return_url: return_url,
         amount: amount_in_minor_units,
         currency: currency,
-        email: email || order.email || order.buyer&.email # ✅ pass guest/buyer email
+        email: email || order.email || order.buyer&.email
       ).initiate
 
     else

@@ -20,15 +20,38 @@ class MpesaStkPushService
       description: @description,
       callback_url: @callback_url
     )
-    gateway.initiate
+
+    response = gateway.initiate
+
+    # ✅ Create a Payment record immediately after STK Push initiation
+    if response && response["ResponseCode"] == "0"
+      Payment.create!(
+        order: @order,
+        amount: @amount,
+        status: "pending",
+        provider: "mpesa",
+        checkout_request_id: response["CheckoutRequestID"],
+        merchant_request_id: response["MerchantRequestID"],
+        message: response["ResponseDescription"]
+      )
+    end
+
+    response
   end
 
   private
 
   def normalize_phone(phone)
-    phone = phone.to_s.strip
-    return phone if phone.start_with?("254")
-    phone.sub(/^0/, "254")
+    phone = phone.to_s.strip.gsub(/\D/, "") # remove non-digits
+
+    # Replace leading 0 with 254
+    phone = phone.sub(/^0/, "254")
+
+    # Remove leading + if present
+    phone = phone.sub(/^\+254/, "254")
+
+    # Ensure starts with 254
+    phone.start_with?("254") ? phone : "254#{phone}"
   end
 
   def default_callback_url
