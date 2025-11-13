@@ -204,17 +204,17 @@ class OrdersController < ApplicationController
 
   def order_params
     params.require(:order).permit(
-      :currency, :provider, :phone_number, :mpesa_phone, :email,
+      :currency, :provider, :phone_number, :email,
       :first_name, :last_name, :alternate_contact,
       :city, :county, :country, :region, :address, :delivery_notes
     )
   end
 
-  def handle_payment(order, provider, phone_number, email)
+  def handle_payment(order, provider, mpesa_phone, email)
     result = PaymentService.process(
       order,
       provider: provider,
-      phone_number: phone_number,
+      phone_number: mpesa_phone,
       email: email,
       currency: order.currency,
       return_url: order_url(order),
