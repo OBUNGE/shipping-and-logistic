@@ -1,28 +1,17 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
-    <style>
-      body { font-family: Arial, sans-serif; color: #333; }
-      h2 { color: #2c3e50; }
-      p { margin: 0 0 10px; }
-    </style>
-  </head>
-  <body>
-    <h2>
-      <% if order.buyer.present? %>
-        Hi <%= order.buyer.first_name %> <%= order.buyer.last_name %>,
-      <% else %>
-        Hi <%= order.first_name %> <%= order.last_name %>,
-      <% end %>
-    </h2>
+<!-- app/views/order_mailer/payment_confirmation.html.erb -->
 
-    <p>Thank you for your payment for Order ##<%= order.id %>.</p>
-    <p>We’ve notified the seller and will begin preparing your shipment.</p>
+<h2>
+  <% if @order.buyer.present? %>
+    Hi <%= @order.buyer.first_name %> <%= @order.buyer.last_name %>,
+  <% else %>
+    Hi <%= @order.first_name %> <%= @order.last_name %>,
+  <% end %>
+</h2>
 
-    <p>
-      <strong>Amount Paid:</strong>
-      <%= number_to_currency(order.total, unit: "#{order.currency} ") %>
-    </p>
-  </body>
-</html>
+<p>Thank you for your payment for Order ##<%= @order.id %>.</p>
+<p>We’ve notified the seller and will begin preparing your shipment.</p>
+
+<p>
+  <strong>Amount Paid:</strong>
+  <%= number_to_currency(@order.total, unit: "#{@order.currency} ") %>
+</p>
