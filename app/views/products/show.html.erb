@@ -55,81 +55,85 @@
         <%= image_tag asset_path("placeholder.jpg"), class: "img-fluid rounded-4 shadow-sm border", alt: "No product image available" %>
       <% end %>
     </div>
+<!-- 🛒 Product Info -->
+<div class="col-lg-6">
+  <h1 class="fw-bold mb-2 lh-1"><%= @product.title %></h1>
 
-    <!-- 🛒 Product Info -->
-    <div class="col-lg-6">
-      <h1 class="fw-bold mb-2 lh-1"><%= @product.title %></h1>
-
-      <div class="mb-3 text-muted small">
-        <span class="fw-semibold"><%= @product.seller_name %></span> |
-        <%= render_stars(@product.average_rating) %> (<%= @product.average_rating %>/5)
-        <% if @product.average_rating >= 4.5 %>
-          <span class="badge bg-success ms-2">Highly Rated</span>
-        <% end %>
-      </div>
-
-      <div class="border-start border-3 border-primary ps-3 mb-4">
-        <h2 class="fw-bold text-primary mb-0"><%= display_price(@product.price, user: current_user) %></h2>
-        <% if @product.discount&.active? %>
-          <small class="text-success"><%= @product.discount.percentage %>% OFF — Now: KES <%= @product.discounted_price %></small>
-        <% end %>
-      </div>
-
-<div class="rounded-4 bg-light p-4 shadow-sm mb-4">
-  <h5 class="fw-semibold mb-3">Purchase Options</h5>
-
-  <% if @order.present? %>
-    <% if @order.payment.nil? %>
-      <%= button_to "Pay Now", order_payment_path(@order), method: :post, class: "btn btn-success w-100 py-2 fw-semibold" %>
-    <% else %>
-      <p><strong>Order Status:</strong> <%= @order.status.capitalize %></p>
-      <p><strong>Payment Status:</strong> <%= @order.payment.status.capitalize %></p>
+  <div class="mb-3 text-muted small">
+    <span class="fw-semibold"><%= @product.seller_name %></span> |
+    <%= render_stars(@product.average_rating) %> (<%= @product.average_rating %>/5)
+    <% if @product.average_rating >= 4.5 %>
+      <span class="badge bg-success ms-2">Highly Rated</span>
     <% end %>
-  <% else %>
-    <%= link_to "Buy Now", new_product_order_path(@product), class: "btn btn-gradient w-100 mb-3" %>
-  <% end %>
+  </div>
 
-  <%= form_with url: add_cart_path, method: :post, local: true, data: { turbo: false } do |f| %>
-    <%= f.hidden_field :product_id, value: @product.id %>
+  <div class="border-start border-3 border-primary ps-3 mb-4">
+    <h2 class="fw-bold text-primary mb-0"><%= display_price(@product.price, user: current_user) %></h2>
+    <% if @product.discount&.active? %>
+      <small class="text-success"><%= @product.discount.percentage %>% OFF — Now: KES <%= @product.discounted_price %></small>
+    <% end %>
+  </div>
 
-    <% if @product.variants.any? %>
-      <div class="mb-3">
-        <label class="form-label small fw-semibold">Choose Variants & Quantities</label>
-        <% @product.variants.each do |variant| %>
-          <div class="d-flex align-items-center mb-2">
-            <span><%= variant.name %>: <%= variant.value %></span>
-            <%= number_field_tag "variants[#{variant.id}]", 0, min: 0, class: "form-control form-control-sm ms-auto", style: "width: 80px;" %>
-          </div>
-        <% end %>
-      </div>
+  <div class="rounded-4 bg-light p-4 shadow-sm mb-4">
+    <h5 class="fw-semibold mb-3">Purchase Options</h5>
+
+    <% if @order.present? %>
+      <% if @order.payment.nil? %>
+        <%= button_to "Pay Now", order_payment_path(@order), method: :post, class: "btn btn-success w-100 py-2 fw-semibold" %>
+      <% else %>
+        <p><strong>Order Status:</strong> <%= @order.status.capitalize %></p>
+        <p><strong>Payment Status:</strong> <%= @order.payment.status.capitalize %></p>
+      <% end %>
     <% else %>
-      <div class="mb-3">
-        <%= f.label :quantity, "Quantity", class: "form-label small fw-semibold" %>
-        <%= f.number_field :quantity, value: @product.min_order || 1, min: @product.min_order || 1, class: "form-control form-control-sm" %>
-      </div>
+      <!-- ✅ Buy Now adds product to cart and redirects -->
+      <%= form_with url: add_cart_path, method: :post, local: true do |f| %>
+        <%= f.hidden_field :product_id, value: @product.id %>
+        <%= f.hidden_field :quantity, value: @product.min_order || 1 %>
+        <%= f.submit "Buy Now", class: "btn btn-gradient w-100 mb-3 fw-semibold py-2" %>
+      <% end %>
     <% end %>
 
-    <%= f.submit "Add to Cart", class: "btn btn-outline-primary w-100 fw-semibold py-2" %>
-  <% end %>
-</div>
+    <!-- Add to Cart form -->
+    <%= form_with url: add_cart_path, method: :post, local: true, data: { turbo: false } do |f| %>
+      <%= f.hidden_field :product_id, value: @product.id %>
 
-      <div class="small text-muted">
-        <div class="row">
-          <div class="col-6"><strong>Stock:</strong> <%= @product.stock %></div>
-          <div class="col-6"><strong>Min Order:</strong> <%= @product.min_order %></div>
-          <div class="col-6"><strong>Shipping:</strong> <%= display_price(@product.shipping_cost || 0, user: current_user) %></div>
-          <div class="col-6"><strong>Delivery:</strong> <%= @product.delivery_estimate %></div>
+      <% if @product.variants.any? %>
+        <div class="mb-3">
+          <label class="form-label small fw-semibold">Choose Variants & Quantities</label>
+          <% @product.variants.each do |variant| %>
+            <div class="d-flex align-items-center mb-2">
+              <span><%= variant.name %>: <%= variant.value %></span>
+              <%= number_field_tag "variants[#{variant.id}]", 0, min: 0, class: "form-control form-control-sm ms-auto", style: "width: 80px;" %>
+            </div>
+          <% end %>
         </div>
-      </div>
-
-      <% if user_signed_in? && current_user.seller? && current_user == @product.seller %>
-        <div class="mt-4 border-top pt-3">
-          <%= link_to "Edit Product", edit_product_path(@product), class: "btn btn-outline-secondary btn-sm me-2" %>
-          <%= button_to "Delete", product_path(@product), method: :delete, data: { confirm: "Are you sure?" }, class: "btn btn-outline-danger btn-sm" %>
+      <% else %>
+        <div class="mb-3">
+          <%= f.label :quantity, "Quantity", class: "form-label small fw-semibold" %>
+          <%= f.number_field :quantity, value: @product.min_order || 1, min: @product.min_order || 1, class: "form-control form-control-sm" %>
         </div>
       <% end %>
+
+      <%= f.submit "Add to Cart", class: "btn btn-outline-primary w-100 fw-semibold py-2" %>
+    <% end %>
+  </div>
+
+  <div class="small text-muted">
+    <div class="row">
+      <div class="col-6"><strong>Stock:</strong> <%= @product.stock %></div>
+      <div class="col-6"><strong>Min Order:</strong> <%= @product.min_order %></div>
+      <div class="col-6"><strong>Shipping:</strong> <%= display_price(@product.shipping_cost || 0, user: current_user) %></div>
+      <div class="col-6"><strong>Delivery:</strong> <%= @product.delivery_estimate %></div>
     </div>
   </div>
+
+  <% if user_signed_in? && current_user.seller? && current_user == @product.seller %>
+    <div class="mt-4 border-top pt-3">
+      <%= link_to "Edit Product", edit_product_path(@product), class: "btn btn-outline-secondary btn-sm me-2" %>
+      <%= button_to "Delete", product_path(@product), method: :delete, data: { confirm: "Are you sure?" }, class: "btn btn-outline-danger btn-sm" %>
+    </div>
+  <% end %>
+</div>
 
   <!-- 📜 Product Description -->
   <div class="mt-5 border rounded-4 p-4 bg-white shadow-sm">

@@ -31,10 +31,9 @@
     <div class="col-md-4">
       <div class="card border-0 shadow-sm rounded-4 p-3 text-center bg-light">
         <h5 class="text-secondary mb-2">💰 Total Revenue</h5>
-<h3 class="fw-bold text-success">
-  <%= display_price(@orders.joins(:payments).where(payments: { status: "paid" }).sum(:total)) %>
-</h3>
-
+        <h3 class="fw-bold text-success">
+          <%= display_price(@orders.joins(:payments).where(payments: { status: "paid" }).sum(:total)) %>
+        </h3>
       </div>
     </div>
   </div>
@@ -145,18 +144,29 @@
             <% @orders.each do |order| %>
               <% latest_payment = order.payments.last %>
               <tr>
-                <td><%= order.buyer.email %></td>
+                <!-- ✅ Guest-safe buyer info -->
+                <td>
+                  <% if order.buyer.present? %>
+                    <%= order.buyer.email %>
+                  <% else %>
+                    <%= order.email %>
+                  <% end %>
+                </td>
+
                 <td>
                   <% order.order_items.each do |item| %>
                     <%= link_to item.product.title, product_path(item.product), class: "text-decoration-none text-dark" %><br>
                   <% end %>
                 </td>
+
                 <td><span class="badge bg-secondary"><%= order.status.capitalize %></span></td>
+
                 <td>
                   <span class="badge bg-info text-dark">
                     <%= latest_payment&.status&.capitalize || "Pending" %>
                   </span>
                 </td>
+
                 <td>
                   <% shipment_status = order.shipment&.status %>
                   <span class="badge bg-<%= case shipment_status
@@ -168,6 +178,7 @@
                     <%= shipment_status&.humanize || "Not shipped" %>
                   </span>
                 </td>
+
                 <td>
                   <% if order.shipment.present? %>
                     <%= order.shipment.first_name %> <%= order.shipment.last_name %><br>
@@ -177,14 +188,15 @@
                     <span class="text-muted">No delivery info yet</span>
                   <% end %>
                 </td>
+
                 <td>
                   <%= link_to "View", order_path(order), class: "btn btn-sm btn-outline-primary rounded-pill" %>
                   <% if latest_payment&.status == "paid" && order.shipment.nil? %>
-                    <%= button_to "Create Shipment",
-                          order_shipment_path(order),
-                          method: :post,
-                          class: "btn btn-sm btn-success rounded-pill mt-1",
-                          data: { confirm: "Create shipment for this paid order?" } %>
+                                      <%= button_to "Create Shipment",
+                        order_shipment_path(order),
+                        method: :post,
+                        class: "btn btn-sm btn-success rounded-pill mt-1",
+                        data: { confirm: "Create shipment for this paid order?" } %>
                   <% elsif order.shipment.present? %>
                     <%= link_to "View Shipment",
                           order_shipment_path(order),
@@ -201,3 +213,4 @@
     <% end %>
   </div>
 </div>
+
