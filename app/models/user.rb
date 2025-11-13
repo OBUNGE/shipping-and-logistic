@@ -81,6 +81,10 @@ end
   end
 
   after_create :set_default_branding
+  def seller_profile_complete?
+  company_name.present? && store_logo_url.present? && store_banner_url.present? && store_description.present?
+end
+
 
   private
 

@@ -4,9 +4,14 @@ Rails.application.routes.draw do
   ActiveAdmin.routes(self)
 
   devise_for :users
-  post "toggle_role",   to: "users#toggle_role",   as: :toggle_role
-  post "become_seller", to: "users#become_seller", as: :become_seller
-  post "become_buyer",  to: "users#become_buyer",  as: :become_buyer
+# Role switching
+post "toggle_role",   to: "users#toggle_role",   as: :toggle_role
+post "become_seller", to: "users#become_seller", as: :become_seller
+post "become_buyer",  to: "users#become_buyer",  as: :become_buyer
+
+# Seller onboarding form
+get "seller/new", to: "users#new_seller", as: :new_seller
+
 
   # === My Account (Profile / Storefront settings) ===
   resource :account, only: [:show, :update], controller: "users" do

@@ -4,10 +4,22 @@ class UsersController < ApplicationController
   # =========================
   # Role Switching
   # =========================
-  def become_seller
-    current_user.become_seller!
-    redirect_back fallback_location: root_path, notice: "You are now a seller!"
+def become_seller
+  if current_user.update(account_params)
+    if current_user.seller_profile_complete?
+      current_user.become_seller!
+      redirect_to seller_dashboard_path, notice: "Your storefront has been created!"
+    else
+      flash.now[:alert] = "Please complete all required details."
+      render :new_seller, status: :unprocessable_entity
+    end
+  else
+    flash.now[:alert] = "There was a problem saving your details."
+    render :new_seller, status: :unprocessable_entity
   end
+end
+
+
 
   def become_buyer
     current_user.become_buyer!

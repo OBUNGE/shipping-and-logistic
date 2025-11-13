@@ -5,7 +5,7 @@
         📝 Create Your Account
       </h2>
       <p class="text-center text-muted small mb-4">
-        Join our B2B community to buy and sell products securely.
+        Join our B2B community to start buying products securely.
       </p>
 
       <%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { class: "needs-validation", novalidate: true }) do |f| %>
@@ -17,48 +17,10 @@
           <%= f.text_field :name, class: "form-control rounded-3", placeholder: "Enter your full name" %>
         </div>
 
-        <!-- Company -->
-        <div class="mb-3">
-          <%= f.label :company_name, "Company / Store Name", class: "form-label fw-semibold" %>
-          <%= f.text_field :company_name, class: "form-control rounded-3", placeholder: "Your business or brand name" %>
-        </div>
-
         <!-- Email -->
         <div class="mb-3">
           <%= f.label :email, class: "form-label fw-semibold" %>
           <%= f.email_field :email, autofocus: true, autocomplete: "email", class: "form-control rounded-3", placeholder: "you@example.com" %>
-        </div>
-
-        <!-- Phone -->
-        <div class="mb-3">
-          <%= f.label :phone, "Phone Number", class: "form-label fw-semibold" %>
-          <%= f.telephone_field :phone, class: "form-control rounded-3", placeholder: "e.g. 0712345678" %>
-        </div>
-
-        <!-- Country -->
-        <div class="mb-3">
-          <%= f.label :country, class: "form-label fw-semibold" %>
-          <%= f.select :country,
-                options_for_select([
-                  ["Kenya", "Kenya"],
-                  ["United States", "United States"],
-                  ["United Kingdom", "United Kingdom"],
-                  ["Nigeria", "Nigeria"],
-                  ["South Africa", "South Africa"]
-                ]),
-                { prompt: "Select your country" },
-                class: "form-select rounded-3" %>
-        </div>
-
-        <!-- Roles -->
-        <div class="mb-3">
-          <%= f.label :roles, "Choose your role(s)", class: "form-label fw-semibold" %>
-          <%= f.select :roles,
-                options_for_select([["Buyer", "buyer"], ["Seller", "seller"]]),
-                {},
-                multiple: true,
-                class: "form-select rounded-3" %>
-          <small class="text-muted">You can select one or both roles.</small>
         </div>
 
         <!-- Password -->
@@ -91,42 +53,3 @@
     </div>
   </div>
 </div>
-
-<style>
-  body {
-    background: linear-gradient(135deg, #e3f2fd, #f8f9fa);
-  }
-
-  .card {
-    background: #fff;
-  }
-
-  .form-control, .form-select {
-    border: 1px solid #ced4da;
-    transition: all 0.2s ease;
-  }
-
-  .form-control:focus, .form-select:focus {
-    border-color: #0d6efd;
-    box-shadow: 0 0 0 0.15rem rgba(13,110,253,0.25);
-  }
-
-  .btn-primary {
-    background: linear-gradient(90deg, #0d6efd, #4dabf7);
-    border: none;
-    transition: 0.3s;
-  }
-
-  .btn-primary:hover {
-    background: linear-gradient(90deg, #0b5ed7, #339af0);
-  }
-
-  .card-body {
-    animation: fadeInUp 0.6s ease;
-  }
-
-  @keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(15px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-</style>
