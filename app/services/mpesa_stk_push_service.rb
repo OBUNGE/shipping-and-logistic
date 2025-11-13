@@ -1,15 +1,13 @@
 require "base64"
 require "httparty"
 
-class MpesaStkPushService
-  def initialize(order:, phone_number:, amount:, account_reference:, description:, callback_url: nil)
-    @order             = order
-    @phone_number      = normalize_phone(phone_number)
-    @amount            = amount
-    @account_reference = account_reference
-    @description       = description
-    @callback_url      = callback_url || default_callback_url
-  end
+MpesaStkPushService.new(
+  order: @order,
+  phone_number: params[:mpesa_phone].presence || @order.phone_number,
+  amount: @order.total,
+  account_reference: "Order_#{@order.id}",
+  description: "Payment for Order #{@order.id}"
+).call
 
   def call
     gateway = MpesaGateway.new(
@@ -26,31 +24,31 @@ class MpesaStkPushService
     # ✅ Create a Payment record immediately after STK Push initiation
     if response && response["ResponseCode"] == "0"
       Payment.create!(
-        order: @order,
-        amount: @amount,
-        status: "pending",
-        provider: "mpesa",
+        order:               @order,
+        amount:              @amount,
+        status:              "pending",
+        provider:            "mpesa",
         checkout_request_id: response["CheckoutRequestID"],
         merchant_request_id: response["MerchantRequestID"],
-        message: response["ResponseDescription"]
+        message:             response["ResponseDescription"]
       )
+    else
+      Rails.logger.error("❌ STK Push failed: #{response.inspect}")
     end
 
     response
+  rescue => e
+    Rails.logger.error("❌ MpesaStkPushService error: #{e.message}")
+    { error: "M-PESA STK Push failed" }
   end
 
   private
 
+  # ✅ Normalize phone to Safaricom’s required format (2547XXXXXXXX)
   def normalize_phone(phone)
     phone = phone.to_s.strip.gsub(/\D/, "") # remove non-digits
-
-    # Replace leading 0 with 254
-    phone = phone.sub(/^0/, "254")
-
-    # Remove leading + if present
-    phone = phone.sub(/^\+254/, "254")
-
-    # Ensure starts with 254
+    phone = phone.sub(/^0/, "254")          # replace leading 0 with 254
+    phone = phone.sub(/^\+254/, "254")      # remove leading +
     phone.start_with?("254") ? phone : "254#{phone}"
   end
 

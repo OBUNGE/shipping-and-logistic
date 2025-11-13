@@ -5,19 +5,19 @@ class PaymentsController < ApplicationController
   # === Create Payment (handles Mpesa, Paystack, PayPal) ===
   def create
     provider        = params[:provider].to_s.downcase
-    phone_number    = params[:phone_number].presence || current_user&.phone
+    phone_number    = params[:mpesa_phone].presence || params[:phone_number].presence || current_user&.phone
     buyer_currency  = params[:currency].presence || @order.currency || "USD"
 
     if provider == "mpesa" && phone_number.blank?
       redirect_to @order, alert: "Phone number is required for M-PESA payments." and return
     end
 
-    @payment = @order.payments.find_by(provider: provider.titleize) ||
+    @payment = @order.payments.find_by(provider: provider) ||
                @order.payments.build(
                  user: current_user,
                  amount: @order.total,
                  currency: buyer_currency,
-                 provider: provider.titleize,
+                 provider: provider,
                  status: :pending
                )
 
@@ -79,7 +79,7 @@ class PaymentsController < ApplicationController
     Rails.logger.info("✅ Paystack verification response: #{body.inspect}")
 
     if body["status"] && body.dig("data", "status") == "success"
-      payment = @order.payments.find_or_initialize_by(transaction_id: reference, provider: "Paystack")
+      payment = @order.payments.find_or_initialize_by(transaction_id: reference, provider: "paystack")
       payment.update!(
         user: @order.buyer,
         amount: body.dig("data", "amount").to_f / 100.0,
@@ -89,14 +89,13 @@ class PaymentsController < ApplicationController
 
       @order.update!(status: :paid)
 
-      # ✅ Call Brevo directly
-      OrderMailer.new.payment_confirmation(@order.id)
-      OrderMailer.new.seller_notification(@order.id)
+      OrderMailer.payment_confirmation(@order.id).deliver_later
+      OrderMailer.seller_notification(@order.id).deliver_later
 
       redirect_to @order, notice: "✅ Paystack payment successful"
     else
       error_msg = body["message"] || "Verification failed"
-      payment = @order.payments.find_or_initialize_by(transaction_id: reference, provider: "Paystack")
+      payment = @order.payments.find_or_initialize_by(transaction_id: reference, provider: "paystack")
       payment.update!(status: :failed, user: @order.buyer)
 
       redirect_to @order, alert: "❌ Paystack payment failed: #{error_msg}"
@@ -128,7 +127,7 @@ class PaymentsController < ApplicationController
 
       if result.status == "COMPLETED"
         capture = result.purchase_units.first.payments.captures.first
-        payment = @order.payments.find_or_initialize_by(transaction_id: result.id, provider: "PayPal")
+        payment = @order.payments.find_or_initialize_by(transaction_id: result.id, provider: "paypal")
         payment.update!(
           user: @order.buyer,
           status: :paid,
@@ -138,13 +137,12 @@ class PaymentsController < ApplicationController
 
         @order.update!(status: :paid)
 
-        # ✅ Call Brevo directly
-        OrderMailer.new.payment_confirmation(@order.id)
-        OrderMailer.new.seller_notification(@order.id)
+        OrderMailer.payment_confirmation(@order.id).deliver_later
+        OrderMailer.seller_notification(@order.id).deliver_later
 
         redirect_to @order, notice: "✅ PayPal payment successful"
       else
-        payment = @order.payments.find_or_initialize_by(transaction_id: result.id, provider: "PayPal")
+        payment = @order.payments.find_or_initialize_by(transaction_id: result.id, provider: "paypal")
         payment.update!(status: :failed, user: @order.buyer)
         redirect_to @order, alert: "❌ PayPal payment not completed (#{result.status})"
       end
@@ -170,15 +168,14 @@ class PaymentsController < ApplicationController
     result_code = body.dig("Body", "stkCallback", "ResultCode")
     checkout_id = body.dig("Body", "stkCallback", "CheckoutRequestID")
 
-    payment = @order.payments.find_or_initialize_by(checkout_request_id: checkout_id, provider: "Mpesa")
+    payment = @order.payments.find_or_initialize_by(checkout_request_id: checkout_id, provider: "mpesa")
 
     if result_code.to_i == 0
-      payment.update!(status: :paid, user: @order.buyer)
+      payment.update!(status: :paid, user: @order.buyer, amount: @order.total, currency: "KES")
       @order.update!(status: :paid)
 
-      # ✅ Call Brevo directly
-      OrderMailer.new.payment_confirmation(@order.id)
-      OrderMailer.new.seller_notification(@order.id)
+      OrderMailer.payment_confirmation(@order.id).deliver_later
+      OrderMailer.seller_notification(@order.id).deliver_later
 
       Rails.logger.info("✅ M-PESA payment confirmed for Order ##{@order.id}")
     else

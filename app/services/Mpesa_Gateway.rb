@@ -52,15 +52,19 @@ class MpesaGateway
     Rails.logger.info("📬 STK Push Response: #{parsed.inspect}")
 
     if response.code == 200 && parsed["ResponseCode"] == "0"
-      @order.create_payment!(
+      # ✅ FIX: Create payment via Payment model, not @order.create_payment!
+      Payment.create!(
+        order:               @order,
         user:                @order.buyer,
-        provider:            "M-PESA",
+        provider:            "mpesa",
         amount:              @amount,
         currency:            "KES",
-        status:              :pending,
+        status:              "pending",
         transaction_id:      parsed["MerchantRequestID"],
-        checkout_request_id: parsed["CheckoutRequestID"]
+        checkout_request_id: parsed["CheckoutRequestID"],
+        message:             parsed["ResponseDescription"]
       )
+
       { redirect_url: Rails.application.routes.url_helpers.order_path(@order) }
     else
       error_msg = parsed["errorMessage"] || parsed["errorDescription"] || "M-PESA STK push failed"
