@@ -184,12 +184,11 @@
           <h5>Subtotal: <%= display_price(subtotal, user: current_user) %></h5>
           <h5>Shipping: <%= display_price(shipping_total, user: current_user) %></h5>
           <h4 class="text-success fw-bold">Grand Total: <%= display_price(grand_total, user: current_user) %></h4>
-        </div><%= form_with model: @order, local: true, html: { class: "checkout-form" } do |f| %>
+        </div>
+        
+  <%= form_with model: @order, local: true, html: { class: "checkout-form" } do |f| %>
   <%= render "orders/shared_checkout_fields", f: f %>
   <%= f.submit "Confirm & Pay", class: "btn btn-success w-100 fw-bold py-2 shadow-sm" %>
-<% end %>
-
-<%= f.submit "Confirm & Pay", class: "btn btn-success w-100 fw-bold py-2 shadow-sm" %>
 <% end %>
 
 <% else %>
