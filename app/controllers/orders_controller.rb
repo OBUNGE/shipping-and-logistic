@@ -119,32 +119,32 @@ class OrdersController < ApplicationController
   end
 
   # Explicit pay endpoint (if used)
-  def pay
-    # set_order already loaded via before_action
-    phone_number = params[:phone_number].presence || current_user&.phone
+def pay
+  # set_order already loaded via before_action
+  phone_number = params[:phone_number].presence || current_user&.phone
 
-    result = MpesaStkPushService.new(
-      order: @order,
-      mpesa_phone: phone_number, # service still expects mpesa_phone param
-      amount: @order.total,
-      account_reference: "Order_#{@order.id}",
-      description: "Payment for Order #{@order.id}",
-      callback_url: mpesa_callback_url(
-        order_id: @order.id,
-        host: ENV["APP_HOST"] || "https://shipping-and-logistic-wuo1.onrender.com"
-      )
-    ).call
+  result = MpesaStkPushService.new(
+    order: @order,
+    phone_number: phone_number, # ✅ unified param name
+    amount: @order.total,
+    account_reference: "Order_#{@order.id}",
+    description: "Payment for Order #{@order.id}",
+    callback_url: mpesa_callback_url(
+      order_id: @order.id,
+      host: ENV["APP_HOST"] || "https://shipping-and-logistic-wuo1.onrender.com"
+    )
+  ).call
 
-    respond_to do |format|
-      if result.is_a?(Hash) && result[:error]
-        format.html { redirect_to order_path(@order), alert: result[:error] }
-        format.json { render json: result, status: :unprocessable_entity }
-      else
-        format.html { redirect_to order_path(@order), notice: "STK Push initiated. Check your phone to complete payment." }
-        format.json { render json: result, status: :ok }
-      end
+  respond_to do |format|
+    if result.is_a?(Hash) && result[:error]
+      format.html { redirect_to order_path(@order), alert: result[:error] }
+      format.json { render json: result, status: :unprocessable_entity }
+    else
+      format.html { redirect_to order_path(@order), notice: "STK Push initiated. Check your phone to complete payment." }
+      format.json { render json: result, status: :ok }
     end
   end
+end
 
   private
 
