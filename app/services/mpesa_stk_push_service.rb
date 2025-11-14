@@ -2,9 +2,9 @@ require "base64"
 require "httparty"
 
 class MpesaStkPushService
-  def initialize(order:, mpesa_phone:, amount:, account_reference:, description:, callback_url: nil)
+  def initialize(order:, phone_number:, amount:, account_reference:, description:, callback_url: nil)
     @order             = order
-    @mpesa_phone       = normalize_phone(mpesa_phone)
+    @phone_number       = normalize_phone(phone_number)
     @amount            = amount
     @account_reference = account_reference
     @description       = description
@@ -14,7 +14,7 @@ class MpesaStkPushService
   def call
     gateway = MpesaGateway.new(
       order: @order,
-      phone_number: @mpesa_phone,
+      phone_number: @phone_number,
       amount: @amount,
       account_reference: @account_reference,
       description: @description,

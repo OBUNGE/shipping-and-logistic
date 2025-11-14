@@ -208,7 +208,7 @@ result = MpesaStkPushService.new(
 
   def order_params
     params.require(:order).permit(
-      :currency, :provider, :phone_number, :email,
+      :currency, :provider, :phone_number, :email, :contact_number,
       :first_name, :last_name, :alternate_contact,
       :city, :county, :country, :region, :address, :delivery_notes
     )
