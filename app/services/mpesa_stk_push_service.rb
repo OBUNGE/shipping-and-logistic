@@ -2,14 +2,17 @@ require "base64"
 require "httparty"
 
 class MpesaStkPushService
-  def initialize(order:, phone_number:, amount:, account_reference:, description:, callback_url: nil)
-    @order             = order
-    @phone_number       = normalize_phone(phone_number)
-    @amount            = amount
-    @account_reference = account_reference
-    @description       = description
-    @callback_url      = callback_url || default_callback_url
-  end
+def initialize(order:, phone_number:, amount:, account_reference:, description:, callback_url: nil)
+  @order             = order
+  @phone_number      = normalize_phone(phone_number)
+  @amount            = amount
+  @account_reference = account_reference
+  @description       = description
+  @callback_url      = callback_url || default_callback_url
+
+  Rails.logger.info("✅ Normalized phone: #{@phone_number}")
+end
+
 
   def call
     gateway = MpesaGateway.new(
