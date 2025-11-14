@@ -2,17 +2,16 @@ require "base64"
 require "httparty"
 
 class MpesaStkPushService
-def initialize(order:, phone_number:, amount:, account_reference:, description:, callback_url: nil)
-  @order             = order
-  @phone_number      = normalize_phone(phone_number)
-  @amount            = amount
-  @account_reference = account_reference
-  @description       = description
-  @callback_url      = callback_url || default_callback_url
+  def initialize(order:, phone_number:, amount:, account_reference:, description:, callback_url: nil)
+    @order             = order
+    @phone_number      = normalize_phone(phone_number)
+    @amount            = amount
+    @account_reference = account_reference
+    @description       = description
+    @callback_url      = callback_url || default_callback_url
 
-  Rails.logger.info("✅ Normalized phone: #{@phone_number}")
-end
-
+    Rails.logger.info("✅ Normalized phone: #{@phone_number}")
+  end
 
   def call
     gateway = MpesaGateway.new(
@@ -26,7 +25,7 @@ end
 
     response = gateway.initiate
 
-    if response && response["ResponseCode"] == "0"
+    if response && (response["ResponseCode"] == "0" || response[:redirect_url].present?)
       Payment.create!(
         order:               @order,
         amount:              @amount,
@@ -35,7 +34,7 @@ end
         checkout_request_id: response["CheckoutRequestID"],
         merchant_request_id: response["MerchantRequestID"],
         message:             response["ResponseDescription"]
-      )
+      ) rescue Rails.logger.warn("⚠️ Payment not created: #{response.inspect}")
     else
       Rails.logger.error("❌ STK Push failed: #{response.inspect}")
     end
@@ -48,13 +47,12 @@ end
 
   private
 
-def normalize_phone(phone_number)
-  phone = phone_number.to_s.strip.gsub(/\D/, "")
-  phone = phone.sub(/^0/, "254")
-  phone = phone.sub(/^\+254/, "254")
-  phone.start_with?("254") ? phone : "254#{phone}"
-end
-
+  def normalize_phone(phone_number)
+    phone = phone_number.to_s.strip.gsub(/\D/, "")
+    phone = phone.sub(/^0/, "254")
+    phone = phone.sub(/^\+254/, "254")
+    phone.start_with?("254") ? phone : "254#{phone}"
+  end
 
   def default_callback_url
     Rails.application.routes.url_helpers.mpesa_callback_url(
