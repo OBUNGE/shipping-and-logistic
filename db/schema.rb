@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_14_053710) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_14_055233) do
   create_schema "auth"
   create_schema "extensions"
   create_schema "graphql"
@@ -190,6 +190,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_14_053710) do
     t.string "currency", default: "USD", null: false
     t.string "guest_email"
     t.string "guest_phone"
+    t.string "message"
     t.index ["checkout_request_id"], name: "index_payments_on_checkout_request_id", unique: true
     t.index ["mpesa_receipt_number"], name: "index_payments_on_mpesa_receipt_number", unique: true
     t.index ["order_id"], name: "index_payments_on_order_id"
