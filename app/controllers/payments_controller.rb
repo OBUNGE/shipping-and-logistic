@@ -156,9 +156,54 @@ class PaymentsController < ApplicationController
         )
         redirect_to @order, alert: "❌ PayPal payment not completed (#{result.status})"
       end
-    rescue => e
+       rescue => e
       Rails.logger.error("PayPal capture error: #{e.message}")
-      redirect_to @order, alert: "❌ M-PESA payment failed for Order ##{@order.id}")
+      redirect_to @order, alert: "❌ PayPal verification failed"
+    end
+  end
+
+  # === M-PESA Callback ===
+  def mpesa_callback
+    order_id = params[:order_id]
+    @order = Order.find_by(id: order_id)
+
+    unless @order
+      Rails.logger.error("⚠️ M-PESA callback: Order not found for ID #{order_id}")
+      return head :not_found
+    end
+
+    body = JSON.parse(request.body.read) rescue {}
+    Rails.logger.info("✅ M-PESA Callback received: #{body.inspect}")
+
+    result_code = body.dig("Body", "stkCallback", "ResultCode")
+    checkout_id = body.dig("Body", "stkCallback", "CheckoutRequestID")
+    result_desc = body.dig("Body", "stkCallback", "ResultDesc")
+
+    payment = @order.payments.find_or_initialize_by(checkout_request_id: checkout_id, provider: "mpesa")
+
+    if result_code.to_i == 0
+      payment.update!(
+        status:   :paid,
+        user:     @order.buyer,
+        amount:   @order.total,
+        currency: "KES"
+        # remove :message unless you add a column
+      )
+      @order.update!(status: :paid)
+
+      OrderMailer.payment_confirmation(@order.id).deliver_later
+      OrderMailer.seller_notification(@order.id).deliver_later
+
+      Rails.logger.info("✅ M-PESA payment confirmed for Order ##{@order.id}")
+    else
+      payment.update!(
+        status:   :failed,
+        user:     @order.buyer,
+        amount:   @order.total,
+        currency: "KES"
+        # remove :message unless you add a column
+      )
+      Rails.logger.warn("❌ M-PESA payment failed for Order ##{@order.id} - #{result_desc}")
     end
 
     head :ok
