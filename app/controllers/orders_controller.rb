@@ -39,11 +39,10 @@ class OrdersController < ApplicationController
   end
 
   def create
-    @order       = user_signed_in? ? current_user.orders_as_buyer.build(order_params) : Order.new(order_params)
-    provider     = order_params[:provider] || "mpesa"
-    # Prefer explicit M-PESA phone; fallback to delivery phone or user phone
-    mpesa_phone  = order_params[:mpesa_phone].presence || order_params[:phone_number].presence || current_user&.phone
-    email        = order_params[:email].presence || current_user&.email
+    @order      = user_signed_in? ? current_user.orders_as_buyer.build(order_params) : Order.new(order_params)
+    provider    = order_params[:provider] || "mpesa"
+    phone_number = order_params[:phone_number].presence || current_user&.phone
+    email       = order_params[:email].presence || current_user&.email
 
     if params[:product_id].present?
       product  = Product.find(params[:product_id])
@@ -63,7 +62,7 @@ class OrdersController < ApplicationController
       end
 
       notify_seller(@order)
-      handle_payment(@order, provider, mpesa_phone, email)
+      handle_payment(@order, provider, phone_number, email)
 
     else
       # Cart checkout (split by seller)
@@ -96,7 +95,7 @@ class OrdersController < ApplicationController
       end
 
       session[:cart] = []
-      handle_payment(orders.first, provider, mpesa_phone, email)
+      handle_payment(orders.first, provider, phone_number, email)
     end
   rescue ActiveRecord::RecordInvalid => e
     Rails.logger.error("⚠️ Order Creation Failed: #{e.record.errors.full_messages.join(', ')}")
@@ -122,21 +121,19 @@ class OrdersController < ApplicationController
   # Explicit pay endpoint (if used)
   def pay
     # set_order already loaded via before_action
-    mpesa_phone = params[:mpesa_phone].presence || order_params[:phone_number].presence || current_user&.phone
+    phone_number = params[:phone_number].presence || current_user&.phone
 
-
-result = MpesaStkPushService.new(
-  order: @order,
-  mpesa_phone: mpesa_phone,
-  amount: @order.total,
-  account_reference: "Order_#{@order.id}",
-  description: "Payment for Order #{@order.id}",
-  callback_url: mpesa_callback_url(
-    order_id: @order.id,
-    host: ENV["APP_HOST"] || "https://shipping-and-logistic-wuo1.onrender.com"
-  )
-).call
-
+    result = MpesaStkPushService.new(
+      order: @order,
+      mpesa_phone: phone_number, # service still expects mpesa_phone param
+      amount: @order.total,
+      account_reference: "Order_#{@order.id}",
+      description: "Payment for Order #{@order.id}",
+      callback_url: mpesa_callback_url(
+        order_id: @order.id,
+        host: ENV["APP_HOST"] || "https://shipping-and-logistic-wuo1.onrender.com"
+      )
+    ).call
 
     respond_to do |format|
       if result.is_a?(Hash) && result[:error]
@@ -173,7 +170,6 @@ result = MpesaStkPushService.new(
 
   def notify_seller(order)
     Notification.create!(user: order.seller, message: "New order placed", read: false)
-    # Use mailer properly (deliver_later)
     OrderMailer.seller_notification(order.id).deliver_later
   end
 
@@ -214,11 +210,11 @@ result = MpesaStkPushService.new(
     )
   end
 
-  def handle_payment(order, provider, mpesa_phone, email)
+  def handle_payment(order, provider, phone_number, email)
     result = PaymentService.process(
       order,
       provider: provider,
-      phone_number: mpesa_phone,
+      phone_number: phone_number,
       email: email,
       currency: order.currency,
       return_url: order_url(order),
@@ -234,8 +230,8 @@ result = MpesaStkPushService.new(
         format.html         { redirect_to order_path(order), alert: result[:error] }
         format.turbo_stream { redirect_to order_path(order), alert: result[:error] }
       else
-        format.html         { redirect_to order_path(order), notice: "Order created! Please complete payment." }
-        format.turbo_stream { redirect_to order_path(order), notice: "Order created! Please complete payment." }
+        format.html         { redirect_to order_path(order), notice: "Order created successfully. Please proceed to payment." }
+        format.turbo_stream { redirect_to order_path(order), notice: "Order created successfully. Please proceed to payment." }
       end
     end
   end
