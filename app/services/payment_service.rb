@@ -4,27 +4,27 @@ class PaymentService
     currency ||= order.currency || "USD"
 
     case provider
-    when "mpesa"
-      # M-PESA only supports KES
-      amount_in_kes = if currency == "USD"
-                         ExchangeRateService.convert(order.total, from: "USD", to: "KES")
-                       else
-                         order.total
-                       end
+when "mpesa"
+  # M-PESA only supports KES
+  amount_in_kes = if currency == "USD"
+                     ExchangeRateService.convert(order.total, from: "USD", to: "KES")
+                   else
+                     order.total
+                   end
 
-      callback_url ||= Rails.application.routes.url_helpers.mpesa_callback_url(
-        order_id: order.id,
-        host: ENV.fetch("APP_HOST", "http://localhost:3000")
-      )
+  callback_url ||= Rails.application.routes.url_helpers.mpesa_callback_url(
+    order_id: order.id,
+    host: ENV.fetch("APP_HOST", "http://localhost:3000")
+  )
 
-      MpesaGateway.new(
-        order: order,
-        phone_number: phone_number,
-        amount: amount_in_kes,
-        account_reference: "Order_#{order.id}",
-        description: "Payment for Order #{order.id}",
-        callback_url: callback_url
-      ).initiate
+  MpesaStkPushService.new(
+    order: order,
+    phone_number: phone_number, # raw input, service will normalize
+    amount: amount_in_kes,
+    account_reference: "Order_#{order.id}",
+    description: "Payment for Order #{order.id}",
+    callback_url: callback_url
+  ).call
 
     when "paypal"
       PaypalGateway.new(

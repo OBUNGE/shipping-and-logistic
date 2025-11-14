@@ -5,7 +5,7 @@ class PaymentsController < ApplicationController
   # === Create Payment (handles Mpesa, Paystack, PayPal) ===
   def create
     provider       = params[:provider].to_s.downcase
-    phone_number = normalize_phone(params[:phone_number].presence || current_user&.phone)
+    phone_number   = params[:phone_number].presence || current_user&.phone
     buyer_currency = params[:currency].presence || @order.currency || "USD"
 
     if provider == "mpesa" && phone_number.blank?
