@@ -51,26 +51,8 @@ class MpesaGateway
     parsed = JSON.parse(response.body) rescue {}
     Rails.logger.info("📬 STK Push Response: #{parsed.inspect}")
 
-    if response.code == 200 && parsed["ResponseCode"] == "0"
-      # ✅ FIX: Create payment via Payment model, not @order.create_payment!
-      Payment.create!(
-        order:               @order,
-        user:                @order.buyer,
-        provider:            "mpesa",
-        amount:              @amount,
-        currency:            "KES",
-        status:              "pending",
-        transaction_id:      parsed["MerchantRequestID"],
-        checkout_request_id: parsed["CheckoutRequestID"],
-        message:             parsed["ResponseDescription"]
-      )
-
-      { redirect_url: Rails.application.routes.url_helpers.order_path(@order) }
-    else
-      error_msg = parsed["errorMessage"] || parsed["errorDescription"] || "M-PESA STK push failed"
-      Rails.logger.error("❌ M-PESA STK Push Error: #{error_msg}")
-      { error: error_msg }
-    end
+    # Always return parsed response + HTTP status
+    parsed.merge("http_status" => response.code)
   rescue => e
     Rails.logger.error("❌ M-PESA initiation exception: #{e.message}")
     { error: "M-PESA initiation failed" }
