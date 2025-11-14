@@ -158,6 +158,20 @@ class PaymentsController < ApplicationController
       end
     rescue => e
       Rails.logger.error("PayPal capture error: #{e.message}")
-      redirect_to @order, alert: "❌ PayPal payment failed due to an error"
+      redirect_to @order, alert: "❌ M-PESA payment failed for Order ##{@order.id}")
+    end
+
+    head :ok
+  end
+
+  private
+
+  def set_order
+    @order = Order.find(params[:order_id])
+    if request.format.html? || request.format.turbo_stream?
+      unless @order.buyer == current_user
+        redirect_to root_path, alert: "Not authorized."
+      end
     end
   end
+end
