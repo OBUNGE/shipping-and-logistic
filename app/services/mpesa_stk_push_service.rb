@@ -26,18 +26,22 @@ class MpesaStkPushService
     response = gateway.initiate
 
     if response && (response["ResponseCode"] == "0" || response[:redirect_url].present?)
- Payment.create!(
-  order:               @order,
-  user:                @order.buyer,
-  amount:              @amount,
-  currency:            "KES",
-  status:              "pending",
-  provider:            "mpesa",
-  transaction_id:      response["MerchantRequestID"], # reuse existing column
-  checkout_request_id: response["CheckoutRequestID"],
-  message:             response["ResponseDescription"]
-)
- rescue Rails.logger.warn("⚠️ Payment not created: #{response.inspect}")
+      begin
+        Payment.create!(
+          order:               @order,
+          user:                @order.buyer,
+          amount:              @amount,
+          currency:            "KES",
+          status:              "pending",
+          provider:            "mpesa",
+          transaction_id:      response["MerchantRequestID"],   # maps to existing column
+          checkout_request_id: response["CheckoutRequestID"],
+          message:             response["ResponseDescription"]
+        )
+        Rails.logger.info("✅ Payment record created for Order ##{@order.id}")
+      rescue => e
+        Rails.logger.warn("⚠️ Payment not created: #{e.message} | Response: #{response.inspect}")
+      end
     else
       Rails.logger.error("❌ STK Push failed: #{response.inspect}")
     end
