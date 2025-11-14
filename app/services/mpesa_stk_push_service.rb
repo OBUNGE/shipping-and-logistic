@@ -48,12 +48,13 @@ end
 
   private
 
-  def normalize_phone(phone)
-    phone = phone.to_s.strip.gsub(/\D/, "")
-    phone = phone.sub(/^0/, "254")
-    phone = phone.sub(/^\+254/, "254")
-    phone.start_with?("254") ? phone : "254#{phone}"
-  end
+def normalize_phone(phone_number)
+  phone = phone_number.to_s.strip.gsub(/\D/, "")
+  phone = phone.sub(/^0/, "254")
+  phone = phone.sub(/^\+254/, "254")
+  phone.start_with?("254") ? phone : "254#{phone}"
+end
+
 
   def default_callback_url
     Rails.application.routes.url_helpers.mpesa_callback_url(

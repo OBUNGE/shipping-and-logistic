@@ -12,7 +12,7 @@ class BrevoEmailService
   def send_email(to_email:, to_name:, subject:, html_content:)
     email = SibApiV3Sdk::SendSmtpEmail.new(
       to: [{ email: to_email, name: to_name }],
-      sender: { email: "no-reply@yourdomain.com", name: "Your App" },
+      sender: { email: "no-reply@tajaone.app", name: "tajaone" },
       subject: subject,
       html_content: html_content
     )
