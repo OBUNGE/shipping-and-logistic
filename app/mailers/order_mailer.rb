@@ -25,7 +25,7 @@ class OrderMailer < ApplicationMailer
 
   def seller_notification(order_id)
     order = Order.find(order_id)
-    recipient_email = order.seller&.email || "admin@yourdomain.com"
+    recipient_email = order.seller&.email || "admin@tajaone.app"
     recipient_name  = order.seller&.name || "Seller"
 
     begin
