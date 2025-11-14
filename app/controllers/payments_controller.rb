@@ -5,10 +5,10 @@ class PaymentsController < ApplicationController
   # === Create Payment (handles Mpesa, Paystack, PayPal) ===
   def create
     provider       = params[:provider].to_s.downcase
-    mpesa_phone    = params[:mpesa_phone].presence || params[:phone_number].presence || current_user&.phone
+    phone_number   = params[:phone_number].presence || current_user&.phone
     buyer_currency = params[:currency].presence || @order.currency || "USD"
 
-    if provider == "mpesa" && mpesa_phone.blank?
+    if provider == "mpesa" && phone_number.blank?
       redirect_to @order, alert: "Phone number is required for M-PESA payments." and return
     end
 
@@ -38,7 +38,7 @@ class PaymentsController < ApplicationController
     result = PaymentService.process(
       @order,
       provider: provider,
-      phone_number: mpesa_phone, # ✅ pass payment phone
+      phone_number: phone_number, # ✅ unified param
       currency: buyer_currency,
       return_url: order_url(@order),
       callback_url: callback_url
@@ -57,7 +57,7 @@ class PaymentsController < ApplicationController
       @payment.update(status: :failed)
       redirect_to @order, alert: result[:error]
     else
-      redirect_to @order, notice: "STK Push sent to #{mpesa_phone}. Please complete payment on your phone."
+      redirect_to @order, notice: "STK Push sent to #{phone_number}. Please complete payment on your phone."
     end
   end
 
@@ -158,65 +158,6 @@ class PaymentsController < ApplicationController
       end
     rescue => e
       Rails.logger.error("PayPal capture error: #{e.message}")
-      redirect_to @order, alert: "❌ PayPal verification failed"
+      redirect_to @order, alert: "❌ PayPal payment failed due to an error"
     end
   end
-
-  # === M-PESA Callback ===
-  def mpesa_callback
-    order_id = params[:order_id]
-    @order = Order.find_by(id: order_id)
-
-    unless @order
-      Rails.logger.error("⚠️ M-PESA callback: Order not found for ID #{order_id}")
-      return head :not_found
-    end
-
-    body = JSON.parse(request.body.read) rescue {}
-    Rails.logger.info("✅ M-PESA Callback received: #{body.inspect}")
-
-    result_code = body.dig("Body", "stkCallback", "ResultCode")
-    checkout_id = body.dig("Body", "stkCallback", "CheckoutRequestID")
-    result_desc = body.dig("Body", "stkCallback", "ResultDesc")
-
-    payment = @order.payments.find_or_initialize_by(checkout_request_id: checkout_id, provider: "mpesa")
-
-    if result_code.to_i == 0
-      payment.update!(
-        status:   :paid,
-        user:     @order.buyer,
-        amount:   @order.total,
-        currency: "KES",
-        message:  result_desc
-      )
-      @order.update!(status: :paid)
-
-      OrderMailer.payment_confirmation(@order.id).deliver_later
-      OrderMailer.seller_notification(@order.id).deliver_later
-
-      Rails.logger.info("✅ M-PESA payment confirmed for Order ##{@order.id}")
-    else
-      payment.update!(
-        status:   :failed,
-        user:     @order.buyer,
-        amount:   @order.total,
-        currency: "KES",
-        message:  result_desc
-      )
-      Rails.logger.warn("❌ M-PESA payment failed for Order ##{@order.id}")
-    end
-
-    head :ok
-  end
-
-  private
-
-  def set_order
-    @order = Order.find(params[:order_id])
-    if request.format.html? || request.format.turbo_stream?
-      unless @order.buyer == current_user
-        redirect_to root_path, alert: "Not authorized."
-      end
-    end
-  end
-end
