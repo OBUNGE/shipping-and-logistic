@@ -43,12 +43,7 @@
             <%= f.number_field :quantity, value: 1, min: 1, class: "form-control shadow-sm", required: true %>
           </div>
 
-          <div class="mb-3">
-            <%= f.label :currency, "Choose Currency", class: "form-label fw-semibold" %>
-            <%= f.select :currency,
-              options_for_select([["USD", "USD"], ["KES", "KES"]], selected: "KES"),
-              {}, class: "form-select shadow-sm" %>
-          </div>
+          <%# 🚨 Removed currency dropdown — handled globally via navbar switcher %>
 
           <%= render "orders/shared_checkout_fields", f: f %>
 
