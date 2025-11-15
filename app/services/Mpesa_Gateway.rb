@@ -6,6 +6,9 @@ class MpesaGateway
   OAUTH_URL       = "#{DARAJA_BASE_URL}/oauth/v1/generate?grant_type=client_credentials"
   STK_PUSH_URL    = "#{DARAJA_BASE_URL}/mpesa/stkpush/v1/processrequest"
 
+  MAX_RETRIES     = 3
+  RETRY_DELAY     = 5.seconds
+
   def initialize(order:, phone_number:, amount:, account_reference:, description:, callback_url:)
     @order             = order
     @phone_number      = phone_number
@@ -16,57 +19,67 @@ class MpesaGateway
   end
 
   def initiate
-    token = fetch_token
-    return { error: "Failed to fetch M-PESA token" } unless token
+    attempts = 0
 
-    timestamp = Time.now.strftime("%Y%m%d%H%M%S")
-    password  = Base64.strict_encode64("#{shortcode}#{passkey}#{timestamp}")
+    begin
+      attempts += 1
+      token = fetch_token
+      return { error: "Failed to fetch M-PESA token" } unless token
 
-    payload = {
-      BusinessShortCode: shortcode,
-      Password:          password,
-      Timestamp:         timestamp,
-      TransactionType:   "CustomerPayBillOnline",
-      Amount:            @amount.to_i,
-      PartyA:            @phone_number,
-      PartyB:            shortcode,
-      PhoneNumber:       @phone_number,
-      CallBackURL:       @callback_url,
-      AccountReference:  @account_reference,
-      TransactionDesc:   @description
-    }
+      timestamp = Time.now.strftime("%Y%m%d%H%M%S")
+      password  = Base64.strict_encode64("#{shortcode}#{passkey}#{timestamp}")
 
-    Rails.logger.info("📡 Sending STK Push with callback: #{@callback_url}")
-    Rails.logger.info("📦 STK Push Payload: #{payload.inspect}")
+      payload = {
+        BusinessShortCode: shortcode,
+        Password:          password,
+        Timestamp:         timestamp,
+        TransactionType:   "CustomerPayBillOnline",
+        Amount:            @amount.to_i,
+        PartyA:            @phone_number,
+        PartyB:            shortcode,
+        PhoneNumber:       @phone_number,
+        CallBackURL:       @callback_url,
+        AccountReference:  @account_reference,
+        TransactionDesc:   @description
+      }
 
-    response = HTTParty.post(
-      STK_PUSH_URL,
-      headers: {
-        "Authorization" => "Bearer #{token}",
-        "Content-Type"  => "application/json"
-      },
-      body: payload.to_json
-    )
+      Rails.logger.info("📡 Sending STK Push (attempt #{attempts}) with callback: #{@callback_url}")
+      Rails.logger.info("📦 STK Push Payload: #{payload.inspect}")
 
-    parsed = JSON.parse(response.body) rescue {}
-    Rails.logger.info("📬 STK Push Response: #{parsed.inspect}")
+      response = HTTParty.post(
+        STK_PUSH_URL,
+        headers: {
+          "Authorization" => "Bearer #{token}",
+          "Content-Type"  => "application/json"
+        },
+        body: payload.to_json
+      )
 
-    # Always return parsed response + HTTP status
-    parsed.merge("http_status" => response.code)
-  rescue => e
-    Rails.logger.error("❌ M-PESA initiation exception: #{e.message}")
-    { error: "M-PESA initiation failed" }
+      parsed = JSON.parse(response.body) rescue {}
+      Rails.logger.info("📬 STK Push Response: #{parsed.inspect}")
+
+      # Return parsed response + HTTP status
+      parsed.merge("http_status" => response.code)
+
+    rescue => e
+      Rails.logger.error("❌ M-PESA initiation exception (attempt #{attempts}): #{e.message}")
+
+      if attempts < MAX_RETRIES
+        Rails.logger.info("⏳ Retrying STK Push in #{RETRY_DELAY}...")
+        sleep RETRY_DELAY
+        retry
+      else
+        Rails.logger.error("❌ All retries failed for Order ##{@order.id}")
+        { error: "M-PESA initiation failed after #{MAX_RETRIES} attempts" }
+      end
+    end
   end
 
   private
 
+  # ✅ Always return KES since your app now stores currency in KES
   def amount_kes(override_amount)
-    return override_amount if override_amount.present?
-    if @order.currency == "USD"
-      ExchangeRateService.convert(@order.total, from: "USD", to: "KES")
-    else
-      @order.total
-    end
+    override_amount.presence || @order.total
   end
 
   def fetch_token
