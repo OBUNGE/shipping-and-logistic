@@ -12,20 +12,8 @@ class ShipmentMailer
       layout: false
     )
 
-    # Generate plain-text fallback (strip tags or build manually)
-    text_content = <<~TEXT
-      Hi #{buyer.first_name},
-
-      Your shipment for Order ##{order.id} has been updated to #{status.humanize}.
-
-      Carrier: #{shipment.carrier}
-      Tracking Number: #{shipment.tracking_number}
-      Estimated Delivery: #{shipment.estimated_delivery || "N/A"}
-
-      Thank you for shopping with us!
-      Best regards,
-      Tajaone team
-    TEXT
+    # Auto-generate plain-text fallback by stripping HTML tags
+    text_content = strip_tags(html_content).squish
 
     subject = "Shipment Update: Order ##{order.id} is now #{status.humanize}"
 
@@ -36,5 +24,12 @@ class ShipmentMailer
       html_content: html_content,
       text_content: text_content   # ✅ plain-text fallback
     )
+  end
+
+  private
+
+  # Use Rails ActionView helper to strip HTML tags
+  def self.strip_tags(html)
+    ActionView::Base.full_sanitizer.sanitize(html)
   end
 end
