@@ -4,7 +4,7 @@ class Discount < ApplicationRecord
   validates :percentage, numericality: { greater_than: 0, less_than_or_equal_to: 100 }
   validates :expires_at, presence: true
 
-  # Ensure discount is only valid within its date range and marked active
+  # 🔎 Active if flagged true and within date range
   def active?
     today = Date.current
     active &&
@@ -12,13 +12,22 @@ class Discount < ApplicationRecord
       (expires_at.nil? || expires_at >= today)
   end
 
-  # Calculate discounted price in product currency (KES default)
+  # 💸 Calculate discounted price in product currency (KES default)
   def discounted_price
     return product.price unless percentage.present?
 
     raw_discounted = product.price * (1 - percentage / 100.0)
-
-    # Normalize into product currency (KES default)
     ExchangeRateService.convert(raw_discounted, from: product.currency, to: product.currency || "KES")
+  end
+
+  # 🛠️ Callback to deactivate expired discounts
+  before_save :deactivate_if_expired
+
+  private
+
+  def deactivate_if_expired
+    if expires_at.present? && expires_at < Date.current
+      self.active = false
+    end
   end
 end
