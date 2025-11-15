@@ -42,7 +42,9 @@ get "seller/new", to: "users#new_seller", as: :new_seller
   # === M-PESA Callback (single global route) ===
   post "/mpesa/callback/:order_id", to: "payments#mpesa_callback", as: :mpesa_callback
 
-  post "set_currency", to: "settings#set_currency", as: :set_currency
+  # post "set_currency", to: "settings#set_currency", as: :set_currency
+  post "set_currency", to: "currencies#set", as: :set_currency
+
 
   # === Orders and nested payment/shipment routes ===
   resources :orders, only: [:index, :show, :new, :create] do
