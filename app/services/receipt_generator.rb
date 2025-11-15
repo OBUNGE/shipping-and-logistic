@@ -11,8 +11,7 @@ class ReceiptGenerator
     @payment = payment || order.payments.last
     @buyer = order.buyer
     @downloaded_at = downloaded_at
-    @currency = determine_currency
-    @exchange_rate = 130.0
+    @currency = "KES" # ✅ always KES now
     @logo_url = "https://yourdomain.com/assets/afrixpress-logo.png"
   end
 
@@ -141,24 +140,8 @@ class ReceiptGenerator
 
   private
 
-  def determine_currency
-    if @payment.present?
-      case @payment.provider.to_s.downcase
-      when "mpesa", "paystack" then "KES"
-      when "paypal" then "USD"
-      else "KES"
-      end
-    else
-      "KES"
-    end
-  end
-
   def format_price(amount)
     return "—" unless amount.present?
-    if @currency == "KES"
-      number_to_currency(amount * @exchange_rate, unit: "KES ")
-    else
-      number_to_currency(amount, unit: "$")
-    end
+    number_to_currency(amount, unit: "KES ")
   end
 end
