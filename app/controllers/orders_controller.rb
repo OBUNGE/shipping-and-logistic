@@ -44,6 +44,8 @@ class OrdersController < ApplicationController
     phone_number = order_params[:phone_number].presence || current_user&.phone
     email       = order_params[:email].presence || current_user&.email
 
+    Rails.logger.info("🛒 Starting order creation: provider=#{provider}, currency=#{@order.currency}, email=#{email}")
+
     if params[:product_id].present?
       product  = Product.find(params[:product_id])
       variant  = params[:variant_id].present? ? Variant.find_by(id: params[:variant_id]) : nil
@@ -62,7 +64,13 @@ class OrdersController < ApplicationController
       end
 
       notify_seller(@order)
-      handle_payment(@order, provider, phone_number, email)
+
+      if @order.present?
+        handle_payment(@order, provider, phone_number, email)
+      else
+        Rails.logger.error("⚠️ @order is nil after save in product branch")
+        redirect_to product_path(product), alert: "Order could not be created."
+      end
 
     else
       # Cart checkout (split by seller)
@@ -95,7 +103,13 @@ class OrdersController < ApplicationController
       end
 
       session[:cart] = []
-      handle_payment(orders.first, provider, phone_number, email)
+
+      if orders.first.present?
+        handle_payment(orders.first, provider, phone_number, email)
+      else
+        Rails.logger.error("⚠️ No orders built from cart, orders.first is nil")
+        redirect_to cart_path, alert: "Cart checkout failed."
+      end
     end
   rescue ActiveRecord::RecordInvalid => e
     Rails.logger.error("⚠️ Order Creation Failed: #{e.record.errors.full_messages.join(', ')}")
@@ -118,33 +132,31 @@ class OrdersController < ApplicationController
               disposition: "inline"
   end
 
-  # Explicit pay endpoint (if used)
-def pay
-  # set_order already loaded via before_action
-  phone_number = params[:phone_number].presence || current_user&.phone
+  def pay
+    phone_number = params[:phone_number].presence || current_user&.phone
 
-  result = MpesaStkPushService.new(
-    order: @order,
-    phone_number: phone_number, # ✅ unified param name
-    amount: @order.total,
-    account_reference: "Order_#{@order.id}",
-    description: "Payment for Order #{@order.id}",
-    callback_url: mpesa_callback_url(
-      order_id: @order.id,
-      host: ENV["APP_HOST"] || "https://shipping-and-logistic-wuo1.onrender.com"
-    )
-  ).call
+    result = MpesaStkPushService.new(
+      order: @order,
+      phone_number: phone_number,
+      amount: @order.total,
+      account_reference: "Order_#{@order.id}",
+      description: "Payment for Order #{@order.id}",
+      callback_url: mpesa_callback_url(
+        order_id: @order.id,
+        host: ENV["APP_HOST"] || "tajaone.app"
+      )
+    ).call
 
-  respond_to do |format|
-    if result.is_a?(Hash) && result[:error]
-      format.html { redirect_to order_path(@order), alert: result[:error] }
-      format.json { render json: result, status: :unprocessable_entity }
-    else
-      format.html { redirect_to order_path(@order), notice: "STK Push initiated. Check your phone to complete payment." }
-      format.json { render json: result, status: :ok }
+    respond_to do |format|
+      if result.is_a?(Hash) && result[:error]
+        format.html { redirect_to order_path(@order), alert: result[:error] }
+        format.json { render json: result, status: :unprocessable_entity }
+      else
+        format.html { redirect_to order_path(@order), notice: "STK Push initiated. Check your phone to complete payment." }
+        format.json { render json: result, status: :ok }
+      end
     end
   end
-end
 
   private
 
@@ -154,7 +166,6 @@ end
 
   def set_order
     @order = Order.find(params[:id])
-
     if user_signed_in?
       unless @order.buyer == current_user || @order.seller == current_user
         redirect_to root_path, alert: "You are not authorized to view this order."
@@ -210,31 +221,44 @@ end
     )
   end
 
-def handle_payment(order, provider, phone_number, email)
-  result = PaymentService.process(
-    order,
-    provider: provider,
-    phone_number: phone_number,
-    email: email,
-    currency: order.currency,
-    return_url: order_url(order),
-    callback_url: mpesa_callback_url(
-      order_id: order.id,
-      host: ENV["APP_HOST"] || "tajaone.app"
-    )
-  )
+  def handle_payment(order, provider, phone_number, email)
+    unless order.present?
+      Rails.logger.error("⚠️ handle_payment called with nil order")
+      redirect_to root_path, alert: "Order not found" and return
+    end
 
-  respond_to do |format|
-    if result.is_a?(Hash) && result[:redirect_url]
-      format.html         { redirect_to result[:redirect_url], allow_other_host: true }
-      format.turbo_stream { redirect_to result[:redirect_url], allow_other_host: true }
-    elsif result.is_a?(Hash) && result[:error]
-      format.html         { redirect_to order_path(order), alert: result[:error] }
-      format.turbo_stream { redirect_to order_path(order), alert: result[:error] }
-    else
-      format.html         { redirect_to order_path(order), notice: "Order created successfully. Please proceed to payment." }
-      format.turbo_stream { redirect_to order_path(order), notice: "Order created successfully. Please proceed to payment." }
+    Rails.logger.info("💳 Initiating payment: order_id=#{order.id}, provider=#{provider}, currency=#{order.currency}")
+
+    result = PaymentService.process(
+      order,
+      provider: provider,
+      phone_number: phone_number,
+      email: email,
+      currency: order.currency,
+      return_url: order_url(order),
+      callback_url: mpesa_callback_url(
+        order_id: order.id,
+        host: ENV["APP_HOST"] || "tajaone.app"
+      )
+    )
+
+    respond_to do |format|
+      if result.is_a?(Hash) && result[:redirect_url]
+        Rails.logger.info("✅ Payment redirect for order #{order.id}: #{result[:redirect_url]}")
+        format.html         { redirect_to result[:redirect_url], allow_other_host: true }
+        format.turbo_stream { redirect_to result[:redirect_url], allow_other_host: true }
+      elsif result.is_a?(Hash) && result[:error]
+        Rails.logger.error("❌ Payment error for order #{order.id}: #{result[:error]}")
+        format.html         { redirect_to order_path(order), alert: result[:error] }
+        format.turbo_stream { redirect_to order_path(order), alert: result[:error] }
+      else
+        Rails.logger.info("ℹ️ Payment fallback for order #{order.id}")
+        format.html         { redirect_to order_path(order), notice: "Order created successfully. Please proceed to payment." }
+        format.turbo_stream { redirect_to order_path(order), notice: "Order created successfully. Please proceed to payment." }
+      end
     end
   end
 end
-end
+
+
+    # Use a verified sender email (default to
