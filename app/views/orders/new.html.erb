@@ -20,7 +20,7 @@
           </ul>
         </div>
 
-        <%= form_with url: product_orders_path(@product), method: :post, local: true, html: { class: "checkout-form" } do |f| %>
+        <%= form_with model: Order.new, url: product_orders_path(@product), local: true, html: { class: "checkout-form" } do |f| %>
 
           <% if @product.variants.any? %>
             <div class="mb-3">
