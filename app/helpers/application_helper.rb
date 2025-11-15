@@ -19,7 +19,6 @@ module ApplicationHelper
     session[:user_country] ||= request.location&.country.to_s.downcase.presence || "unknown"
   end
 
-  # 💱 Display price in correct currency (KES default, USD optional)
   def display_price(price)
     return "Price on request" unless price.present?
 
@@ -28,13 +27,14 @@ module ApplicationHelper
 
     case currency
     when "KES"
-      kes_amount = ExchangeRateService.convert(price, from: "USD", to: "KES") rescue price
-      number_to_currency(kes_amount, unit: "KES ")
+      # Stored in KES, so no conversion needed
+      number_to_currency(price, unit: "KES ")
     when "USD"
+      # Convert from KES → USD
       usd_amount = ExchangeRateService.convert(price, from: "KES", to: "USD") rescue price
       number_to_currency(usd_amount, unit: "$")
     else
-      # fallback
+      # Fallback: show KES
       number_to_currency(price, unit: "KES ")
     end
   end

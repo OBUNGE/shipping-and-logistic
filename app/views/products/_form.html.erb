@@ -48,27 +48,27 @@
 <!-- 💰 Pricing -->
 <div class="row g-2 mb-3">
   <div class="col-md-6">
-    <%= form.label :price, "Base Price", class: "form-label small" %>
+    <%= form.label :price, "Base Price (KES)", class: "form-label small" %>
     <%= form.number_field :price,
-          step: 0.01,
+          step: 1,
           class: "form-control form-control-sm",
           id: "product_price",
-          placeholder: "e.g. 120.00",
+          placeholder: "e.g. 1200",
           required: true %>
     <small class="text-muted">
-      Stored in USD — buyers will see <%= display_price(120) %> approx.
+      Stored in KES — buyers will see <%= display_price(1200) %> (default KES, converts to USD if selected).
     </small>
   </div>
 
   <div class="col-md-6">
-    <%= form.label :shipping_cost, "Shipping Cost", class: "form-label small" %>
+    <%= form.label :shipping_cost, "Shipping Cost (KES)", class: "form-label small" %>
     <%= form.number_field :shipping_cost,
-          step: 0.01,
+          step: 1,
           class: "form-control form-control-sm",
           id: "product_shipping_cost",
-          placeholder: "e.g. 300.00" %>
+          placeholder: "e.g. 300" %>
     <small class="text-muted">
-      Stored in USD — buyers will see <%= display_price(300) %> approx.
+      Stored in KES — buyers will see <%= display_price(300) %> (default KES, converts to USD if selected).
     </small>
   </div>
 </div>
