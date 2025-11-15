@@ -169,15 +169,16 @@ class ShipmentsController < ApplicationController
 
   private
 
-  def log_status_change(new_status)
-    ShipmentStatusLog.create!(
-      shipment: @shipment,
-      status: new_status,
-      changed_by: current_user,
-      changed_at: Time.current
-    )
-    ShipmentMailer.new.status_update(@shipment, new_status)
-  end
+def log_status_change(new_status)
+  ShipmentStatusLog.create!(
+    shipment: @shipment,
+    status: new_status,
+    changed_by: current_user,
+    changed_at: Time.current
+  )
+  ShipmentMailer.status_update(@shipment, new_status)  # ✅ call class method
+end
+
 
   def require_seller_or_admin
     unless current_user.admin? || current_user.seller?
