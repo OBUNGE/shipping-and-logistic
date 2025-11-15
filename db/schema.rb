@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_14_055233) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_15_054921) do
   create_schema "auth"
   create_schema "extensions"
   create_schema "graphql"
@@ -163,7 +163,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_14_055233) do
     t.string "first_name"
     t.string "last_name"
     t.text "address"
-    t.string "currency", default: "USD", null: false
+    t.string "currency", default: "KES", null: false
     t.string "country"
     t.string "region"
     t.string "county"
@@ -187,7 +187,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_14_055233) do
     t.datetime "updated_at", null: false
     t.string "checkout_request_id"
     t.string "mpesa_receipt_number"
-    t.string "currency", default: "USD", null: false
+    t.string "currency", default: "KES", null: false
     t.string "guest_email"
     t.string "guest_phone"
     t.string "message"
@@ -222,7 +222,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_14_055233) do
     t.bigint "category_id"
     t.integer "seller_id"
     t.integer "subcategory_id"
-    t.string "currency", default: "USD", null: false
+    t.string "currency", default: "KES", null: false
     t.string "image_url"
     t.text "gallery_image_urls"
     t.string "slug"

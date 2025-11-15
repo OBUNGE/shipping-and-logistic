@@ -7,13 +7,13 @@ Rails.application.configure do
 
   # ✅ Host for ActiveStorage signed URLs
   config.action_controller.default_url_options = {
-    host: "shipping-and-logistic-wuo1.onrender.com",
+    host: "tajaone.app",
     protocol: "https"
   }
 
   # ✅ Mailer host (for Devise or ActionMailer)
   config.action_mailer.default_url_options = {
-    host: "shipping-and-logistic-wuo1.onrender.com",
+    host: "tajaone.app",
     protocol: "https"
   }
 
