@@ -61,13 +61,16 @@
   </tbody>
 </table>
 
+<% subtotal = order.order_items.sum(&:subtotal) %>
+<% shipping_total = order.order_items.sum { |oi| oi.shipping || 0 } %>
+
 <p>
   <strong>Subtotal:</strong>
-  <%= number_to_currency(order.subtotal, unit: "#{order.currency} ") %>
+  <%= number_to_currency(subtotal, unit: "#{order.currency} ") %>
 </p>
 <p>
   <strong>Shipping:</strong>
-  <%= number_to_currency(order.shipping_total, unit: "#{order.currency} ") %>
+  <%= number_to_currency(shipping_total, unit: "#{order.currency} ") %>
 </p>
 <p>
   <strong>Total:</strong>
