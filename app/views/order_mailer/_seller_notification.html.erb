@@ -13,9 +13,13 @@
 
 <p>Please prepare the shipment and update tracking when ready.</p>
 
+<%# Always show KES first, then USD conversion %>
 <p>
   <strong>Total:</strong>
-  <%= number_to_currency(order.total, unit: "#{order.currency} ") %>
+  <%= number_to_currency(order.total, unit: "KES ") %>
+  <% usd_total = ExchangeRateService.convert(order.total, from: "KES", to: "USD") %>
+  <span class="text-muted small">≈ <%= number_to_currency(usd_total, unit: "USD ") %></span>
 </p>
 
 <p>Thank you for using our platform.</p>
+<p>Best regards,<br>The Tajaone Team</p>

@@ -10,33 +10,55 @@ class OrdersController < ApplicationController
 
   def show; end
 
-  def new
-    if params[:product_id].present?
-      @product = Product.find(params[:product_id])
-      @order   = user_signed_in? ? current_user.orders_as_buyer.new : Order.new
-    else
-      if session[:cart].blank?
-        redirect_to cart_path, alert: "Your cart is empty." and return
-      end
-
-      @cart_items = session[:cart].map do |item|
-        product = Product.find(item["product_id"])
-        variant = item["variant_id"].present? ? Variant.find_by(id: item["variant_id"]) : nil
-        final_price = product.price + (variant&.price_modifier || 0)
-
-        {
-          product:    product,
-          variant:    variant,
-          quantity:   item["quantity"].to_i,
-          unit_price: final_price,
-          subtotal:   final_price * item["quantity"].to_i,
-          shipping:   (product.shipping_cost || 0) * item["quantity"].to_i
-        }
-      end
-
-      @order = user_signed_in? ? current_user.orders_as_buyer.new : Order.new
+def new
+  if params[:product_id].present?
+    @product = Product.find(params[:product_id])
+    @order   = user_signed_in? ? current_user.orders_as_buyer.new : Order.new
+  else
+    if session[:cart].blank?
+      redirect_to cart_path, alert: "Your cart is empty." and return
     end
+
+    # Default currency = KES
+    order_currency = "KES"
+
+    @cart_items = session[:cart].map do |item|
+      product  = Product.find(item["product_id"])
+      variant  = item["variant_id"].present? ? Variant.find_by(id: item["variant_id"]) : nil
+      quantity = item["quantity"].to_i
+
+      base_price = product.price + (variant&.price_modifier || 0)
+
+      # ✅ Convert unit price into order currency (KES)
+      unit_price = ExchangeRateService.convert(
+        base_price,
+        from: product.currency,
+        to: order_currency
+      )
+
+      subtotal = unit_price * quantity
+
+      # ✅ Convert shipping into order currency (KES)
+      shipping = ExchangeRateService.convert(
+        (product.shipping_cost || 0) * quantity,
+        from: product.currency,
+        to: order_currency
+      )
+
+      {
+        product:    product,
+        variant:    variant,
+        quantity:   quantity,
+        unit_price: unit_price,
+        subtotal:   subtotal,
+        shipping:   shipping,
+        currency:   order_currency
+      }
+    end
+
+    @order = user_signed_in? ? current_user.orders_as_buyer.new : Order.new(currency: order_currency)
   end
+end
 
   def create
     @order      = user_signed_in? ? current_user.orders_as_buyer.build(order_params) : Order.new(order_params)
@@ -191,27 +213,35 @@ class OrdersController < ApplicationController
     end
   end
 
-  def build_order_items(order, product, variant, quantity)
-    base_price = product.price + (variant&.price_modifier || 0)
+def build_order_items(order, product, variant, quantity)
+  base_price = product.price + (variant&.price_modifier || 0)
 
-    subtotal = ExchangeRateService.convert(
-      base_price * quantity,
-      from: product.currency,
-      to: order.currency
-    )
+  unit_price = ExchangeRateService.convert(
+    base_price,
+    from: product.currency,
+    to: order.currency
+  )
 
-    shipping = (product.shipping_cost || 0) * quantity
+  subtotal = unit_price * quantity
 
-    order.order_items.build(
-      product:  product,
-      variant:  variant,
-      quantity: quantity,
-      subtotal: subtotal,
-      shipping: shipping
-    )
+  shipping = ExchangeRateService.convert(
+    (product.shipping_cost || 0) * quantity,
+    from: product.currency,
+    to: order.currency
+  )
 
-    order.total = order.order_items.sum { |oi| oi.subtotal + (oi.shipping || 0) }
-  end
+  order.order_items.build(
+    product:    product,
+    variant:    variant,
+    quantity:   quantity,
+    unit_price: unit_price,   # ✅ persist unit price
+    subtotal:   subtotal,
+    shipping:   shipping,
+    currency:   order.currency
+  )
+
+  order.total = order.order_items.sum { |oi| oi.subtotal + (oi.shipping || 0) }
+end
 
   def order_params
     params.require(:order).permit(

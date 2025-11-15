@@ -6,16 +6,24 @@ class DiscountsController < ApplicationController
     @discount = @product.build_discount
   end
 
-  def create
-    @product = Product.find(params[:product_id])
-    @discount = @product.build_discount(discount_params.merge(active: true))
+def create
+  @product = Product.find(params[:product_id])
 
-    if @discount.save
-      redirect_to edit_product_path(@product), notice: "Discount added."
-    else
-      render :new, status: :unprocessable_entity
-    end
+  # Ensure discount is built in product currency (KES default)
+  @discount = @product.build_discount(
+    discount_params.merge(
+      active: true,
+      currency: @product.currency || "KES"
+    )
+  )
+
+  if @discount.save
+    redirect_to edit_product_path(@product), notice: "Discount added."
+  else
+    # reload product for the form view
+    render :new, status: :unprocessable_entity
   end
+end
 
   def edit
     @product = @discount.product

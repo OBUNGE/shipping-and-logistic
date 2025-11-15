@@ -13,7 +13,6 @@ class Order < ApplicationRecord
   validate  :buyer_or_guest_present
   validates :email, presence: true, format: { with: URI::MailTo::EMAIL_REGEXP }
 
-
   enum :status, {
     pending:   "pending",
     paid:      "paid",
@@ -25,23 +24,40 @@ class Order < ApplicationRecord
   }
 
   before_create :set_default_status
+  before_validation :set_default_currency, on: :create
 
+  # === Status helpers ===
   def mark_as_paid!; update!(status: :paid); end
   def mark_as_shipped!; transaction { update!(status: :shipped); shipment&.mark_as_shipped! }; end
   def mark_as_delivered!; transaction { update!(status: :delivered); shipment&.mark_as_delivered! }; end
   def cancel!; update!(status: :cancelled); shipment&.cancel!; end
 
-  def total_in_usd; total; end
+  # === Currency helpers ===
+  # Always store totals in KES, convert only when needed
   def total_in_kes
-    rate = ExchangeRateService.get("USD", "KES")
-    return total unless rate
-    (total * rate).round(2)
+    if currency == "KES"
+      total
+    else
+      ExchangeRateService.convert(total, from: currency, to: "KES")
+    end
+  end
+
+  def total_in_usd
+    if currency == "USD"
+      total
+    else
+      ExchangeRateService.convert(total, from: "KES", to: "USD")
+    end
   end
 
   private
 
   def set_default_status
     self.status ||= "pending"
+  end
+
+  def set_default_currency
+    self.currency ||= "KES"
   end
 
   def buyer_or_guest_present

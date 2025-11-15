@@ -46,7 +46,7 @@
         </div>
 
         <!-- Items Table -->
-        <% currency = @order.currency.presence || "USD" %>
+        <% currency = @order.currency.presence || "KES" %>
         <div class="table-responsive mb-4">
           <h5 class="fw-semibold mb-3">🛍️ Items Purchased</h5>
           <table class="table align-middle">
@@ -74,7 +74,7 @@
                     <% end %>
                   </td>
                   <td><%= item.quantity %></td>
-                  <td><%= number_to_currency(item.unit_price || item.product.price, unit: "#{currency} ") %></td>
+                  <td><%= number_to_currency(item.unit_price, unit: "#{currency} ") %></td>
                   <td><%= number_to_currency(item.shipping || 0, unit: "#{currency} ") %></td>
                   <td class="fw-semibold"><%= number_to_currency(item.subtotal, unit: "#{currency} ") %></td>
                 </tr>
@@ -84,23 +84,18 @@
         </div>
 
         <!-- Totals -->
-        <% subtotal = @order.order_items.sum(&:subtotal) %>
-        <% shipping_total = @order.order_items.sum { |i| i.shipping || 0 } %>
-        <% grand_total = subtotal + shipping_total %>
-
         <div class="border-top pt-3 mb-4">
           <div class="d-flex justify-content-end flex-column align-items-end">
-            <p class="mb-1 fw-semibold">Subtotal: <%= number_to_currency(subtotal, unit: "#{currency} ") %></p>
-            <p class="mb-1 fw-semibold">Shipping: <%= number_to_currency(shipping_total, unit: "#{currency} ") %></p>
-            <h4 class="fw-bold text-success">Total: <%= number_to_currency(grand_total, unit: "#{currency} ") %></h4>
+            <p class="mb-1 fw-semibold">Subtotal: <%= number_to_currency(@order.order_items.sum(&:subtotal), unit: "#{currency} ") %></p>
+            <p class="mb-1 fw-semibold">Shipping: <%= number_to_currency(@order.order_items.sum { |i| i.shipping || 0 }, unit: "#{currency} ") %></p>
+            <h4 class="fw-bold text-success">Total: <%= number_to_currency(@order.total, unit: "#{currency} ") %></h4>
 
-            <% if currency == "USD" %>
-              <% converted_total = ExchangeRateService.convert(@order.total, from: "USD", to: "KES") %>
-              <% if converted_total %>
-                <p class="text-muted small">≈ <%= number_to_currency(converted_total, unit: "KES ") %></p>
-              <% else %>
-                <p class="text-muted small">Exchange rate unavailable.</p>
-              <% end %>
+            <% if currency == "KES" %>
+              <% usd_total = ExchangeRateService.convert(@order.total, from: "KES", to: "USD") %>
+              <p class="text-muted small">≈ <%= number_to_currency(usd_total, unit: "USD ") %></p>
+            <% elsif currency == "USD" %>
+              <% kes_total = ExchangeRateService.convert(@order.total, from: "USD", to: "KES") %>
+              <p class="text-muted small">≈ <%= number_to_currency(kes_total, unit: "KES ") %></p>
             <% end %>
           </div>
         </div>
@@ -117,7 +112,16 @@
               </span>
             </p>
             <p class="mb-1"><strong>Transaction ID:</strong> <%= latest_payment.transaction_id %></p>
-            <p class="mb-2"><strong>Amount Paid:</strong> <%= number_to_currency(latest_payment.amount, unit: "#{latest_payment.currency.presence || currency} ") %></p>
+
+            <% if latest_payment.currency == @order.currency %>
+              <p class="mb-2"><strong>Amount Paid:</strong> <%= number_to_currency(latest_payment.amount, unit: "#{@order.currency} ") %></p>
+            <% else %>
+              <% converted_amount = ExchangeRateService.convert(latest_payment.amount, from: latest_payment.currency, to: @order.currency) %>
+              <p class="mb-2"><strong>Amount Paid:</strong>
+                <%= number_to_currency(converted_amount, unit: "#{@order.currency} ") %>
+                <span class="text-muted small">(original: <%= number_to_currency(latest_payment.amount, unit: "#{latest_payment.currency} ") %>)</span>
+              </p>
+            <% end %>
 
             <% if latest_payment.paid? %>
               <% if latest_payment.mpesa_receipt_number.present? %>
@@ -142,32 +146,11 @@
 </div>
 
 <style>
-  body {
-    background: #f8f9fb;
-  }
-
-  .order-summary-wrapper {
-    max-width: 900px;
-  }
-
-  .table th {
-    font-weight: 600;
-    font-size: 0.95rem;
-  }
-
-  .table td {
-    vertical-align: middle;
-  }
-
-  .badge {
-    font-size: 0.85rem;
-  }
-
-  .fw-semibold {
-    font-weight: 600;
-  }
-
-  .btn {
-    transition: all 0.2s;
-  }
+  body { background: #f8f9fb; }
+  .order-summary-wrapper { max-width: 900px; }
+  .table th { font-weight: 600; font-size: 0.95rem; }
+  .table td { vertical-align: middle; }
+  .badge { font-size: 0.85rem; }
+  .fw-semibold { font-weight: 600; }
+  .btn { transition: all 0.2s; }
 </style>

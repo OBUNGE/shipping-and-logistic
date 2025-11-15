@@ -67,22 +67,32 @@
     <% end %>
   </div>
 
+  <!-- ✅ Price block -->
   <div class="border-start border-3 border-primary ps-3 mb-4">
-    <h2 class="fw-bold text-primary mb-0"><%= display_price(@product.price, user: current_user) %></h2>
+    <% price_in_kes = ExchangeRateService.convert(@product.price, from: @product.currency, to: "KES") %>
+    <h2 class="fw-bold text-primary mb-0"><%= number_to_currency(price_in_kes, unit: "KES ") %></h2>
+    <% usd_price = ExchangeRateService.convert(price_in_kes, from: "KES", to: "USD") %>
+    <small class="text-muted">≈ <%= number_to_currency(usd_price, unit: "USD ") %></small>
+
     <% if @product.discount&.active? %>
-      <small class="text-success"><%= @product.discount.percentage %>% OFF — Now: KES <%= @product.discounted_price %></small>
+      <% discounted_kes = ExchangeRateService.convert(@product.discounted_price, from: @product.currency, to: "KES") %>
+      <small class="text-success d-block">
+        <%= @product.discount.percentage %>% OFF — Now: <%= number_to_currency(discounted_kes, unit: "KES ") %>
+      </small>
     <% end %>
   </div>
 
+  <!-- ✅ Purchase Options -->
   <div class="rounded-4 bg-light p-4 shadow-sm mb-4">
     <h5 class="fw-semibold mb-3">Purchase Options</h5>
 
     <% if @order.present? %>
-      <% if @order.payment.nil? %>
+      <% latest_payment = @order.payments.last %>
+      <% if latest_payment.nil? %>
         <%= button_to "Pay Now", order_payment_path(@order), method: :post, class: "btn btn-success w-100 py-2 fw-semibold" %>
       <% else %>
         <p><strong>Order Status:</strong> <%= @order.status.capitalize %></p>
-        <p><strong>Payment Status:</strong> <%= @order.payment.status.capitalize %></p>
+        <p><strong>Payment Status:</strong> <%= latest_payment.status.capitalize %></p>
       <% end %>
     <% else %>
       <!-- ✅ Buy Now → Single product checkout -->
@@ -118,11 +128,16 @@
     <% end %>
   </div>
 
+  <!-- ✅ Product Meta -->
   <div class="small text-muted">
     <div class="row">
       <div class="col-6"><strong>Stock:</strong> <%= @product.stock %></div>
       <div class="col-6"><strong>Min Order:</strong> <%= @product.min_order %></div>
-      <div class="col-6"><strong>Shipping:</strong> <%= display_price(@product.shipping_cost || 0, user: current_user) %></div>
+      <div class="col-6">
+        <strong>Shipping:</strong>
+        <% shipping_kes = ExchangeRateService.convert(@product.shipping_cost || 0, from: @product.currency, to: "KES") %>
+        <%= number_to_currency(shipping_kes, unit: "KES ") %>
+      </div>
       <div class="col-6"><strong>Delivery:</strong> <%= @product.delivery_estimate %></div>
     </div>
   </div>

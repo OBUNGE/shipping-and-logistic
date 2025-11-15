@@ -13,12 +13,14 @@
     </div>
   <% end %>
 
+  <!-- Discount Percentage -->
   <div class="mb-3">
     <%= form.label :percentage, "Discount Percentage", class: "form-label fw-semibold" %>
     <%= form.number_field :percentage, step: 0.01, class: "form-control", placeholder: "e.g. 15", required: true %>
     <div class="form-text">Enter a percentage value like 10 or 15.5</div>
   </div>
 
+  <!-- Expiry Date -->
   <div class="mb-3">
     <%= form.label :expires_at, "Expires At", class: "form-label fw-semibold" %>
     <%= form.date_field :expires_at, class: "form-control", required: true %>
@@ -26,22 +28,26 @@
   </div>
 
   <% if @product.present? %>
+    <!-- Original Price -->
     <div class="mb-3">
       <label class="form-label fw-semibold">Original Price</label>
       <p class="form-control-plaintext"><%= display_price(@product.price) %></p>
     </div>
 
+    <!-- Discounted Price Preview -->
     <% if @discount.percentage.present? %>
-      <% discounted_price = @product.price * (1 - @discount.percentage / 100.0) %>
+      <% discounted_raw = @product.price * (1 - @discount.percentage / 100.0) %>
+      <% discounted_kes = ExchangeRateService.convert(discounted_raw, from: @product.currency, to: "KES") %>
       <div class="mb-3">
         <label class="form-label fw-semibold">Discounted Price Preview</label>
         <p class="form-control-plaintext text-success fw-bold">
-          <%= display_price(discounted_price) %>
+          <%= display_price(discounted_kes) %>
         </p>
       </div>
     <% end %>
   <% end %>
 
+  <!-- Actions -->
   <div class="d-flex justify-content-between align-items-center mt-4">
     <%= form.submit "Create Discount", class: "btn btn-primary" %>
     <%= link_to "← Back to Product", edit_product_path(@product), class: "btn btn-link" %>

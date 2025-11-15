@@ -11,7 +11,9 @@
 
 <p>
   <strong>Amount Paid:</strong>
-  <%= number_to_currency(order.total, unit: "#{order.currency} ") %>
+  <%= number_to_currency(order.total, unit: "KES ") %>
+  <% usd_total = ExchangeRateService.convert(order.total, from: "KES", to: "USD") %>
+  <span class="text-muted small">≈ <%= number_to_currency(usd_total, unit: "USD ") %></span>
 </p>
 
 <% latest_payment = order.payments.last %>
@@ -54,8 +56,8 @@
         <td><%= item.product.title %></td>
         <td><%= item.variant.present? ? "#{item.variant.name}: #{item.variant.value}" : "—" %></td>
         <td><%= item.quantity %></td>
-        <td><%= number_to_currency(item.unit_price, unit: "#{order.currency} ") %></td>
-        <td><%= number_to_currency(item.subtotal, unit: "#{order.currency} ") %></td>
+        <td><%= number_to_currency(item.unit_price, unit: "KES ") %></td>
+        <td><%= number_to_currency(item.subtotal, unit: "KES ") %></td>
       </tr>
     <% end %>
   </tbody>
@@ -66,15 +68,17 @@
 
 <p>
   <strong>Subtotal:</strong>
-  <%= number_to_currency(subtotal, unit: "#{order.currency} ") %>
+  <%= number_to_currency(subtotal, unit: "KES ") %>
 </p>
 <p>
   <strong>Shipping:</strong>
-  <%= number_to_currency(shipping_total, unit: "#{order.currency} ") %>
+  <%= number_to_currency(shipping_total, unit: "KES ") %>
 </p>
 <p>
   <strong>Total:</strong>
-  <%= number_to_currency(order.total, unit: "#{order.currency} ") %>
+  <%= number_to_currency(order.total, unit: "KES ") %>
+  <% usd_total = ExchangeRateService.convert(order.total, from: "KES", to: "USD") %>
+  <span class="text-muted small">≈ <%= number_to_currency(usd_total, unit: "USD ") %></span>
 </p>
 
 <p>If you have any questions about your order, feel free to reply to this email or contact our support team.</p>

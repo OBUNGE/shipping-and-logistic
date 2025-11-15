@@ -19,28 +19,24 @@ module ApplicationHelper
     session[:user_country] ||= request.location&.country.to_s.downcase.presence || "unknown"
   end
 
-  # 💱 Display price in correct currency
-  def display_price(price, user: nil)
+  # 💱 Display price in correct currency (KES default, USD optional)
+  def display_price(price, currency: "KES")
     return "Price on request" unless price.present?
 
-    exchange_rate = 130.0
-
-    # ✅ Default to KES unless overridden
-    currency = session[:currency] || (
-      case session[:payment_method]
-      when "mpesa", "paystack"
-        "KES"
-      when "paypal"
-        "USD"
-      else
-        user_country == "kenya" ? "KES" : "USD"
-      end
-    )
-
     if currency == "KES"
-      number_to_currency(price * exchange_rate, unit: "KES ")
+      kes_amount = ExchangeRateService.convert(price, from: "USD", to: "KES") rescue price
+      usd_amount = ExchangeRateService.convert(kes_amount, from: "KES", to: "USD") rescue nil
+
+      output = number_to_currency(kes_amount, unit: "KES ")
+      output += " <span class='text-muted small'>(≈ #{number_to_currency(usd_amount, unit: 'USD ')})</span>" if usd_amount
+      output.html_safe
     else
-      number_to_currency(price, unit: "$")
+      usd_amount = price
+      kes_amount = ExchangeRateService.convert(usd_amount, from: "USD", to: "KES") rescue nil
+
+      output = number_to_currency(usd_amount, unit: "USD ")
+      output += " <span class='text-muted small'>(≈ #{number_to_currency(kes_amount, unit: 'KES ')})</span>" if kes_amount
+      output.html_safe
     end
   end
 end

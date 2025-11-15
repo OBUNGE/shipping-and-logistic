@@ -42,7 +42,7 @@
                           class: "text-decoration-none fw-semibold text-dark" %>
                   </td>
 
-                  <!-- Image (variant > product > placeholder) -->
+                  <!-- Image -->
                   <td class="text-center">
                     <% image_url = variant&.variant_images&.first&.image_url.presence || product.image_url.presence %>
                     <% if image_url.present? %>
@@ -81,9 +81,9 @@
                   </td>
 
                   <!-- Pricing -->
-                  <td class="text-center"><%= display_price(item[:unit_price], user: current_user) %></td>
-                  <td class="text-center"><%= display_price(item[:unit_price] * item[:quantity], user: current_user) %></td>
-                  <td class="text-center"><%= display_price(shipping_cost, user: current_user) %></td>
+                  <td class="text-center"><%= number_to_currency(item[:unit_price], unit: "KES ") %></td>
+                  <td class="text-center"><%= number_to_currency(item[:unit_price] * item[:quantity], unit: "KES ") %></td>
+                  <td class="text-center"><%= number_to_currency(shipping_cost, unit: "KES ") %></td>
 
                   <!-- Seller -->
                   <td class="text-center"><%= product.seller.company_name.presence || product.seller.name.presence || "Unknown Seller" %></td>
@@ -117,17 +117,20 @@
                 <h5 class="fw-bold text-secondary mb-3">Order Summary</h5>
                 <div class="d-flex justify-content-between">
                   <span>Subtotal (Products):</span>
-                  <strong><%= display_price(subtotal, user: current_user) %></strong>
+                  <strong><%= number_to_currency(subtotal, unit: "KES ") %></strong>
                 </div>
                 <div class="d-flex justify-content-between">
                   <span>Shipping:</span>
-                  <strong><%= display_price(shipping_total, user: current_user) %></strong>
+                  <strong><%= number_to_currency(shipping_total, unit: "KES ") %></strong>
                 </div>
                 <hr>
                 <div class="d-flex justify-content-between">
                   <h5 class="fw-bold">Grand Total:</h5>
-                  <h5 class="fw-bold text-success"><%= display_price(grand_total, user: current_user) %></h5>
+                  <h5 class="fw-bold text-success"><%= number_to_currency(grand_total, unit: "KES ") %></h5>
                 </div>
+
+                <% usd_total = ExchangeRateService.convert(grand_total, from: "KES", to: "USD") %>
+                <p class="text-muted small">≈ <%= number_to_currency(usd_total, unit: "USD ") %></p>
               </div>
             </div>
           </div>

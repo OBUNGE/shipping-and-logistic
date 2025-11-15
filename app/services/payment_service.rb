@@ -2,16 +2,17 @@
 class PaymentService
   def self.process(order, provider:, phone_number: nil, email: nil, return_url: nil, callback_url: nil, currency: nil)
     provider = provider.to_s.downcase
-    currency ||= order.currency || "USD"
+    # Default currency should be KES, not USD
+    currency ||= order.currency || "KES"
 
     case provider
     when "mpesa"
       # M-PESA only supports KES
       amount_in_kes = if currency == "USD"
-                        ExchangeRateService.convert(order.total, from: "USD", to: "KES")
-                      else
-                        order.total
-                      end
+                         ExchangeRateService.convert(order.total, from: "USD", to: "KES")
+                       else
+                         order.total
+                       end
 
       callback_url ||= Rails.application.routes.url_helpers.mpesa_callback_url(
         order_id: order.id,
@@ -28,16 +29,25 @@ class PaymentService
       ).call
 
     when "paypal"
+      # PayPal typically requires USD, so convert if needed
+      amount_in_usd = if currency == "KES"
+                         ExchangeRateService.convert(order.total, from: "KES", to: "USD")
+                       else
+                         order.total
+                       end
+
       PaypalGateway.new(
         order: order,
         return_url: return_url || Rails.application.routes.url_helpers.order_url(order, host: ENV.fetch("APP_HOST", "tajaone.app")),
-        currency: currency
+        currency: "USD", # force USD for PayPal
+        amount: amount_in_usd
       ).initiate
 
     when "paystack"
+      # Paystack can handle both USD and KES, so just pass through
       PaystackPaymentService.new(
         order,
-        currency,
+        currency, # either "KES" or "USD"
         email: email || order.email || order.buyer&.email
       ).create_payment
 

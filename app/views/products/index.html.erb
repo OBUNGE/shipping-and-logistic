@@ -92,16 +92,16 @@
                   <% discounted_price = product.price * (1 - product.discount.percentage / 100.0) %>
                   <p class="small mb-1">
                     <span class="text-muted text-decoration-line-through me-2">
-                      <%= display_price(product.price, user: current_user) %>
+                      <%= display_price(product.price) %>
                     </span>
                     <span class="text-danger fw-bold">
-                      <%= display_price(discounted_price, user: current_user) %>
+                      <%= display_price(discounted_price) %>
                     </span>
                   </p>
                   <span class="badge bg-success mb-1">-<%= product.discount.percentage.to_i %>% Off</span>
                 <% else %>
                   <p class="text-primary fw-bold small mb-1">
-                    <%= display_price(product.price, user: current_user) %>
+                    <%= display_price(product.price) %>
                   </p>
                 <% end %>
 
@@ -111,7 +111,6 @@
 
                 <% if seller&.store_slug.present? %>
                   <p class="small text-muted mb-2">
-                    
                     <%= link_to (seller.company_name || seller.name),
                         seller_path(seller.store_slug),
                         class: "fw-semibold text-decoration-none hover-link" %>
@@ -139,5 +138,3 @@
     </main>
   </div>
 </div>
-
-

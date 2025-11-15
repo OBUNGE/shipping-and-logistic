@@ -26,11 +26,13 @@
                   <td><%= order.buyer&.name.presence || "—" %></td>
                   <td><%= order.seller&.name.presence || "—" %></td>
                   <td>
-                    <span class="fw-semibold"><%= display_price(order.total, user: order.buyer) %></span>
-                    <% if (session[:payment_method] == "mpesa" || session[:payment_method] == "paystack" || order.buyer&.country&.downcase == "kenya") %>
-                      <br>
-                      <small class="text-muted">(USD <%= number_to_currency(order.total, unit: "$") %>)</small>
-                    <% end %>
+                    <!-- Always show KES first -->
+                    <span class="fw-semibold">
+                      <%= number_to_currency(order.total_in_kes, unit: "KES ") %>
+                    </span>
+                    <% usd_total = ExchangeRateService.convert(order.total_in_kes, from: "KES", to: "USD") %>
+                    <br>
+                    <small class="text-muted">(≈ <%= number_to_currency(usd_total, unit: "USD ") %>)</small>
                   </td>
 
                   <!-- Order Status -->
@@ -46,14 +48,17 @@
                     </span>
                   </td>
 
+                  <!-- Payment Provider -->
                   <td>
                     <span class="badge bg-light text-dark border">
-                      <%= order.payment&.provider&.capitalize || "—" %>
+                      <%= order.payments.last&.provider&.capitalize || "—" %>
                     </span>
                   </td>
 
+                  <!-- Date -->
                   <td><%= order.created_at.strftime("%b %d, %Y") %></td>
 
+                  <!-- Action -->
                   <td class="text-center">
                     <%= link_to "View", order_path(order), class: "btn btn-sm btn-gradient rounded-pill px-3" %>
                   </td>

@@ -4,15 +4,15 @@ require "json"
 
 class ExchangeRateService
   BASE_URL = "https://v6.exchangerate-api.com/v6"
-  API_KEY  = ENV["EXCHANGE_RATE_API_KEY"] # store in credentials or .env
+  API_KEY  = ENV["EXCHANGE_RATE_API_KEY"]
 
+  # Fallback rates (KES as anchor)
   FALLBACK_RATES = {
-    "USD_KES" => 130.0,
-    "KES_USD" => 1.0 / 130.0
+    "USD_KES" => 130.0,       # 1 USD = 130 KES
+    "KES_USD" => 1.0 / 130.0  # 1 KES = 0.0077 USD
   }.freeze
 
   class << self
-    # Convert an amount from one currency to another
     def convert(amount, from:, to:)
       return amount if from == to
 
