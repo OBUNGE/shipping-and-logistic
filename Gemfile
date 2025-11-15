@@ -72,6 +72,7 @@ gem 'geocoder'
 gem 'rqrcode'
 gem 'bootstrap', '~> 5.2.3'
 
+gem "country_select"
 
 # Gemfile
 gem 'sib-api-v3-sdk'
