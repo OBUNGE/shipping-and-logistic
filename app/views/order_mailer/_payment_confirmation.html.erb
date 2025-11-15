@@ -7,20 +7,24 @@
 </h2>
 
 <p>Thank you for your payment for Order ##<%= order.id %>.</p>
-<p>We’ve notified the seller and will begin preparing your shipment.</p>
+<p>Your order will be delivered to you.</p>
 
 <p>
   <strong>Amount Paid:</strong>
   <%= number_to_currency(order.total, unit: "#{order.currency} ") %>
 </p>
+
+<% latest_payment = order.payments.last %>
 <p>
   <strong>Payment Method:</strong>
-  <%= order.payment_method.humanize %>
+  <%= latest_payment&.provider&.humanize || "N/A" %>
 </p>
+
 <p>
   <strong>Order Date:</strong>
   <%= order.created_at.strftime("%B %d, %Y at %I:%M %p") %>
 </p>
+
 <p>
   <strong>Shipping Address:</strong><br>
   <%= [order.first_name, order.last_name].compact.join(" ") %><br>
@@ -32,6 +36,7 @@
     Alternate Contact: <%= order.alternate_contact %><br>
   <% end %>
 </p>
+
 <h4>Order Summary</h4>
 <table>
   <thead>
@@ -55,6 +60,7 @@
     <% end %>
   </tbody>
 </table>
+
 <p>
   <strong>Subtotal:</strong>
   <%= number_to_currency(order.subtotal, unit: "#{order.currency} ") %>
@@ -67,6 +73,7 @@
   <strong>Total:</strong>
   <%= number_to_currency(order.total, unit: "#{order.currency} ") %>
 </p>
+
 <p>If you have any questions about your order, feel free to reply to this email or contact our support team.</p>
 <p>Thank you for shopping with us!</p>
 <p>Best regards,<br>tajaone</p>
