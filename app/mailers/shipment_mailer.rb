@@ -5,10 +5,11 @@ class ShipmentMailer
     buyer  = order.buyer
     status = new_status
 
-    # Render the HTML body using Rails view rendering
+    # Render the HTML body using Rails view rendering, without application layout
     html_content = ApplicationController.render(
       template: "shipment_mailer/status_update",
-      assigns: { shipment: shipment, order: order, buyer: buyer, status: status }
+      assigns: { shipment: shipment, order: order, buyer: buyer, status: status },
+      layout: false
     )
 
     subject = "Shipment Update: Order ##{order.id} is now #{status.humanize}"
