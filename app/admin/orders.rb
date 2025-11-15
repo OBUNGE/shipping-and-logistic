@@ -1,4 +1,5 @@
 ActiveAdmin.register Order do
+  # === Strong Parameters ===
   permit_params :buyer_id, :seller_id, :status, :total
 
   # === Index Table ===
@@ -14,14 +15,14 @@ ActiveAdmin.register Order do
   end
 
   # === Filters ===
-  filter :buyer
-  filter :seller
-  filter :status
+  filter :buyer, collection: -> { User.all }   # ✅ ensures dropdown instead of free-text
+  filter :seller, collection: -> { User.all }
+  filter :status, as: :select, collection: Order.statuses.keys
   filter :total
   filter :created_at
 
   # === Show Page ===
-  show do
+  show do |order|
     attributes_table do
       row :id
       row :buyer
@@ -59,10 +60,10 @@ ActiveAdmin.register Order do
   # === Form ===
   form do |f|
     f.inputs "Order Details" do
-      f.input :buyer
-      f.input :seller
-      f.input :status
-      f.input :total, min: 0.01  # ✅ Prevents Formtastic error
+      f.input :buyer, collection: User.all
+      f.input :seller, collection: User.all
+      f.input :status, as: :select, collection: Order.statuses.keys
+      f.input :total, min: 0.01  # ✅ prevents Formtastic error
     end
     f.actions
   end

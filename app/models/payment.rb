@@ -1,12 +1,13 @@
 class Payment < ApplicationRecord
+  # === Associations ===
   belongs_to :order
   belongs_to :user, optional: true
 
   # === Status management ===
   enum :status, {
-    pending:  "pending",
-    paid:     "paid",
-    failed:   "failed"
+    pending: "pending",
+    paid:    "paid",
+    failed:  "failed"
   }, default: "pending"
 
   # === Validations ===
@@ -19,9 +20,17 @@ class Payment < ApplicationRecord
   # === Ransack (Admin filtering) ===
   def self.ransackable_attributes(_auth_object = nil)
     %w[
-      id order_id user_id amount provider status
-      checkout_request_id mpesa_receipt_number
-      created_at updated_at
+      id
+      order_id
+      user_id
+      amount
+      provider
+      status
+      checkout_request_id
+      mpesa_receipt_number
+      currency
+      created_at
+      updated_at
     ]
   end
 

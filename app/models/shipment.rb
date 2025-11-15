@@ -43,7 +43,7 @@ class Shipment < ApplicationRecord
   end
 
   def self.ransackable_associations(auth_object = nil)
-    %w[order]
+    %w[order shipment_status_logs]
   end
 
   # === Estimated delivery (optional)

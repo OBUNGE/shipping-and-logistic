@@ -4,21 +4,11 @@ class User < ApplicationRecord
          :recoverable, :rememberable, :validatable
 
   # === Associations ===
-
-  # Products listed by this user (as seller)
   has_many :products, foreign_key: "user_id", inverse_of: :seller, dependent: :destroy
-
-  # Orders placed by this user (as buyer)
   has_many :orders_as_buyer, class_name: "Order", foreign_key: "buyer_id"
-
-  # Orders received by this user (as seller)
   has_many :orders_as_seller, class_name: "Order", foreign_key: "seller_id"
-
-  # Messaging system
   has_many :sent_messages, class_name: "Message", foreign_key: "sender_id", dependent: :destroy
   has_many :received_messages, class_name: "Message", foreign_key: "receiver_id", dependent: :destroy
-
-  # Other relationships
   has_many :notifications, dependent: :destroy
   has_many :payments, dependent: :destroy
   has_many :shipments, through: :orders_as_buyer
@@ -78,7 +68,45 @@ class User < ApplicationRecord
       store_description.present?
   end
 
-  # === Private Methods ===
+  # === Ransack support for ActiveAdmin ===
+  def self.ransackable_attributes(auth_object = nil)
+    %w[
+      id
+      first_name
+      last_name
+      email
+      phone
+      company_name
+      country
+      store_name
+      store_slug
+      store_description
+      store_logo_url
+      store_banner_url
+      active_role
+      roles
+      admin
+      created_at
+      updated_at
+    ]
+  end
+
+  def self.ransackable_associations(auth_object = nil)
+    %w[
+      products
+      orders_as_buyer
+      orders_as_seller
+      sent_messages
+      received_messages
+      notifications
+      payments
+      shipments
+      reviews
+      votes
+      reports
+    ]
+  end
+
   private
 
   def generate_store_slug
