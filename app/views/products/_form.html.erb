@@ -56,7 +56,7 @@
           placeholder: "e.g. 120.00",
           required: true %>
     <small class="text-muted">
-      Stored in USD — buyers will see <%= display_price(120, user: current_user) %> approx.
+      Stored in USD — buyers will see <%= display_price(120) %> approx.
     </small>
   </div>
 
@@ -68,7 +68,7 @@
           id: "product_shipping_cost",
           placeholder: "e.g. 300.00" %>
     <small class="text-muted">
-      Stored in USD — buyers will see <%= display_price(300, user: current_user) %> approx.
+      Stored in USD — buyers will see <%= display_price(300) %> approx.
     </small>
   </div>
 </div>
@@ -76,7 +76,7 @@
 <p class="text-primary small mb-3">
   💵 Total Cost: 
   <span id="total-cost">
-    <%= display_price((@product.price || 0) + (@product.shipping_cost || 0), user: current_user) %>
+    <%= display_price((@product.price || 0) + (@product.shipping_cost || 0)) %>
   </span>
 </p>
 
