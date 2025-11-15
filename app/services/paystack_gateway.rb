@@ -58,7 +58,7 @@ class PaystackGateway
   private
 
   def callback_url
-    paystack_callback_order_payments_url(@order, host: ENV["APP_HOST"] || "shipping-and-logistic-wuo1.onrender.com")
+    paystack_callback_order_payments_url(@order, host: ENV["APP_HOST"] || "tajaone.app", protocol: "https")
   end
 
   def default_url_options

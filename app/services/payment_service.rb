@@ -35,7 +35,7 @@ when "mpesa"
 
     when "paystack"
       amount_in_minor_units = (order.total * 100).to_i
-      PaystackGateway.new(
+      PaystackPaymentService.new(
         order: order,
         return_url: return_url,
         amount: amount_in_minor_units,

@@ -237,5 +237,4 @@ def handle_payment(order, provider, phone_number, email)
     end
   end
 end
-
 end
