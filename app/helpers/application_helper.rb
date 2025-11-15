@@ -20,23 +20,22 @@ module ApplicationHelper
   end
 
   # 💱 Display price in correct currency (KES default, USD optional)
-  def display_price(price, currency: "KES")
+  def display_price(price)
     return "Price on request" unless price.present?
 
-    if currency == "KES"
+    # Default currency = KES
+    currency = session[:currency] || "KES"
+
+    case currency
+    when "KES"
       kes_amount = ExchangeRateService.convert(price, from: "USD", to: "KES") rescue price
-      usd_amount = ExchangeRateService.convert(kes_amount, from: "KES", to: "USD") rescue nil
-
-      output = number_to_currency(kes_amount, unit: "KES ")
-      output += " <span class='text-muted small'>(≈ #{number_to_currency(usd_amount, unit: 'USD ')})</span>" if usd_amount
-      output.html_safe
+      number_to_currency(kes_amount, unit: "KES ")
+    when "USD"
+      usd_amount = ExchangeRateService.convert(price, from: "KES", to: "USD") rescue price
+      number_to_currency(usd_amount, unit: "$")
     else
-      usd_amount = price
-      kes_amount = ExchangeRateService.convert(usd_amount, from: "USD", to: "KES") rescue nil
-
-      output = number_to_currency(usd_amount, unit: "USD ")
-      output += " <span class='text-muted small'>(≈ #{number_to_currency(kes_amount, unit: 'KES ')})</span>" if kes_amount
-      output.html_safe
+      # fallback
+      number_to_currency(price, unit: "KES ")
     end
   end
 end
