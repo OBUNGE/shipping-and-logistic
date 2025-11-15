@@ -1,5 +1,4 @@
 class OrdersController < ApplicationController
-  # Allow guest checkout (no login required for new/create/pay/receipt)
   before_action :authenticate_user!, except: [:new, :create, :pay, :receipt]
   before_action :set_product, only: [:new, :create], if: -> { params[:product_id].present? }
   before_action :set_order, only: [:show, :receipt, :pay]
@@ -10,61 +9,49 @@ class OrdersController < ApplicationController
 
   def show; end
 
-def new
-  if params[:product_id].present?
-    @product = Product.find(params[:product_id])
-    @order   = user_signed_in? ? current_user.orders_as_buyer.new : Order.new
-  else
-    if session[:cart].blank?
-      redirect_to cart_path, alert: "Your cart is empty." and return
+  def new
+    if params[:product_id].present?
+      @product = Product.find(params[:product_id])
+      @order   = user_signed_in? ? current_user.orders_as_buyer.new : Order.new(currency: "KES")
+    else
+      if session[:cart].blank?
+        redirect_to cart_path, alert: "Your cart is empty." and return
+      end
+
+      order_currency = "KES"
+
+      @cart_items = session[:cart].map do |item|
+        product  = Product.find(item["product_id"])
+        variant  = item["variant_id"].present? ? Variant.find_by(id: item["variant_id"]) : nil
+        quantity = item["quantity"].to_i
+
+        base_price = product.price + (variant&.price_modifier || 0)
+
+        unit_price = ExchangeRateService.convert(base_price, from: product.currency, to: order_currency)
+        subtotal   = unit_price * quantity
+        shipping   = ExchangeRateService.convert((product.shipping_cost || 0) * quantity, from: product.currency, to: order_currency)
+
+        {
+          product:    product,
+          variant:    variant,
+          quantity:   quantity,
+          unit_price: unit_price,
+          subtotal:   subtotal,
+          shipping:   shipping
+        }
+      end
+
+      @order = user_signed_in? ? current_user.orders_as_buyer.new(currency: order_currency) : Order.new(currency: order_currency)
     end
-
-    # Default currency = KES
-    order_currency = "KES"
-
-    @cart_items = session[:cart].map do |item|
-      product  = Product.find(item["product_id"])
-      variant  = item["variant_id"].present? ? Variant.find_by(id: item["variant_id"]) : nil
-      quantity = item["quantity"].to_i
-
-      base_price = product.price + (variant&.price_modifier || 0)
-
-      # ✅ Convert unit price into order currency (KES)
-      unit_price = ExchangeRateService.convert(
-        base_price,
-        from: product.currency,
-        to: order_currency
-      )
-
-      subtotal = unit_price * quantity
-
-      # ✅ Convert shipping into order currency (KES)
-      shipping = ExchangeRateService.convert(
-        (product.shipping_cost || 0) * quantity,
-        from: product.currency,
-        to: order_currency
-      )
-
-      {
-        product:    product,
-        variant:    variant,
-        quantity:   quantity,
-        unit_price: unit_price,
-        subtotal:   subtotal,
-        shipping:   shipping,
-        currency:   order_currency
-      }
-    end
-
-    @order = user_signed_in? ? current_user.orders_as_buyer.new : Order.new(currency: order_currency)
   end
-end
 
   def create
-    @order      = user_signed_in? ? current_user.orders_as_buyer.build(order_params) : Order.new(order_params)
-    provider    = order_params[:provider] || "mpesa"
+    @order       = user_signed_in? ? current_user.orders_as_buyer.build(order_params) : Order.new(order_params)
+    @order.currency ||= "KES"
+
+    provider     = order_params[:provider] || "mpesa"
     phone_number = order_params[:phone_number].presence || current_user&.phone
-    email       = order_params[:email].presence || current_user&.email
+    email        = order_params[:email].presence || current_user&.email
 
     Rails.logger.info("🛒 Starting order creation: provider=#{provider}, currency=#{@order.currency}, email=#{email}")
 
@@ -86,23 +73,18 @@ end
       end
 
       notify_seller(@order)
-
-      if @order.present?
-        handle_payment(@order, provider, phone_number, email)
-      else
-        Rails.logger.error("⚠️ @order is nil after save in product branch")
-        redirect_to product_path(product), alert: "Order could not be created."
-      end
+      handle_payment(@order, provider, phone_number, email)
 
     else
-      # Cart checkout (split by seller)
       grouped_items = (session[:cart] || []).group_by { |item| Product.find(item["product_id"]).seller.id }
-
       orders = []
+
       ActiveRecord::Base.transaction do
         grouped_items.each do |seller_id, items|
           order = user_signed_in? ? current_user.orders_as_buyer.build(order_params.merge(seller_id: seller_id, status: :pending)) :
                                     Order.new(order_params.merge(seller_id: seller_id, status: :pending))
+
+          order.currency ||= "KES"
 
           items.each do |item|
             product       = Product.find(item["product_id"])
@@ -125,13 +107,7 @@ end
       end
 
       session[:cart] = []
-
-      if orders.first.present?
-        handle_payment(orders.first, provider, phone_number, email)
-      else
-        Rails.logger.error("⚠️ No orders built from cart, orders.first is nil")
-        redirect_to cart_path, alert: "Cart checkout failed."
-      end
+      handle_payment(orders.first, provider, phone_number, email)
     end
   rescue ActiveRecord::RecordInvalid => e
     Rails.logger.error("⚠️ Order Creation Failed: #{e.record.errors.full_messages.join(', ')}")
@@ -163,10 +139,7 @@ end
       amount: @order.total,
       account_reference: "Order_#{@order.id}",
       description: "Payment for Order #{@order.id}",
-      callback_url: mpesa_callback_url(
-        order_id: @order.id,
-        host: ENV["APP_HOST"] || "tajaone.app"
-      )
+      callback_url: mpesa_callback_url(order_id: @order.id, host: ENV["APP_HOST"] || "tajaone.app")
     ).call
 
     respond_to do |format|
@@ -213,35 +186,24 @@ end
     end
   end
 
-def build_order_items(order, product, variant, quantity)
-  base_price = product.price + (variant&.price_modifier || 0)
+  def build_order_items(order, product, variant, quantity)
+    base_price = product.price + (variant&.price_modifier || 0)
 
-  unit_price = ExchangeRateService.convert(
-    base_price,
-    from: product.currency,
-    to: order.currency
-  )
+    unit_price = ExchangeRateService.convert(base_price, from: product.currency, to: order.currency)
+    subtotal   = unit_price * quantity
+    shipping   = ExchangeRateService.convert((product.shipping_cost || 0) * quantity, from: product.currency, to: order.currency)
 
-  subtotal = unit_price * quantity
+    order.order_items.build(
+      product:    product,
+      variant:    variant,
+      quantity:   quantity,
+      unit_price: unit_price,
+      subtotal:   subtotal,
+      shipping:   shipping
+    )
 
-  shipping = ExchangeRateService.convert(
-    (product.shipping_cost || 0) * quantity,
-    from: product.currency,
-    to: order.currency
-  )
-
-  order.order_items.build(
-    product:    product,
-    variant:    variant,
-    quantity:   quantity,
-    unit_price: unit_price,   # ✅ persist unit price
-    subtotal:   subtotal,
-    shipping:   shipping,
-    currency:   order.currency
-  )
-
-  order.total = order.order_items.sum { |oi| oi.subtotal + (oi.shipping || 0) }
-end
+    order.total = order.order_items.sum { |oi| oi.subtotal + (oi.shipping || 0) }
+  end
 
   def order_params
     params.require(:order).permit(
@@ -290,5 +252,3 @@ end
   end
 end
 
-
-    # Use a verified sender email (default to
