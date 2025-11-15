@@ -79,5 +79,5 @@ Rails.application.configure do
 end
 
 # ✅ Ensure URL helpers (like *_url) generate full URLs
-Rails.application.routes.default_url_options[:host] = "shipping-and-logistic-wuo1.onrender.com"
+Rails.application.routes.default_url_options[:host] = "tajaone.app"
 Rails.application.routes.default_url_options[:protocol] = "https"

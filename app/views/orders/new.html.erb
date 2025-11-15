@@ -50,100 +50,12 @@
               {}, class: "form-select shadow-sm" %>
           </div>
 
-          <h4 class="mt-4 fw-semibold text-secondary border-bottom pb-2">Delivery Information</h4>
-          
-          <%# --- NOTE: These fields save directly to the new order --- %>
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              <%= f.label :first_name, "First Name", class: "form-label fw-semibold" %>
-              <%= f.text_field :first_name, class: "form-control shadow-sm", required: true %>
-            </div>
-            <div class="col-md-6 mb-3">
-              <%= f.label :last_name, "Last Name", class: "form-label fw-semibold" %>
-              <%= f.text_field :last_name, class: "form-control shadow-sm", required: true %>
-            </div>
-          </div>
-
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              <%= f.label :phone_number, "Phone Number", class: "form-label fw-semibold" %>
-              <%= f.telephone_field :phone_number, value: current_user.phone, class: "form-control shadow-sm", placeholder: "e.g. 2547XXXXXXXX", required: true %>
-            </div>
-            <div class="col-md-6 mb-3">
-              <%= f.label :alternate_contact, "Alternate Contact (optional)", class: "form-label fw-semibold" %>
-              <%= f.telephone_field :alternate_contact, class: "form-control shadow-sm", placeholder: "e.g. 2547XXXXXXXX" %>
-            </div>
-          </div>
-
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              <%= f.label :city, "City / Town", class: "form-label fw-semibold" %>
-              <%= f.text_field :city, class: "form-control shadow-sm", id: "city-field-product", required: true %>
-            </div>
-            <div class="col-md-6 mb-3">
-              <%= f.label :country, "Country", class: "form-label fw-semibold" %>
-              <%= f.select :country,
-                    options_for_select(["Kenya", "Uganda", "Tanzania", "Other"], f.object&.country || "Kenya"),
-                    {}, class: "form-select shadow-sm", id: "country-select-product", required: true %>
-            </div>
-          </div>
-
-          <div class="row">
-            <div class="col-md-6 mb-3" id="county-wrapper-product">
-              <%= f.label :county, "County (Kenya only)", class: "form-label fw-semibold" %>
-              <%= f.select :county,
-                    options_for_select([
-                      "Nairobi", "Mombasa", "Kisumu", "Nakuru", "Kiambu", "Machakos", "Uasin Gishu"
-                    ], f.object&.county),
-                    { prompt: "Select County" },
-                    class: "form-select shadow-sm" %>
-            </div>
-            <div class="col-md-6 mb-3" id="region-wrapper-product" style="display:none;">
-              <%= f.label :region, "Region / State", class: "form-label fw-semibold" %>
-              <%= f.text_field :region, class: "form-control shadow-sm", placeholder: "Enter your region" %>
-            </div>
-          </div>
-
-          <div class="mb-3">
-            <%= f.label :address, "Delivery Address", class: "form-label fw-semibold" %>
-            <%= f.text_area :address, class: "form-control shadow-sm", rows: 3, required: true %>
-          </div>
-
-          <div class="mb-3">
-            <%= f.label :delivery_notes, "Delivery Notes (optional)", class: "form-label fw-semibold" %>
-            <%= f.text_area :delivery_notes, class: "form-control shadow-sm", rows: 2, placeholder: "Gate code, floor, landmark..." %>
-          </div>
-
-          <div class="mb-3">
-            <h5 class="fw-semibold text-secondary">Available Shipping Rates</h5>
-            <div id="shipping-rates-product" class="p-2 border rounded bg-light text-muted">
-              Select country and city to fetch DHL rates...
-            </div>
-          </div>
-
-          <h4 class="mt-4 fw-semibold text-secondary border-bottom pb-2">Payment Method</h4>
-          <div class="form-check mb-3">
-            <%= f.radio_button :provider, "mpesa", checked: true, class: "form-check-input", id: "provider_mpesa_product" %>
-            <%= f.label :provider_mpesa_product, "M-PESA (STK Push)", class: "form-check-label fw-semibold" %>
-          </div>
-          <div class="mb-3" id="mpesa_phone_field_product">
-            <%= f.label :mpesa_phone, "M-PESA Phone Number", class: "form-label fw-semibold" %>
-            <%= f.telephone_field :mpesa_phone, value: current_user.phone, class: "form-control shadow-sm", placeholder: "e.g. 2547XXXXXXXX" %>
-          </div>
-          <div class="form-check mb-3">
-            <%= f.radio_button :provider, "paypal", class: "form-check-input", id: "provider_paypal_product" %>
-            <%= f.label :provider_paypal_product, "PayPal", class: "form-check-label fw-semibold" %>
-          </div>
-          <div class="form-check mb-4">
-            <%= f.radio_button :provider, "paystack", class: "form-check-input", id: "provider_paystack_product" %>
-            <%= f.label :provider_paystack_product, "Credit/Debit Card", class: "form-check-label fw-semibold" %>
-          </div>
+          <%= render "orders/shared_checkout_fields", f: f %>
 
           <%= f.submit "Confirm & Pay", class: "btn btn-success w-100 fw-bold py-2 shadow-sm" %>
         <% end %>
 
       <%# --- 2. CART CHECKOUT --- %>
-      <%# *** FIXED: This 'elsif' is now INSIDE the card-body *** %>
       <% elsif @order.present? && @cart_items.present? %>
         <h4 class="fw-semibold text-secondary mb-3">Order Summary</h4>
         <div class="table-responsive mb-4">
@@ -186,17 +98,19 @@
           <h4 class="text-success fw-bold">Grand Total: <%= display_price(grand_total, user: current_user) %></h4>
         </div>
         
-  <%= form_with model: @order, local: true, html: { class: "checkout-form" } do |f| %>
-  <%= render "orders/shared_checkout_fields", f: f %>
-  <%= f.submit "Confirm & Pay", class: "btn btn-success w-100 fw-bold py-2 shadow-sm" %>
-<% end %>
+        <%= form_with model: @order, local: true, html: { class: "checkout-form" } do |f| %>
+          <%= render "orders/shared_checkout_fields", f: f %>
+          <%= f.submit "Confirm & Pay", class: "btn btn-success w-100 fw-bold py-2 shadow-sm" %>
+        <% end %>
 
-<% else %>
-  <p class="text-muted fs-5">Your cart is empty.</p>
-  <%= link_to "Back to Products", products_path, class: "btn btn-primary fw-semibold" %>
-<% end %>
-
-    
+      <% else %>
+        <p class="text-muted fs-5">Your cart is empty.</p>
+        <%= link_to "Back to Products", products_path, class: "btn btn-primary fw-semibold" %>
+      <% end %>
+    </div>
+  </div>
+</div>
+  
     
 <script>
   document.addEventListener("DOMContentLoaded", function() {
