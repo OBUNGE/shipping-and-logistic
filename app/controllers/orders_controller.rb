@@ -210,29 +210,32 @@ end
     )
   end
 
-  def handle_payment(order, provider, phone_number, email)
-    result = PaymentService.process(
-      order,
-      provider: provider,
-      phone_number: phone_number,
-      email: email,
-      currency: order.currency,
-      return_url: order_url(order),
-      callback_url: mpesa_callback_url(order_id: order.id,
-                                       host: ENV["APP_HOST"] || "shipping-and-logistic-wuo1.onrender.com")
+def handle_payment(order, provider, phone_number, email)
+  result = PaymentService.process(
+    order,
+    provider: provider,
+    phone_number: phone_number,
+    email: email,
+    currency: order.currency,
+    return_url: order_url(order),
+    callback_url: mpesa_callback_url(
+      order_id: order.id,
+      host: ENV["APP_HOST"] || "tajaone.app"
     )
+  )
 
-    respond_to do |format|
-      if result.is_a?(Hash) && result[:redirect_url]
-        format.html         { redirect_to result[:redirect_url], allow_other_host: true }
-        format.turbo_stream { redirect_to result[:redirect_url], allow_other_host: true }
-      elsif result.is_a?(Hash) && result[:error]
-        format.html         { redirect_to order_path(order), alert: result[:error] }
-        format.turbo_stream { redirect_to order_path(order), alert: result[:error] }
-      else
-        format.html         { redirect_to order_path(order), notice: "Order created successfully. Please proceed to payment." }
-        format.turbo_stream { redirect_to order_path(order), notice: "Order created successfully. Please proceed to payment." }
-      end
+  respond_to do |format|
+    if result.is_a?(Hash) && result[:redirect_url]
+      format.html         { redirect_to result[:redirect_url], allow_other_host: true }
+      format.turbo_stream { redirect_to result[:redirect_url], allow_other_host: true }
+    elsif result.is_a?(Hash) && result[:error]
+      format.html         { redirect_to order_path(order), alert: result[:error] }
+      format.turbo_stream { redirect_to order_path(order), alert: result[:error] }
+    else
+      format.html         { redirect_to order_path(order), notice: "Order created successfully. Please proceed to payment." }
+      format.turbo_stream { redirect_to order_path(order), notice: "Order created successfully. Please proceed to payment." }
     end
   end
+end
+
 end
