@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_15_134224) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_16_115420) do
   create_schema "auth"
   create_schema "extensions"
   create_schema "graphql"
@@ -225,8 +225,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_15_134224) do
     t.integer "subcategory_id"
     t.string "currency", default: "KES", null: false
     t.string "image_url"
-    t.text "gallery_image_urls"
     t.string "slug"
+    t.jsonb "gallery_image_urls", default: []
     t.index ["category_id"], name: "index_products_on_category_id"
     t.index ["seller_id"], name: "index_products_on_seller_id"
     t.index ["slug"], name: "index_products_on_slug", unique: true
