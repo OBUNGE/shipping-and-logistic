@@ -12,7 +12,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const price = parseFloat(priceField.value) || 0;
     const shipping = parseFloat(shippingField.value) || 0;
     const total = price + shipping;
-    totalCostSpan.textContent = `$${total.toFixed(2)}`;
+    // ✅ Default currency set to KES
+    totalCostSpan.textContent = `KES ${total.toFixed(2)}`;
   }
 
   priceField?.addEventListener("input", updateTotal);

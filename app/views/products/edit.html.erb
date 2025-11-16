@@ -9,37 +9,37 @@
 
 <!-- Dynamic Total Cost & Field Cloning & Image Preview -->
 <script>
- document.addEventListener("DOMContentLoaded", () => {
-    const priceField = document.getElementById("product_price");
-    const shippingField = document.getElementById("product_shipping_cost");
-    const totalCostSpan = document.getElementById("total-cost");
+document.addEventListener("DOMContentLoaded", () => {
+  const priceField = document.getElementById("product_price");
+  const shippingField = document.getElementById("product_shipping_cost");
+  const totalCostSpan = document.getElementById("total-cost");
 
-    function updateTotal() {
-      const price = parseFloat(priceField.value) || 0;
-      const shipping = parseFloat(shippingField.value) || 0;
-      const total = price + shipping;
-
-      // For now, just show USD symbol — server will render correct currency
-      totalCostSpan.textContent = `$${total.toFixed(2)}`;
-    }
-
-    priceField.addEventListener("input", updateTotal);
-    shippingField.addEventListener("input", updateTotal);
-  });
-
-
-  function addFields(containerId) {
-    const container = document.getElementById(containerId);
-    const lastBlock = container.querySelector("div.border:last-of-type");
-    if (lastBlock) {
-      const clone = lastBlock.cloneNode(true);
-      clone.querySelectorAll("input").forEach(input => input.value = "");
-      container.appendChild(clone);
-    }
+  function updateTotal() {
+    const price = parseFloat(priceField.value) || 0;
+    const shipping = parseFloat(shippingField.value) || 0;
+    const total = price + shipping;
+    // ✅ Default currency set to KES
+    totalCostSpan.textContent = `KES ${total.toFixed(2)}`;
   }
 
-  function previewMainImage(event) {
-  const output = document.getElementById('main-image-preview');
+  priceField?.addEventListener("input", updateTotal);
+  shippingField?.addEventListener("input", updateTotal);
+});
+
+// --- Clone last block (generic) ---
+function addFields(containerId) {
+  const container = document.getElementById(containerId);
+  const lastBlock = container?.querySelector("div.border:last-of-type");
+  if (lastBlock) {
+    const clone = lastBlock.cloneNode(true);
+    clone.querySelectorAll("input").forEach(input => input.value = "");
+    container.appendChild(clone);
+  }
+}
+
+// --- Main image preview ---
+function previewMainImage(event) {
+  const output = document.getElementById("main-image-preview");
   const file = event.target.files[0];
   if (file) {
     output.src = URL.createObjectURL(file);
@@ -51,63 +51,65 @@
   }
 }
 
+// --- Gallery image preview ---
+function previewGalleryImages(event) {
+  const previewContainer = document.getElementById("gallery-preview");
+  previewContainer.innerHTML = "";
 
-  function previewGalleryImages(event) {
-    const previewContainer = document.getElementById("gallery-preview");
-    previewContainer.innerHTML = "";
+  Array.from(event.target.files).forEach((file, index) => {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const wrapper = document.createElement("div");
+      wrapper.className = "col-md-3 mb-2 text-center preview-item";
+      wrapper.draggable = true;
+      wrapper.dataset.index = index;
 
-    Array.from(event.target.files).forEach((file, index) => {
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const wrapper = document.createElement("div");
-        wrapper.className = "col-md-3 mb-2 text-center preview-item";
-        wrapper.draggable = true;
-        wrapper.dataset.index = index;
+      const img = document.createElement("img");
+      img.src = e.target.result;
+      img.className = "img-thumbnail";
+      img.style.maxHeight = "150px";
+      img.style.width = "auto";
 
-        const img = document.createElement("img");
-        img.src = e.target.result;
-        img.className = "img-thumbnail";
-        img.style.maxHeight = "150px";
-        img.style.width = "auto";
+      const removeBtn = document.createElement("button");
+      removeBtn.className = "btn btn-sm btn-outline-danger mt-2";
+      removeBtn.textContent = "Remove";
+      removeBtn.onclick = () => wrapper.remove();
 
-        const removeBtn = document.createElement("button");
-        removeBtn.className = "btn btn-sm btn-outline-danger mt-2";
-        removeBtn.textContent = "Remove";
-        removeBtn.onclick = () => wrapper.remove();
-
-        wrapper.appendChild(img);
-        wrapper.appendChild(removeBtn);
-        previewContainer.appendChild(wrapper);
-      };
-      reader.readAsDataURL(file);
-    });
-  }
-  // Drag-and-drop sorting
-  document.addEventListener("DOMContentLoaded", () => {
-    const container = document.querySelector(".sortable-preview");
-    let dragged;
-
-    container?.addEventListener("dragstart", (e) => {
-      dragged = e.target.closest(".preview-item");
-      if (dragged) dragged.style.opacity = 0.5;
-    });
-
-    container?.addEventListener("dragend", (e) => {
-      if (dragged) dragged.style.opacity = "";
-    });
-
-    container?.addEventListener("dragover", (e) => {
-      e.preventDefault();
-    });
-
-    container?.addEventListener("drop", (e) => {
-      e.preventDefault();
-      const target = e.target.closest(".preview-item");
-      if (target && dragged && dragged !== target) {
-        container.insertBefore(dragged, target);
-      }
-    });
+      wrapper.appendChild(img);
+      wrapper.appendChild(removeBtn);
+      previewContainer.appendChild(wrapper);
+    };
+    reader.readAsDataURL(file);
   });
+}
+
+// --- Drag-and-drop sorting for gallery preview ---
+document.addEventListener("DOMContentLoaded", () => {
+  const container = document.querySelector(".sortable-preview");
+  let dragged;
+
+  container?.addEventListener("dragstart", (e) => {
+    dragged = e.target.closest(".preview-item");
+    if (dragged) dragged.style.opacity = 0.5;
+  });
+
+  container?.addEventListener("dragend", () => {
+    if (dragged) dragged.style.opacity = "";
+  });
+
+  container?.addEventListener("dragover", (e) => {
+    e.preventDefault();
+  });
+
+  container?.addEventListener("drop", (e) => {
+    e.preventDefault();
+    const target = e.target.closest(".preview-item");
+    if (target && dragged && dragged !== target) {
+      container.insertBefore(dragged, target);
+    }
+  });
+});
+
 // ✅ Variant & Inventory Dynamic Fields
 document.addEventListener("turbo:load", () => {
   const typeOptions = {
@@ -143,7 +145,6 @@ document.addEventListener("turbo:load", () => {
       }
     }
 
-    // Show/hide color image section
     if (actions) {
       actions.classList.toggle("d-none", selectedType !== "Color");
       if (selectedType === "Color") {
@@ -159,7 +160,7 @@ document.addEventListener("turbo:load", () => {
     });
   }
 
-  // --- Delete buttons (set _destroy instead of removing) ---
+  // --- Delete buttons ---
   function bindDeleteButtons(container) {
     container.querySelectorAll(".delete-variant").forEach(button => {
       button.addEventListener("click", (e) => {
@@ -167,7 +168,7 @@ document.addEventListener("turbo:load", () => {
         if (block) {
           const destroyField = block.querySelector("input.destroy-flag");
           if (destroyField) destroyField.value = "true";
-          block.style.display = "none"; // hide instead of remove
+          block.style.display = "none";
         }
       });
     });
@@ -200,7 +201,7 @@ document.addEventListener("turbo:load", () => {
     const templateHtml = document.getElementById("variant-image-template").innerHTML;
     if (!templateHtml) return;
 
-    const uniqueId = new Date().getTime(); // unique key
+    const uniqueId = new Date().getTime();
     const html = templateHtml
       .replace(/NEW_RECORD/g, `new_${uniqueId}`)
       .replace(/NEW_IMAGE/g, `new_${uniqueId}`);
@@ -226,7 +227,7 @@ document.addEventListener("turbo:load", () => {
     });
   }
 
-  // --- Generic addFields (works for variants & inventories) ---
+  // --- Generic addFields ---
   window.addFields = function(containerId) {
     const container = document.getElementById(containerId);
     if (!container) return;
