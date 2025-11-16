@@ -14,7 +14,9 @@ class Product < ApplicationRecord
 
   # === Supabase Image Fields ===
   # Store gallery image URLs in a JSON/text column
-  serialize :gallery_image_urls, Array
+  # Rails 8+ style
+attribute :gallery_image_urls, :json, default: []
+
 
   # === Nested Attributes ===
   accepts_nested_attributes_for :variants,
