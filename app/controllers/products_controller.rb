@@ -243,24 +243,27 @@ class ProductsController < ApplicationController
     end
   end
 
-  def attach_gallery_images(product)
-    gallery_images = params[:gallery_images] || params[:product][:gallery_images]
-    return unless gallery_images.present?
+def attach_gallery_images(product)
+  gallery_images = params[:gallery_images] || params[:product][:gallery_images]
+  return unless gallery_images.present?
 
-    valid_files = Array(gallery_images).select do |file|
-      file.respond_to?(:original_filename) && file.respond_to?(:read)
-    end
-
-    new_urls = valid_files.map do |file|
-      begin
-        upload_to_supabase(file)
-      rescue => e
-        Rails.logger.error "Supabase gallery image upload failed: #{e.message}"
-        nil
-      end
-    end.compact
-
-    # Merge new images with existing ones
-    product.update(gallery_image_urls: product.gallery_image_urls + new_urls)
+  valid_files = Array(gallery_images).select do |file|
+    file.respond_to?(:original_filename) && file.respond_to?(:read)
   end
+
+  new_urls = valid_files.map do |file|
+    begin
+      upload_to_supabase(file)
+    rescue => e
+      Rails.logger.error "Supabase gallery image upload failed: #{e.message}"
+      nil
+    end
+  end.compact
+
+  # Ensure gallery_image_urls is always an array
+  existing_urls = Array(product.gallery_image_urls)
+
+  product.update(gallery_image_urls: existing_urls + new_urls)
+end
+
 end
