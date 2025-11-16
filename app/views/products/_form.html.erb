@@ -96,10 +96,9 @@
     <%= form.label :return_policy, class: "form-label small" %>
     <%= form.text_area :return_policy, class: "form-control form-control-sm", rows: 2, placeholder: "e.g. Returns accepted within 7 days" %>
   </div>
-
 <!-- 🖼️ Main Product Image -->
 <div class="mb-3">
-  <%= form.label :image, "Main Product Image", class: "form-label small" %>
+  <%= form.label :image_url, "Main Product Image", class: "form-label small" %>
 
   <% if @product.image_url.present? %>
     <div class="mb-2">
@@ -109,9 +108,17 @@
     </div>
   <% end %>
 
-  <%= form.file_field :image, class: "form-control form-control-sm", accept: "image/*", onchange: "previewMainImage(event)" %>
-  <img id="main-image-preview" class="img-fluid mt-2 rounded shadow-sm" style="max-height: 250px;" />
+  <!-- Use file_field_tag instead of form.file_field -->
+  <%= file_field_tag "product[image]",
+        class: "form-control form-control-sm",
+        accept: "image/*",
+        onchange: "previewMainImage(event)" %>
+
+  <img id="main-image-preview"
+       class="img-fluid mt-2 rounded shadow-sm"
+       style="max-height: 250px;" />
 </div>
+
 <!-- 🖼️ Gallery Images -->
 <div class="mb-3">
   <%= form.label :gallery_image_urls, "Gallery Images", class: "form-label small" %>

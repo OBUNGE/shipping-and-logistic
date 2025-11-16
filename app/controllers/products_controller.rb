@@ -201,7 +201,6 @@ class ProductsController < ApplicationController
       :stock,
       :estimated_delivery_range,
       :return_policy,
-      :image,
       :category_id,
       :subcategory_id,
       :inventory_csv,
