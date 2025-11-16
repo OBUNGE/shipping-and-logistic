@@ -101,6 +101,20 @@ class ProductsController < ApplicationController
       @product.image_url = upload_to_supabase(params[:product][:image])
     end
 
+    # Intercept variant deletions to avoid FK violations
+    if params[:product][:variants_attributes].present?
+      params[:product][:variants_attributes].each do |_, attrs|
+        if attrs["_destroy"] == "true"
+          variant = Variant.find_by(id: attrs["id"])
+          if variant&.order_items&.exists?
+            # Soft delete instead of hard delete
+            variant.update(active: false)
+            attrs.delete("_destroy") # prevent Rails from destroying it
+          end
+        end
+      end
+    end
+
     if @product.update(product_params)
       import_inventory_csv(@product) if params[:product][:inventory_csv].present?
       @product.update(stock: @product.total_inventory)
@@ -191,7 +205,6 @@ class ProductsController < ApplicationController
       :category_id,
       :subcategory_id,
       :inventory_csv,
-      gallery_images: [],
       variants_attributes: [
         :id, :name, :value, :price_modifier, :_destroy,
         variant_images_attributes: [:id, :image, :_destroy]
@@ -231,7 +244,7 @@ class ProductsController < ApplicationController
   end
 
   def attach_gallery_images(product)
-    gallery_images = params[:product][:gallery_images]
+    gallery_images = params[:gallery_images] || params[:product][:gallery_images]
     return unless gallery_images.present?
 
     valid_files = Array(gallery_images).select do |file|
