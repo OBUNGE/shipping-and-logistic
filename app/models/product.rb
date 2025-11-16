@@ -21,7 +21,9 @@ attribute :gallery_image_urls, :json, default: []
   # === Nested Attributes ===
   accepts_nested_attributes_for :variants,
                                 allow_destroy: true,
-                                reject_if: ->(attrs) { attrs['name'].blank? || attrs['value'].blank? }
+                                reject_if: ->(attrs) { attrs['name'].blank? && attrs['value'].blank? }
+
+
   accepts_nested_attributes_for :inventories,
                                 allow_destroy: true,
                                 reject_if: :all_blank

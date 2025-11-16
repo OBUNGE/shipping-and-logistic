@@ -189,9 +189,10 @@
         <%= variant_fields.fields_for :variant_images do |image_fields| %>
           <div class="border p-2 mb-2 bg-light rounded variant-image-block">
             <% if image_fields.object.image_url.present? %>
-              <%= image_tag image_fields.object.image_url, class: "img-thumbnail mb-1" %>
+              <!-- ✅ Show existing image -->
+              <%= image_tag image_fields.object.image_url, class: "img-thumbnail mb-1 variant-image-preview" %>
             <% end %>
-            <!-- ✅ Added preview support -->
+            <!-- ✅ File field with preview support -->
             <%= image_fields.file_field :image,
                   class: "form-control form-control-sm",
                   accept: "image/*",
