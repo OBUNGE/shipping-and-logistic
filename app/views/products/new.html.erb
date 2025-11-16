@@ -107,11 +107,11 @@
 // ✅ Variant & Inventory Dynamic Fields
 document.addEventListener("turbo:load", () => {
   const typeOptions = {
-    Size: ["XS", "S", "M", "L", "XL", "XXL", "3XL", "4XL", "5XL", "6XL", "7XL", "8XL", "9XL", "10XL"],
-    Color: ["Red", "Blue", "Black", "White", "Green", "Yellow", "Purple", "Orange", "Pink", "Gray", "Brown", "Cyan", "Magenta", "Lime", "Teal", "Navy", "Maroon", "Olive", "Silver", "Gold", "Beige"],
-    Material: ["Cotton", "Leather", "Polyester", "Plastic", "Metal", "Wood", "Glass", "Silk", "Wool", "Denim"],
-    Storage: ["64GB", "128GB", "256GB", "512GB", "1TB", "2TB", "4TB"],
-    Packaging: ["Box", "Bag", "Sachet", "Envelope", "Bottle", "Jar"]
+    Size: ["XS","S","M","L","XL","XXL","3XL","4XL","5XL","6XL","7XL","8XL","9XL","10XL"],
+    Color: ["Red","Blue","Black","White","Green","Yellow","Purple","Orange","Pink","Gray","Brown","Cyan","Magenta","Lime","Teal","Navy","Maroon","Olive","Silver","Gold","Beige"],
+    Material: ["Cotton","Leather","Polyester","Plastic","Metal","Wood","Glass","Silk","Wool","Denim"],
+    Storage: ["64GB","128GB","256GB","512GB","1TB","2TB","4TB"],
+    Packaging: ["Box","Bag","Sachet","Envelope","Bottle","Jar"]
   };
 
   // --- Variant dropdowns ---
@@ -155,26 +155,38 @@ document.addEventListener("turbo:load", () => {
     });
   }
 
-  // --- Delete buttons ---
+  // --- Delete buttons (set _destroy instead of removing) ---
   function bindDeleteButtons(container) {
     container.querySelectorAll(".delete-variant").forEach(button => {
       button.addEventListener("click", (e) => {
         const block = e.target.closest(".variant-block");
-        if (block) block.remove();
+        if (block) {
+          const destroyField = block.querySelector("input.destroy-flag");
+          if (destroyField) destroyField.value = "true";
+          block.style.display = "none"; // hide instead of remove
+        }
       });
     });
 
     container.querySelectorAll(".delete-variant-image").forEach(button => {
       button.addEventListener("click", (e) => {
         const block = e.target.closest(".variant-image-block");
-        if (block) block.remove();
+        if (block) {
+          const destroyField = block.querySelector("input.destroy-flag");
+          if (destroyField) destroyField.value = "true";
+          block.style.display = "none";
+        }
       });
     });
 
     container.querySelectorAll(".remove-inventory").forEach(button => {
       button.addEventListener("click", (e) => {
         const block = e.target.closest(".inventory-block");
-        if (block) block.remove();
+        if (block) {
+          const destroyField = block.querySelector("input.destroy-flag");
+          if (destroyField) destroyField.value = "true";
+          block.style.display = "none";
+        }
       });
     });
   }
@@ -184,12 +196,10 @@ document.addEventListener("turbo:load", () => {
     const templateHtml = document.getElementById("variant-image-template").innerHTML;
     if (!templateHtml) return;
 
-    const variantIndex = Array.from(document.querySelectorAll("#variant-fields .variant-block")).indexOf(variantBlock);
-    const imageIndex = variantBlock.querySelectorAll(".variant-image-block").length;
-
+    const uniqueId = new Date().getTime(); // unique key
     const html = templateHtml
-      .replace(/NEW_RECORD/g, variantIndex)
-      .replace(/NEW_IMAGE/g, imageIndex);
+      .replace(/NEW_RECORD/g, `new_${uniqueId}`)
+      .replace(/NEW_IMAGE/g, `new_${uniqueId}`);
 
     const wrapper = document.createElement("div");
     wrapper.innerHTML = html.trim();
@@ -217,7 +227,6 @@ document.addEventListener("turbo:load", () => {
     const container = document.getElementById(containerId);
     if (!container) return;
 
-    // Map containerId -> templateId
     const templateId = containerId.replace("-fields", "-template");
     const templateEl = document.getElementById(templateId);
     if (!templateEl) {
@@ -226,8 +235,8 @@ document.addEventListener("turbo:load", () => {
     }
 
     const template = templateEl.innerHTML;
-    const index = container.children.length;
-    const newBlockHtml = template.replace(/NEW_RECORD/g, index);
+    const uniqueId = new Date().getTime();
+    const newBlockHtml = template.replace(/NEW_RECORD/g, `new_${uniqueId}`);
 
     const wrapper = document.createElement("div");
     wrapper.innerHTML = newBlockHtml.trim();
@@ -236,7 +245,6 @@ document.addEventListener("turbo:load", () => {
 
     container.appendChild(newBlock);
 
-    // Bind variant-specific logic
     if (containerId === "variant-fields") {
       bindVariantDropdowns(newBlock);
       bindAddImageButtons(newBlock);

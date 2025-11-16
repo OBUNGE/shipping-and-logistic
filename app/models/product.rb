@@ -13,7 +13,8 @@ class Product < ApplicationRecord
   has_one  :discount, dependent: :destroy
 
   # === Supabase Image Fields ===
-  store_accessor :gallery_image_urls
+  # Store gallery image URLs in a JSON/text column
+  serialize :gallery_image_urls, Array
 
   # === Nested Attributes ===
   accepts_nested_attributes_for :variants,
@@ -67,7 +68,15 @@ class Product < ApplicationRecord
   end
 
   def gallery_image_urls
-    self[:gallery_image_urls] || []
+    super || []
+  end
+
+  def add_gallery_image(url)
+    update(gallery_image_urls: gallery_image_urls + [url])
+  end
+
+  def remove_gallery_image(url)
+    update(gallery_image_urls: gallery_image_urls - [url])
   end
 
   # === Custom Methods ===

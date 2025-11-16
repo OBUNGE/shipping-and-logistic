@@ -4,71 +4,61 @@ class ProductsController < ApplicationController
 
   require "csv"
 
+  def index
+    @products = Product.includes(:variants, :inventories)
+                       .order(created_at: :desc)
 
-def index
-  @products = Product.includes(:variants, :inventories)
-                     .order(created_at: :desc)
-
-  # 🔍 Search by query (title or description)
-  if params[:query].present?
-    q = "%#{params[:query]}%"
-    @products = @products.where("products.title ILIKE ? OR products.description ILIKE ?", q, q)
-  end
-
-  # 🏷️ Filter by category (top-level)
-  if params[:category].present?
-    category = Category.find_by(slug: params[:category], parent_id: nil)
-    if category
-      # include products in this category + its subcategories
-      sub_ids = category.subcategories.pluck(:id)
-      @products = @products.where(category_id: [category.id] + sub_ids)
-    end
-  end
-
-  # 🏷️ Filter by subcategory (child category)
-  if params[:subcategory].present?
-    subcategory = Category.find_by(slug: params[:subcategory], parent_id: Category.where(slug: params[:category]).pluck(:id))
-    if subcategory
-      @products = @products.where(category_id: subcategory.id)
-    end
-  end
-
-  # 📄 Paginate results
-  @products = @products.page(params[:page]).per(20)
-
-rescue => e
-  Rails.logger.error "🔥 Products#index failed: #{e.message}"
-  Rails.logger.error e.backtrace.join("\n")
-  render plain: "Product listing error: #{e.message}", status: 500
-end
-
-
-def show
-  # @product is already set by set_product
-  @reviews = @product.reviews.order(created_at: :desc).page(params[:page]).per(5)
-  @selected_color = params[:color]
-
-  @variant_images =
-    if @selected_color.present?
-      @product.variants.where(name: "Color", value: @selected_color)
-              .flat_map { |variant| Array(variant.image_urls) }
-              .select { |url| url.is_a?(String) && url.present? }
-    else
-      @product.variants
-              .flat_map { |variant| Array(variant.image_urls) }
-              .select { |url| url.is_a?(String) && url.present? }
+    # 🔍 Search by query (title or description)
+    if params[:query].present?
+      q = "%#{params[:query]}%"
+      @products = @products.where("products.title ILIKE ? OR products.description ILIKE ?", q, q)
     end
 
-  respond_to do |format|
-    format.html
-    format.json do
-      image_url = @variant_images.find { |url| url.is_a?(String) && url.present? } ||
-                  view_context.asset_path("placeholder.png")
-      render json: { image_url: image_url }
+    # 🏷️ Filter by category (top-level)
+    if params[:category].present?
+      category = Category.find_by(slug: params[:category], parent_id: nil)
+      if category
+        sub_ids = category.subcategories.pluck(:id)
+        @products = @products.where(category_id: [category.id] + sub_ids)
+      end
+    end
+
+    # 🏷️ Filter by subcategory (child category)
+    if params[:subcategory].present?
+      parent = Category.find_by(slug: params[:category])
+      subcategory = Category.find_by(slug: params[:subcategory], parent_id: parent&.id)
+      @products = @products.where(category_id: subcategory.id) if subcategory
+    end
+
+    # 📄 Paginate results
+    @products = @products.page(params[:page]).per(20)
+  rescue => e
+    Rails.logger.error "🔥 Products#index failed: #{e.message}"
+    Rails.logger.error e.backtrace.join("\n")
+    render plain: "Product listing error: #{e.message}", status: 500
+  end
+
+  def show
+    @reviews = @product.reviews.order(created_at: :desc).page(params[:page]).per(5)
+    @selected_color = params[:color]
+
+    @variant_images =
+      if @selected_color.present?
+        @product.variants.where(name: "Color", value: @selected_color)
+                .flat_map { |variant| Array(variant.image_urls) }
+                .select(&:present?)
+      else
+        @product.variants.flat_map { |variant| Array(variant.image_urls) }.select(&:present?)
+      end
+
+    respond_to do |format|
+      format.html
+      format.json do
+        image_url = @variant_images.find(&:present?) || view_context.asset_path("placeholder.png")
+        render json: { image_url: image_url }
+      end
     end
   end
-end
-
 
   def new
     @product = Product.new
@@ -76,20 +66,20 @@ end
   end
 
   def create
-    @product = current_user.products.build(product_params.except(:image, :gallery_images, :variants_attributes))
+    @product = current_user.products.build(product_params)
 
+    # Upload main image to Supabase
     if params[:product][:image].present?
       @product.image_url = upload_to_supabase(params[:product][:image])
     end
 
     if @product.save
-      import_inventory_csv(@product)
-      @product.update(stock: @product.total_inventory) if params[:product][:inventory_csv].present?
+      import_inventory_csv(@product) if params[:product][:inventory_csv].present?
+      @product.update(stock: @product.total_inventory)
 
       attach_gallery_images(@product)
-      attach_variants(@product)
 
-      redirect_to @product, allow_other_host: true, notice: "Product created successfully."
+      redirect_to @product, notice: "Product created successfully."
     else
       Rails.logger.debug "❌ Product save failed: #{@product.errors.full_messages}"
       build_nested_fields(@product)
@@ -106,12 +96,16 @@ end
   end
 
   def update
-    if @product.update(product_params.except(:image, :gallery_images, :variants_attributes))
-      import_inventory_csv(@product)
-      @product.update(stock: @product.total_inventory) if params[:product][:inventory_csv].present?
+    # Upload new main image if provided
+    if params[:product][:image].present?
+      @product.image_url = upload_to_supabase(params[:product][:image])
+    end
+
+    if @product.update(product_params)
+      import_inventory_csv(@product) if params[:product][:inventory_csv].present?
+      @product.update(stock: @product.total_inventory)
 
       attach_gallery_images(@product)
-      attach_variants(@product)
 
       redirect_to @product, notice: "Product updated successfully."
     else
@@ -165,14 +159,14 @@ end
     end
   end
 
-private
+  private
 
-def set_product
-  slug = params[:slug] || params[:id]
-  @product = Product.friendly.find(slug)
-rescue ActiveRecord::RecordNotFound
-  redirect_to products_path, alert: "Product not found"
-end
+  def set_product
+    slug = params[:slug] || params[:id]
+    @product = Product.friendly.find(slug)
+  rescue ActiveRecord::RecordNotFound
+    redirect_to products_path, alert: "Product not found"
+  end
 
   def build_nested_fields(product)
     product.variants.build if product.variants.empty?
@@ -180,7 +174,7 @@ end
       color_variant.variant_images.build if color_variant.variant_images.empty?
     end
     product.inventories.build if product.inventories.empty?
-    10.times { product.variants.build } if product.variants.empty?
+    product.product_images.build if product.product_images.empty?
   end
 
   def product_params
@@ -198,99 +192,62 @@ end
       :subcategory_id,
       :inventory_csv,
       gallery_images: [],
-
       variants_attributes: [
-        :id,
-        :name,
-        :value,
-        :price_modifier,
-        :_destroy,
-        variant_images_attributes: [
-          :id,
-          :image,
-          :_destroy
-        ]
+        :id, :name, :value, :price_modifier, :_destroy,
+        variant_images_attributes: [:id, :image, :_destroy]
       ],
-
-      inventories_attributes: [
-        :id,
-        :location,
-        :quantity,
-        :_destroy
-      ]
+      inventories_attributes: [:id, :location, :quantity, :_destroy],
+      product_images_attributes: [:id, :image_url, :_destroy]
     )
   end
 
+  def upload_to_supabase(file)
+    return unless file.respond_to?(:original_filename) && file.respond_to?(:read)
 
-def upload_to_supabase(file)
-  return unless file.respond_to?(:original_filename) && file.respond_to?(:read)
+    raw_filename = "#{SecureRandom.hex}_#{file.original_filename}"
+    encoded_filename = URI.encode_www_form_component(raw_filename)
 
-  raw_filename = "#{SecureRandom.hex}_#{file.original_filename}"
-  encoded_filename = URI.encode_www_form_component(raw_filename)
+    bucket = ENV["SUPABASE_BUCKET"]
+    project_ref = ENV["SUPABASE_ACCESS_KEY_ID"]
+    endpoint = "https://#{project_ref}.supabase.co/storage/v1/object/#{bucket}/#{encoded_filename}"
 
-  bucket = ENV["SUPABASE_BUCKET"]
-  project_ref = ENV["SUPABASE_ACCESS_KEY_ID"]
-  endpoint = "https://#{project_ref}.supabase.co/storage/v1/object/#{bucket}/#{encoded_filename}"
+    uri = URI(endpoint)
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl = true
 
-  uri = URI(endpoint)
-  http = Net::HTTP.new(uri.host, uri.port)
-  http.use_ssl = true
+    request = Net::HTTP::Put.new(uri)
+    request["Authorization"] = "Bearer #{ENV['SUPABASE_SECRET_ACCESS_KEY']}"
+    request["Content-Type"] = file.content_type
+    request.body = file.read
 
-  request = Net::HTTP::Put.new(uri)
-  request["Authorization"] = "Bearer #{ENV['SUPABASE_SECRET_ACCESS_KEY']}" # ✅ Use API key, not secret access key
-  request["Content-Type"] = file.content_type
-  request.body = file.read
+    response = http.request(request)
 
-  response = http.request(request)
-
-  if response.code.to_i == 200
-    "https://#{project_ref}.supabase.co/storage/v1/object/public/#{bucket}/#{encoded_filename}"
-  else
-    Rails.logger.error "Supabase upload failed: #{response.code} - #{response.body}"
-    nil
-  end
-end
-
-def attach_gallery_images(product)
-  gallery_images = params[:product][:gallery_images]
-
-  return unless gallery_images.present? && gallery_images.is_a?(Array)
-
-  valid_files = gallery_images.select do |file|
-    file.respond_to?(:original_filename) && file.respond_to?(:read)
-  end
-
-  urls = valid_files.map do |file|
-    begin
-      upload_to_supabase(file)
-    rescue => e
-      Rails.logger.error "Supabase gallery image upload failed: #{e.message}"
+    if response.code.to_i == 200
+      "https://#{project_ref}.supabase.co/storage/v1/object/public/#{bucket}/#{encoded_filename}"
+    else
+      Rails.logger.error "Supabase upload failed: #{response.code} - #{response.body}"
       nil
     end
-  end.compact
-
-  product.update(gallery_image_urls: urls)
-end
-
-def attach_variants(product)
-  return unless product_params[:variants_attributes].present?
-
-  product_params[:variants_attributes].to_h.each do |_, variant_data|
-    variant = product.variants.create(
-      name: variant_data[:name],
-      value: variant_data[:value],
-      price_modifier: variant_data[:price_modifier]
-    )
-
-    next unless variant_data[:variant_images_attributes].present?
-
-    variant_data[:variant_images_attributes].to_h.each do |_, image_data|
-      if image_data[:image].present?
-        url = upload_to_supabase(image_data[:image])
-        variant.variant_images.create(image_url: url) if url.present?
-      end
-    end
   end
-end
 
+  def attach_gallery_images(product)
+    gallery_images = params[:product][:gallery_images]
+    return unless gallery_images.present?
+
+    valid_files = Array(gallery_images).select do |file|
+      file.respond_to?(:original_filename) && file.respond_to?(:read)
+    end
+
+    new_urls = valid_files.map do |file|
+      begin
+        upload_to_supabase(file)
+      rescue => e
+        Rails.logger.error "Supabase gallery image upload failed: #{e.message}"
+        nil
+      end
+    end.compact
+
+    # Merge new images with existing ones
+    product.update(gallery_image_urls: product.gallery_image_urls + new_urls)
+  end
 end

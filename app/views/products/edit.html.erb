@@ -108,10 +108,7 @@
       }
     });
   });
-
-
-// Variant Type-Value Dynamic Dropdowns
-
+// ✅ Variant & Inventory Dynamic Fields
 document.addEventListener("turbo:load", () => {
   const typeOptions = {
     Size: ["XS","S","M","L","XL","XXL","3XL","4XL","5XL","6XL","7XL","8XL","9XL","10XL"],
@@ -121,6 +118,7 @@ document.addEventListener("turbo:load", () => {
     Packaging: ["Box","Bag","Sachet","Envelope","Bottle","Jar"]
   };
 
+  // --- Variant dropdowns ---
   function updateValueOptions(typeSelect) {
     const selectedType = typeSelect.value;
     const block = typeSelect.closest(".variant-block");
@@ -145,119 +143,123 @@ document.addEventListener("turbo:load", () => {
       }
     }
 
-    // Toggle "Add color image" button
+    // Show/hide color image section
     if (actions) {
       actions.classList.toggle("d-none", selectedType !== "Color");
+      if (selectedType === "Color") {
+        bindAddImageButtons(block);
+      }
     }
   }
 
   function bindVariantDropdowns(container) {
     container.querySelectorAll(".variant-block .variant-type").forEach(typeSelect => {
       updateValueOptions(typeSelect);
-      typeSelect.addEventListener("change", () => {
-        updateValueOptions(typeSelect);
-      });
+      typeSelect.addEventListener("change", () => updateValueOptions(typeSelect));
     });
   }
 
+  // --- Delete buttons (set _destroy instead of removing) ---
   function bindDeleteButtons(container) {
     container.querySelectorAll(".delete-variant").forEach(button => {
       button.addEventListener("click", (e) => {
         const block = e.target.closest(".variant-block");
-        if (block) block.remove();
+        if (block) {
+          const destroyField = block.querySelector("input.destroy-flag");
+          if (destroyField) destroyField.value = "true";
+          block.style.display = "none"; // hide instead of remove
+        }
       });
     });
 
     container.querySelectorAll(".delete-variant-image").forEach(button => {
       button.addEventListener("click", (e) => {
         const block = e.target.closest(".variant-image-block");
-        if (block) block.remove();
+        if (block) {
+          const destroyField = block.querySelector("input.destroy-flag");
+          if (destroyField) destroyField.value = "true";
+          block.style.display = "none";
+        }
+      });
+    });
+
+    container.querySelectorAll(".remove-inventory").forEach(button => {
+      button.addEventListener("click", (e) => {
+        const block = e.target.closest(".inventory-block");
+        if (block) {
+          const destroyField = block.querySelector("input.destroy-flag");
+          if (destroyField) destroyField.value = "true";
+          block.style.display = "none";
+        }
       });
     });
   }
 
+  // --- Variant images ---
   function addVariantImageToBlock(variantBlock) {
     const templateHtml = document.getElementById("variant-image-template").innerHTML;
+    if (!templateHtml) return;
 
-    // Determine variant index by position among .variant-blocks
-    const variantIndex = Array.from(document.querySelectorAll("#variant-fields .variant-block")).indexOf(variantBlock);
-
-    // Determine next image index within this variant
-    const existingImages = variantBlock.querySelectorAll(".variant-image-block").length;
-    const imageIndex = existingImages; // 0-based
-
+    const uniqueId = new Date().getTime(); // unique key
     const html = templateHtml
-      .replace(/NEW_RECORD/g, variantIndex)
-      .replace(/NEW_IMAGE/g, imageIndex);
+      .replace(/NEW_RECORD/g, `new_${uniqueId}`)
+      .replace(/NEW_IMAGE/g, `new_${uniqueId}`);
 
     const wrapper = document.createElement("div");
     wrapper.innerHTML = html.trim();
     const imageBlock = wrapper.firstElementChild;
 
     if (imageBlock) {
-      variantBlock.appendChild(imageBlock);
+      variantBlock.querySelector(".color-image-actions").appendChild(imageBlock);
       bindDeleteButtons(imageBlock);
     }
   }
 
   function bindAddImageButtons(container) {
     container.querySelectorAll(".variant-block .add-variant-image-btn").forEach(btn => {
-      btn.addEventListener("click", (e) => {
+      btn.removeEventListener("click", btn._boundClick);
+      btn._boundClick = (e) => {
         const variantBlock = e.target.closest(".variant-block");
         addVariantImageToBlock(variantBlock);
-      });
+      };
+      btn.addEventListener("click", btn._boundClick);
     });
   }
 
-  // Add Variant (uses NEW_RECORD placeholder replacement)
+  // --- Generic addFields (works for variants & inventories) ---
   window.addFields = function(containerId) {
     const container = document.getElementById(containerId);
-    const templateEl = document.getElementById("variant-template");
+    if (!container) return;
+
+    const templateId = containerId.replace("-fields", "-template");
+    const templateEl = document.getElementById(templateId);
     if (!templateEl) {
-      console.error("Template not found");
+      console.error("Template not found for", templateId);
       return;
     }
 
     const template = templateEl.innerHTML;
-    const index = container.querySelectorAll(".variant-block").length;
-
-    const newBlockHtml = template.replace(/NEW_RECORD/g, index);
+    const uniqueId = new Date().getTime();
+    const newBlockHtml = template.replace(/NEW_RECORD/g, `new_${uniqueId}`);
 
     const wrapper = document.createElement("div");
     wrapper.innerHTML = newBlockHtml.trim();
     const newBlock = wrapper.firstElementChild;
-
-    if (!newBlock) {
-      console.error("Template produced no element");
-      return;
-    }
+    if (!newBlock) return;
 
     container.appendChild(newBlock);
 
-    bindVariantDropdowns(newBlock);
+    if (containerId === "variant-fields") {
+      bindVariantDropdowns(newBlock);
+      bindAddImageButtons(newBlock);
+    }
+
     bindDeleteButtons(newBlock);
-    bindAddImageButtons(newBlock);
   };
 
-  // Initial bindings
+  // --- Initial bindings ---
   bindVariantDropdowns(document);
   bindDeleteButtons(document);
   bindAddImageButtons(document);
 });
 </script>
-<!-- Variant Image Template (hidden) -->
-<script>
-<template id="variant-image-template">
-  <div class="variant-image-block border p-2 mb-2 position-relative">
-    <button type="button" class="btn-close position-absolute top-0 end-0 m-2 delete-variant-image" aria-label="Delete variant image"></button>
-    <div class="mb-2">
-      <label for="product_variants_NEW_RECORD_variant_images_NEW_IMAGE_image" class="form-label fw-semibold">Variant Image</label>
-      <input type="file" name="product[variants][NEW_RECORD][variant_images][NEW_IMAGE][image]" id="product_variants_NEW_RECORD_variant_images_NEW_IMAGE_image" class="form-control" accept="image/*">
-    </div>
-  </div>
-</template>
-<style>
-  .preview-item {
-    cursor: move;
-  }
-</style>
