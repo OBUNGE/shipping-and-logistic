@@ -8,13 +8,11 @@ class ProductsController < ApplicationController
     @products = Product.includes(:variants, :inventories)
                        .order(created_at: :desc)
 
-    # 🔍 Search by query (title or description)
     if params[:query].present?
       q = "%#{params[:query]}%"
       @products = @products.where("products.title ILIKE ? OR products.description ILIKE ?", q, q)
     end
 
-    # 🏷️ Filter by category (top-level)
     if params[:category].present?
       category = Category.find_by(slug: params[:category], parent_id: nil)
       if category
@@ -23,14 +21,12 @@ class ProductsController < ApplicationController
       end
     end
 
-    # 🏷️ Filter by subcategory (child category)
     if params[:subcategory].present?
       parent = Category.find_by(slug: params[:category])
       subcategory = Category.find_by(slug: params[:subcategory], parent_id: parent&.id)
       @products = @products.where(category_id: subcategory.id) if subcategory
     end
 
-    # 📄 Paginate results
     @products = @products.page(params[:page]).per(20)
   rescue => e
     Rails.logger.error "🔥 Products#index failed: #{e.message}"
@@ -68,7 +64,6 @@ class ProductsController < ApplicationController
   def create
     @product = current_user.products.build(product_params)
 
-    # Upload main image to Supabase
     if params[:product][:image].present?
       @product.image_url = upload_to_supabase(params[:product][:image])
     end
@@ -78,6 +73,7 @@ class ProductsController < ApplicationController
       @product.update(stock: @product.total_inventory)
 
       attach_gallery_images(@product)
+      attach_variant_images(@product)
 
       redirect_to @product, notice: "Product created successfully."
     else
@@ -96,20 +92,17 @@ class ProductsController < ApplicationController
   end
 
   def update
-    # Upload new main image if provided
     if params[:product][:image].present?
       @product.image_url = upload_to_supabase(params[:product][:image])
     end
 
-    # Intercept variant deletions to avoid FK violations
     if params[:product][:variants_attributes].present?
       params[:product][:variants_attributes].each do |_, attrs|
         if attrs["_destroy"] == "true"
           variant = Variant.find_by(id: attrs["id"])
           if variant&.order_items&.exists?
-            # Soft delete instead of hard delete
             variant.update(active: false)
-            attrs.delete("_destroy") # prevent Rails from destroying it
+            attrs.delete("_destroy")
           end
         end
       end
@@ -120,6 +113,7 @@ class ProductsController < ApplicationController
       @product.update(stock: @product.total_inventory)
 
       attach_gallery_images(@product)
+      attach_variant_images(@product)
 
       redirect_to @product, notice: "Product updated successfully."
     else
@@ -206,7 +200,7 @@ class ProductsController < ApplicationController
       :inventory_csv,
       variants_attributes: [
         :id, :name, :value, :price_modifier, :_destroy,
-        variant_images_attributes: [:id, :image, :_destroy]
+        variant_images_attributes: [:id, :image_url, :_destroy] # ✅ corrected
       ],
       inventories_attributes: [:id, :location, :quantity, :_destroy],
       product_images_attributes: [:id, :image_url, :_destroy]
@@ -242,27 +236,39 @@ class ProductsController < ApplicationController
     end
   end
 
-def attach_gallery_images(product)
-  gallery_images = params[:gallery_images] || params[:product][:gallery_images]
-  return unless gallery_images.present?
+  def attach_gallery_images(product)
+    gallery_images = params[:gallery_images] || params[:product][:gallery_images]
+    return unless gallery_images.present?
 
-  valid_files = Array(gallery_images).select do |file|
-    file.respond_to?(:original_filename) && file.respond_to?(:read)
+    valid_files = Array(gallery_images).select do |file|
+      file.respond_to?(:original_filename) && file.respond_to?(:read)
+    end
+
+    new_urls = valid_files.map do |file|
+      begin
+        upload_to_supabase(file)
+      rescue => e
+        Rails.logger.error "Supabase gallery image upload failed: #{e.message}"
+        nil
+      end
+    end.compact
+
+    # Ensure gallery_image_urls is always an array
+    existing_urls = Array(product.gallery_image_urls)
+
+    product.update(gallery_image_urls: existing_urls + new_urls)
   end
 
-  new_urls = valid_files.map do |file|
-    begin
-      upload_to_supabase(file)
-    rescue => e
-      Rails.logger.error "Supabase gallery image upload failed: #{e.message}"
-      nil
+  def attach_variant_images(product)
+    product.variants.each do |variant|
+      variant.variant_images.each do |vi|
+        # If a file was uploaded, upload to Supabase and set image_url
+        if vi.image.is_a?(ActionDispatch::Http::UploadedFile)
+          uploaded_url = upload_to_supabase(vi.image)
+          vi.update(image_url: uploaded_url)
+        end
+      end
     end
-  end.compact
-
-  # Ensure gallery_image_urls is always an array
-  existing_urls = Array(product.gallery_image_urls)
-
-  product.update(gallery_image_urls: existing_urls + new_urls)
+  end
 end
-
-end
+  # === Supabase Image Accessors ===
