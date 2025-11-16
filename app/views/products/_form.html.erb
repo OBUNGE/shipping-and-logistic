@@ -157,7 +157,8 @@
         </div>
         <div class="col-md-4">
           <%= variant_fields.label :value, "Option", class: "form-label small" %>
-          <%= variant_fields.text_field :value, class: "form-control form-control-sm variant-value", required: true %>
+          <!-- ✅ Changed to select for auto-fill -->
+          <%= variant_fields.select :value, [], {}, class: "form-select form-select-sm variant-value", required: true %>
         </div>
         <div class="col-md-3">
           <%= variant_fields.label :price_modifier, "Price Modifier", class: "form-label small" %>
@@ -204,7 +205,10 @@
       </div>
       <div class="col-md-4">
         <label class="form-label small">Option</label>
-        <input type="text" name="product[variants_attributes][NEW_RECORD][value]" class="form-control form-control-sm variant-value" />
+        <!-- ✅ Changed to select for auto-fill -->
+        <select name="product[variants_attributes][NEW_RECORD][value]" class="form-select form-select-sm variant-value">
+          <option value="">Select Option</option>
+        </select>
       </div>
       <div class="col-md-3">
         <label class="form-label small">Price Modifier</label>
@@ -229,7 +233,6 @@
     <button type="button" class="btn btn-sm btn-outline-danger delete-variant-image">Delete</button>
   </div>
 </div>
-
 
 <!-- 🏬 Inventory -->
 <div class="mb-4">

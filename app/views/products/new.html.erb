@@ -1,7 +1,6 @@
 <h2 class="fs-4 fw-semibold mb-3">🛒 Add New Product</h2>
 <%= render "form", product: @product %>
 
-<!-- Dynamic Total Cost & Field Cloning & Image Preview -->
 <script>
 document.addEventListener("DOMContentLoaded", () => {
   const priceField = document.getElementById("product_price");
@@ -12,24 +11,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const price = parseFloat(priceField.value) || 0;
     const shipping = parseFloat(shippingField.value) || 0;
     const total = price + shipping;
-    // ✅ Default currency set to KES
-    totalCostSpan.textContent = `KES ${total.toFixed(2)}`;
+    totalCostSpan.textContent = `KES ${total.toFixed(2)}`; // ✅ Default currency KES
   }
 
   priceField?.addEventListener("input", updateTotal);
   shippingField?.addEventListener("input", updateTotal);
 });
-
-// --- Clone last block (generic) ---
-function addFields(containerId) {
-  const container = document.getElementById(containerId);
-  const lastBlock = container?.querySelector("div.border:last-of-type");
-  if (lastBlock) {
-    const clone = lastBlock.cloneNode(true);
-    clone.querySelectorAll("input").forEach(input => input.value = "");
-    container.appendChild(clone);
-  }
-}
 
 // --- Main image preview ---
 function previewMainImage(event) {
@@ -62,7 +49,6 @@ function previewGalleryImages(event) {
       img.src = e.target.result;
       img.className = "img-thumbnail";
       img.style.maxHeight = "150px";
-      img.style.width = "auto";
 
       const removeBtn = document.createElement("button");
       removeBtn.className = "btn btn-sm btn-outline-danger mt-2";
@@ -121,7 +107,7 @@ document.addEventListener("turbo:load", () => {
     const valueSelect = block.querySelector(".variant-value");
     const actions = block.querySelector(".color-image-actions");
 
-    if (valueSelect) {
+    if (valueSelect && valueSelect.tagName.toLowerCase() === "select") {
       valueSelect.innerHTML = "";
       const options = typeOptions[selectedType] || [];
       if (options.length === 0) {
@@ -154,38 +140,41 @@ document.addEventListener("turbo:load", () => {
     });
   }
 
-  // --- Delete buttons ---
+  // --- Delete buttons (gallery, variant, inventory) ---
   function bindDeleteButtons(container) {
+    container.querySelectorAll(".delete-gallery-image").forEach(button => {
+      button.addEventListener("click", (e) => {
+        const block = e.target.closest(".gallery-image-block");
+        const destroyField = block.querySelector("input.destroy-flag");
+        if (destroyField) destroyField.value = "true"; // mark for removal
+        block.style.display = "none";
+      });
+    });
+
     container.querySelectorAll(".delete-variant").forEach(button => {
       button.addEventListener("click", (e) => {
         const block = e.target.closest(".variant-block");
-        if (block) {
-          const destroyField = block.querySelector("input.destroy-flag");
-          if (destroyField) destroyField.value = "true";
-          block.style.display = "none";
-        }
+        const destroyField = block.querySelector("input.destroy-flag");
+        if (destroyField) destroyField.value = "true";
+        block.style.display = "none";
       });
     });
 
     container.querySelectorAll(".delete-variant-image").forEach(button => {
       button.addEventListener("click", (e) => {
         const block = e.target.closest(".variant-image-block");
-        if (block) {
-          const destroyField = block.querySelector("input.destroy-flag");
-          if (destroyField) destroyField.value = "true";
-          block.style.display = "none";
-        }
+        const destroyField = block.querySelector("input.destroy-flag");
+        if (destroyField) destroyField.value = "true";
+        block.style.display = "none";
       });
     });
 
     container.querySelectorAll(".remove-inventory").forEach(button => {
       button.addEventListener("click", (e) => {
         const block = e.target.closest(".inventory-block");
-        if (block) {
-          const destroyField = block.querySelector("input.destroy-flag");
-          if (destroyField) destroyField.value = "true";
-          block.style.display = "none";
-        }
+        const destroyField = block.querySelector("input.destroy-flag");
+        if (destroyField) destroyField.value = "true";
+        block.style.display = "none";
       });
     });
   }
@@ -238,8 +227,8 @@ document.addEventListener("turbo:load", () => {
     const newBlockHtml = template.replace(/NEW_RECORD/g, `new_${uniqueId}`);
 
     const wrapper = document.createElement("div");
-    wrapper.innerHTML = newBlockHtml.trim();
-    const newBlock = wrapper.firstElementChild;
+    wrapper.innerHTML = newBlockHtml.trim(); 
+      const newBlock = wrapper.firstElementChild;
     if (!newBlock) return;
 
     container.appendChild(newBlock);
@@ -258,3 +247,4 @@ document.addEventListener("turbo:load", () => {
   bindAddImageButtons(document);
 });
 </script>
+
