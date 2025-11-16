@@ -1,7 +1,6 @@
 <h2 class="fs-4 fw-semibold mb-3">🛒  edit Product</h2>
 <%= render "form", product: @product %>
 
-
 <script>
 document.addEventListener("DOMContentLoaded", () => {
   const priceField = document.getElementById("product_price");
@@ -9,10 +8,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const totalCostSpan = document.getElementById("total-cost");
 
   function updateTotal() {
-    const price = parseFloat(priceField.value) || 0;
-    const shipping = parseFloat(shippingField.value) || 0;
+    const price = parseFloat(priceField?.value) || 0;
+    const shipping = parseFloat(shippingField?.value) || 0;
     const total = price + shipping;
-    totalCostSpan.textContent = `KES ${total.toFixed(2)}`; // ✅ Default currency KES
+    if (totalCostSpan) totalCostSpan.textContent = `KES ${total.toFixed(2)}`;
   }
 
   priceField?.addEventListener("input", updateTotal);
@@ -23,11 +22,11 @@ document.addEventListener("DOMContentLoaded", () => {
 function previewMainImage(event) {
   const output = document.getElementById("main-image-preview");
   const file = event.target.files[0];
-  if (file) {
+  if (file && output) {
     output.src = URL.createObjectURL(file);
     output.onload = () => URL.revokeObjectURL(output.src);
     output.style.display = "block";
-  } else {
+  } else if (output) {
     output.src = "";
     output.style.display = "none";
   }
@@ -36,6 +35,7 @@ function previewMainImage(event) {
 // --- Gallery image preview ---
 function previewGalleryImages(event) {
   const previewContainer = document.getElementById("gallery-preview");
+  if (!previewContainer) return;
   previewContainer.innerHTML = "";
 
   Array.from(event.target.files).forEach((file, index) => {
@@ -62,6 +62,26 @@ function previewGalleryImages(event) {
     };
     reader.readAsDataURL(file);
   });
+}
+
+// --- Variant image preview ---
+function previewVariantImage(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    let preview = event.target.closest(".variant-image-block")
+                              .querySelector(".variant-image-preview");
+    if (!preview) {
+      preview = document.createElement("img");
+      preview.className = "img-thumbnail mt-2 variant-image-preview";
+      event.target.closest(".variant-image-block").appendChild(preview);
+    }
+    preview.src = e.target.result;
+    preview.style.maxHeight = "120px";
+  };
+  reader.readAsDataURL(file);
 }
 
 // --- Drag-and-drop sorting for gallery preview ---
@@ -109,6 +129,7 @@ document.addEventListener("turbo:load", () => {
     const actions = block.querySelector(".color-image-actions");
 
     if (valueSelect && valueSelect.tagName.toLowerCase() === "select") {
+      const current = valueSelect.dataset.current || "";
       valueSelect.innerHTML = "";
       const options = typeOptions[selectedType] || [];
       if (options.length === 0) {
@@ -123,6 +144,9 @@ document.addEventListener("turbo:load", () => {
           option.textContent = opt;
           valueSelect.appendChild(option);
         });
+        if (current && options.includes(current)) {
+          valueSelect.value = current;
+        }
       }
     }
 
@@ -143,39 +167,47 @@ document.addEventListener("turbo:load", () => {
 
   // --- Delete buttons (gallery, variant, inventory) ---
   function bindDeleteButtons(container) {
+    // Gallery delete: append hidden input dynamically
     container.querySelectorAll(".delete-gallery-image").forEach(button => {
       button.addEventListener("click", (e) => {
+        const url = e.target.dataset.url;
+        const form = e.target.closest("form");
+        if (form && url) {
+          const hidden = document.createElement("input");
+          hidden.type = "hidden";
+          hidden.name = "remove_gallery[]";
+          hidden.value = url;
+          form.appendChild(hidden);
+        }
         const block = e.target.closest(".gallery-image-block");
-        const destroyField = block.querySelector("input.destroy-flag");
-        if (destroyField) destroyField.value = "true"; // mark for removal
-        block.style.display = "none";
+        if (block) block.style.display = "none";
       });
     });
 
     container.querySelectorAll(".delete-variant").forEach(button => {
       button.addEventListener("click", (e) => {
         const block = e.target.closest(".variant-block");
-        const destroyField = block.querySelector("input.destroy-flag");
+        const destroyField = block?.querySelector("input.destroy-flag");
         if (destroyField) destroyField.value = "true";
-        block.style.display = "none";
+        if (block) block.style.display = "none";
       });
     });
 
     container.querySelectorAll(".delete-variant-image").forEach(button => {
       button.addEventListener("click", (e) => {
         const block = e.target.closest(".variant-image-block");
-        const destroyField = block.querySelector("input.destroy-flag");
+        const destroyField = block?.querySelector("input.destroy-flag");
         if (destroyField) destroyField.value = "true";
-        block.style.display = "none";
+        if (block) block.style.display = "none";
       });
     });
 
     container.querySelectorAll(".remove-inventory").forEach(button => {
       button.addEventListener("click", (e) => {
         const block = e.target.closest(".inventory-block");
-        const destroyField = block.querySelector("input.destroy-flag");
+        const destroyField = block?.querySelector("input.destroy-flag");
         if (destroyField) destroyField.value = "true";
-        block.style.display = "none";
+        if (block) block.style.display = "none";
       });
     });
   }
@@ -203,7 +235,7 @@ document.addEventListener("turbo:load", () => {
   function bindAddImageButtons(container) {
     container.querySelectorAll(".variant-block .add-variant-image-btn").forEach(btn => {
       btn.removeEventListener("click", btn._boundClick);
-      btn._boundClick = (e) => {
+            btn._boundClick = (e) => {
         const variantBlock = e.target.closest(".variant-block");
         addVariantImageToBlock(variantBlock);
       };
@@ -248,6 +280,3 @@ document.addEventListener("turbo:load", () => {
   bindAddImageButtons(document);
 });
 </script>
-
-
-

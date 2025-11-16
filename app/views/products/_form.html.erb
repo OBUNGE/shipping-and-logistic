@@ -191,7 +191,11 @@
             <% if image_fields.object.image_url.present? %>
               <%= image_tag image_fields.object.image_url, class: "img-thumbnail mb-1" %>
             <% end %>
-            <%= image_fields.file_field :image, class: "form-control form-control-sm", accept: "image/*" %>
+            <!-- ✅ Added preview support -->
+            <%= image_fields.file_field :image,
+                  class: "form-control form-control-sm",
+                  accept: "image/*",
+                  onchange: "previewVariantImage(event)" %>
             <%= image_fields.hidden_field :_destroy, class: "destroy-flag" %>
             <button type="button" class="btn btn-sm btn-outline-danger delete-variant-image">Delete</button>
           </div>
@@ -253,7 +257,8 @@
     <input type="file"
            name="product[variants_attributes][NEW_RECORD][variant_images_attributes][NEW_IMAGE][image]"
            class="form-control form-control-sm"
-           accept="image/*" />
+           accept="image/*"
+           onchange="previewVariantImage(event)" />
     <input type="hidden"
            name="product[variants_attributes][NEW_RECORD][variant_images_attributes][NEW_IMAGE][_destroy]"
            class="destroy-flag"
