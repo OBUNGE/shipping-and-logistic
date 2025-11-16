@@ -91,37 +91,44 @@ class ProductsController < ApplicationController
     build_nested_fields(@product)
   end
 
-  def update
-    if params[:product][:image].present?
-      @product.image_url = upload_to_supabase(params[:product][:image])
-    end
+def update
+  if params[:product][:image].present?
+    @product.image_url = upload_to_supabase(params[:product][:image])
+  end
 
-    if params[:product][:variants_attributes].present?
-      params[:product][:variants_attributes].each do |_, attrs|
-        if attrs["_destroy"] == "true"
-          variant = Variant.find_by(id: attrs["id"])
-          if variant&.order_items&.exists?
-            variant.update(active: false)
-            attrs.delete("_destroy")
-          end
+  # Handle variant soft delete
+  if params[:product][:variants_attributes].present?
+    params[:product][:variants_attributes].each do |_, attrs|
+      if attrs["_destroy"] == "true"
+        variant = Variant.find_by(id: attrs["id"])
+        if variant&.order_items&.exists?
+          variant.update(active: false)
+          attrs.delete("_destroy")
         end
       end
     end
-
-    if @product.update(product_params)
-      import_inventory_csv(@product) if params[:product][:inventory_csv].present?
-      @product.update(stock: @product.total_inventory)
-
-      attach_gallery_images(@product)
-      attach_variant_images(@product)
-
-      redirect_to @product, notice: "Product updated successfully."
-    else
-      Rails.logger.debug "❌ Product update failed: #{@product.errors.full_messages}"
-      build_nested_fields(@product)
-      render :edit, status: :unprocessable_entity
-    end
   end
+
+  if @product.update(product_params)
+    import_inventory_csv(@product) if params[:product][:inventory_csv].present?
+    @product.update(stock: @product.total_inventory)
+
+    # ✅ Handle gallery deletions
+    if params[:remove_gallery].present?
+      remaining = Array(@product.gallery_image_urls) - params[:remove_gallery]
+      @product.update(gallery_image_urls: remaining)
+    end
+
+    attach_gallery_images(@product)
+    attach_variant_images(@product)
+
+    redirect_to @product, notice: "Product updated successfully."
+  else
+    Rails.logger.debug "❌ Product update failed: #{@product.errors.full_messages}"
+    build_nested_fields(@product)
+    render :edit, status: :unprocessable_entity
+  end
+end
 
   def destroy
     @product.destroy
