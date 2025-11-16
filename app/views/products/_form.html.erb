@@ -128,8 +128,10 @@
       <% @product.gallery_image_urls.each do |url| %>
         <div class="col-4 text-center gallery-image-block">
           <%= image_tag url, class: "img-fluid rounded shadow-sm mb-1" %>
-          <input type="hidden" name="remove_gallery[]" value="<%= url %>" class="destroy-flag" />
-          <button type="button" class="btn btn-sm btn-outline-danger delete-gallery-image">Delete</button>
+          <!-- ✅ No hidden input here; JS will add it dynamically -->
+          <button type="button"
+                  class="btn btn-sm btn-outline-danger delete-gallery-image"
+                  data-url="<%= url %>">Delete</button>
         </div>
       <% end %>
     </div>
@@ -153,16 +155,28 @@
       <div class="row g-2">
         <div class="col-md-4">
           <%= variant_fields.label :name, "Type", class: "form-label small" %>
-          <%= variant_fields.select :name, ["Size","Color","Material","Storage","Packaging"], {}, class: "form-select form-select-sm variant-type", required: true %>
+          <%= variant_fields.select :name,
+                ["Size","Color","Material","Storage","Packaging"],
+                {},
+                class: "form-select form-select-sm variant-type",
+                required: true %>
         </div>
         <div class="col-md-4">
           <%= variant_fields.label :value, "Option", class: "form-label small" %>
-          <!-- ✅ Changed to select for auto-fill -->
-          <%= variant_fields.select :value, [], {}, class: "form-select form-select-sm variant-value", required: true %>
+          <!-- ✅ Select with data-current for JS auto-fill -->
+          <%= variant_fields.select :value,
+                [],
+                {},
+                class: "form-select form-select-sm variant-value",
+                required: true,
+                data: { current: variant_fields.object.value } %>
         </div>
         <div class="col-md-3">
           <%= variant_fields.label :price_modifier, "Price Modifier", class: "form-label small" %>
-          <%= variant_fields.number_field :price_modifier, step: 0.01, placeholder: "e.g. 50.00", class: "form-control form-control-sm" %>
+          <%= variant_fields.number_field :price_modifier,
+                step: 0.01,
+                placeholder: "e.g. 50.00",
+                class: "form-control form-control-sm" %>
         </div>
         <div class="col-md-1 d-flex align-items-end">
           <%= variant_fields.hidden_field :_destroy, class: "destroy-flag" %>
@@ -205,17 +219,25 @@
       </div>
       <div class="col-md-4">
         <label class="form-label small">Option</label>
-        <!-- ✅ Changed to select for auto-fill -->
-        <select name="product[variants_attributes][NEW_RECORD][value]" class="form-select form-select-sm variant-value">
+        <!-- ✅ Select with data-current -->
+        <select name="product[variants_attributes][NEW_RECORD][value]"
+                class="form-select form-select-sm variant-value"
+                data-current="">
           <option value="">Select Option</option>
         </select>
       </div>
       <div class="col-md-3">
         <label class="form-label small">Price Modifier</label>
-        <input type="number" step="0.01" name="product[variants_attributes][NEW_RECORD][price_modifier]" class="form-control form-control-sm" placeholder="e.g. 50.00" />
+        <input type="number" step="0.01"
+               name="product[variants_attributes][NEW_RECORD][price_modifier]"
+               class="form-control form-control-sm"
+               placeholder="e.g. 50.00" />
       </div>
       <div class="col-md-1 d-flex align-items-end">
-        <input type="hidden" name="product[variants_attributes][NEW_RECORD][_destroy]" class="destroy-flag" value="false" />
+        <input type="hidden"
+               name="product[variants_attributes][NEW_RECORD][_destroy]"
+               class="destroy-flag"
+               value="false" />
         <button type="button" class="btn btn-sm btn-outline-danger delete-variant">Delete</button>
       </div>
     </div>
@@ -228,8 +250,14 @@
 <!-- ✅ Hidden Template for Variant Image Block -->
 <div id="variant-image-template" style="display: none;">
   <div class="border p-2 mb-2 bg-light rounded variant-image-block">
-    <input type="file" name="product[variants_attributes][NEW_RECORD][variant_images_attributes][NEW_IMAGE][image]" class="form-control form-control-sm" accept="image/*" />
-    <input type="hidden" name="product[variants_attributes][NEW_RECORD][variant_images_attributes][NEW_IMAGE][_destroy]" class="destroy-flag" value="false" />
+    <input type="file"
+           name="product[variants_attributes][NEW_RECORD][variant_images_attributes][NEW_IMAGE][image]"
+           class="form-control form-control-sm"
+           accept="image/*" />
+    <input type="hidden"
+           name="product[variants_attributes][NEW_RECORD][variant_images_attributes][NEW_IMAGE][_destroy]"
+           class="destroy-flag"
+           value="false" />
     <button type="button" class="btn btn-sm btn-outline-danger delete-variant-image">Delete</button>
   </div>
 </div>

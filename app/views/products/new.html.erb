@@ -228,7 +228,7 @@ document.addEventListener("turbo:load", () => {
 
     const wrapper = document.createElement("div");
     wrapper.innerHTML = newBlockHtml.trim(); 
-      const newBlock = wrapper.firstElementChild;
+    const newBlock = wrapper.firstElementChild;
     if (!newBlock) return;
 
     container.appendChild(newBlock);

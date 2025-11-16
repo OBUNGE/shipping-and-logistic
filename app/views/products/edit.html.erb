@@ -1,5 +1,6 @@
-<h2 class="fs-4 fw-semibold mb-3">🛒 Add New Product</h2>
+<h2 class="fs-4 fw-semibold mb-3">🛒  edit Product</h2>
 <%= render "form", product: @product %>
+
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
@@ -228,7 +229,7 @@ document.addEventListener("turbo:load", () => {
 
     const wrapper = document.createElement("div");
     wrapper.innerHTML = newBlockHtml.trim(); 
-      const newBlock = wrapper.firstElementChild;
+    const newBlock = wrapper.firstElementChild;
     if (!newBlock) return;
 
     container.appendChild(newBlock);
@@ -247,4 +248,6 @@ document.addEventListener("turbo:load", () => {
   bindAddImageButtons(document);
 });
 </script>
+
+
 
