@@ -112,29 +112,33 @@
   <%= form.file_field :image, class: "form-control form-control-sm", accept: "image/*", onchange: "previewMainImage(event)" %>
   <img id="main-image-preview" class="img-fluid mt-2 rounded shadow-sm" style="max-height: 250px;" />
 </div>
-
 <!-- 🖼️ Gallery Images -->
 <div class="mb-3">
-  <%= form.label :gallery_images, "Gallery Images", class: "form-label small" %>
+  <%= form.label :gallery_image_urls, "Gallery Images", class: "form-label small" %>
 
   <% if @product.gallery_image_urls.present? %>
     <div class="row g-2 mb-2">
       <% @product.gallery_image_urls.each do |url| %>
-        <div class="col-4 text-center">
+        <div class="col-4 text-center gallery-image-block">
           <%= image_tag url, class: "img-fluid rounded shadow-sm mb-1" %>
-          <!-- Optional: Add remove button logic if needed -->
+          <input type="hidden" name="remove_gallery[]" value="<%= url %>" class="destroy-flag" />
+          <button type="button" class="btn btn-sm btn-outline-danger delete-gallery-image">Delete</button>
         </div>
       <% end %>
     </div>
   <% end %>
 
   <div id="gallery-inputs">
-    <%= form.file_field :gallery_images, multiple: true, class: "form-control form-control-sm mb-2", accept: "image/*", onchange: "previewGalleryImages(event)" %>
+    <%= file_field_tag "gallery_images[]", multiple: true,
+          class: "form-control form-control-sm mb-2",
+          accept: "image/*",
+          onchange: "previewGalleryImages(event)" %>
   </div>
 
   <button type="button" class="btn btn-sm btn-outline-primary mt-2" onclick="addGalleryInput()">➕ Add More Images</button>
   <div id="gallery-preview" class="row mt-2 sortable-preview"></div>
 </div>
+
 <!-- 🔀 Variants -->
 <div id="variant-fields">
   <%= form.fields_for :variants do |variant_fields| %>
@@ -142,17 +146,18 @@
       <div class="row g-2">
         <div class="col-md-4">
           <%= variant_fields.label :name, "Type", class: "form-label small" %>
-          <%= variant_fields.select :name, ["Size", "Color", "Material", "Storage", "Packaging"], {}, class: "form-select form-select-sm variant-type", required: true %>
+          <%= variant_fields.select :name, ["Size","Color","Material","Storage","Packaging"], {}, class: "form-select form-select-sm variant-type", required: true %>
         </div>
         <div class="col-md-4">
           <%= variant_fields.label :value, "Option", class: "form-label small" %>
-          <%= variant_fields.select :value, [], {}, class: "form-select form-select-sm variant-value", required: true %>
+          <%= variant_fields.text_field :value, class: "form-control form-control-sm variant-value", required: true %>
         </div>
         <div class="col-md-3">
           <%= variant_fields.label :price_modifier, "Price Modifier", class: "form-label small" %>
           <%= variant_fields.number_field :price_modifier, step: 0.01, placeholder: "e.g. 50.00", class: "form-control form-control-sm" %>
         </div>
         <div class="col-md-1 d-flex align-items-end">
+          <%= variant_fields.hidden_field :_destroy, class: "destroy-flag" %>
           <button type="button" class="btn btn-sm btn-outline-danger delete-variant">Delete</button>
         </div>
       </div>
@@ -169,10 +174,7 @@
             <button type="button" class="btn btn-sm btn-outline-danger delete-variant-image">Delete</button>
           </div>
         <% end %>
-
-        <button type="button" class="btn btn-sm btn-outline-secondary add-variant-image-btn">
-          Add color image
-        </button>
+        <button type="button" class="btn btn-sm btn-outline-secondary add-variant-image-btn">Add color image</button>
       </div>
     </div>
   <% end %>
@@ -188,26 +190,27 @@
         <label class="form-label small">Type</label>
         <select name="product[variants_attributes][NEW_RECORD][name]" class="form-select form-select-sm variant-type">
           <option value="">Select Type</option>
-          <% ["Size", "Color", "Material", "Storage", "Packaging"].each do |type| %>
+          <% ["Size","Color","Material","Storage","Packaging"].each do |type| %>
             <option value="<%= type %>"><%= type %></option>
           <% end %>
         </select>
       </div>
       <div class="col-md-4">
         <label class="form-label small">Option</label>
-        <select name="product[variants_attributes][NEW_RECORD][value]" class="form-select form-select-sm variant-value"></select>
+        <input type="text" name="product[variants_attributes][NEW_RECORD][value]" class="form-control form-control-sm variant-value" />
       </div>
       <div class="col-md-3">
         <label class="form-label small">Price Modifier</label>
         <input type="number" step="0.01" name="product[variants_attributes][NEW_RECORD][price_modifier]" class="form-control form-control-sm" placeholder="e.g. 50.00" />
       </div>
       <div class="col-md-1 d-flex align-items-end">
+        <input type="hidden" name="product[variants_attributes][NEW_RECORD][_destroy]" class="destroy-flag" value="false" />
         <button type="button" class="btn btn-sm btn-outline-danger delete-variant">Delete</button>
       </div>
     </div>
-
-    <!-- Placeholder for dynamic color-image-actions -->
-    <div class="mt-2 d-none color-image-actions"></div>
+    <div class="mt-2 d-none color-image-actions">
+      <button type="button" class="btn btn-sm btn-outline-secondary add-variant-image-btn">Add color image</button>
+    </div>
   </div>
 </div>
 
