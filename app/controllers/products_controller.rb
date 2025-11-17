@@ -87,12 +87,11 @@ class ProductsController < ApplicationController
     render plain: "Product creation error: #{e.message}", status: 500
   end
 
-def edit
-  @product = Product.includes(:inventories, :product_images, variants: :variant_images)
-                    .find_by!(slug: params[:slug])
-
-  build_nested_fields(@product)
-end
+  def edit
+    @product = Product.includes(:inventories, :product_images, variants: :variant_images)
+                      .find_by!(slug: params[:slug])
+    build_nested_fields(@product)
+  end
 
   def update
     if params[:product][:image].present?
@@ -245,7 +244,7 @@ end
     end
   end
 
-  def attach_gallery_images(product)
+   def attach_gallery_images(product)
     gallery_images = params[:gallery_images] || params[:product][:gallery_images]
     return unless gallery_images.present?
 
@@ -253,7 +252,7 @@ end
       file.respond_to?(:original_filename) && file.respond_to?(:read)
     end
 
-     new_urls = valid_files.map do |file|
+    new_urls = valid_files.map do |file|
       begin
         upload_to_supabase(file)
       rescue => e
@@ -264,30 +263,28 @@ end
 
     # Ensure gallery_image_urls is always an array
     existing_urls = Array(product.gallery_image_urls)
-
     product.update(gallery_image_urls: existing_urls + new_urls)
   end
 
-def attach_variant_images(product)
-  product.variants.each do |variant|
-    variant.variant_images.each do |vi|
-      Rails.logger.debug "👉 Processing VariantImage ID=#{vi.id || 'new'}, image=#{vi.image.inspect}, image_url(before)=#{vi.image_url}"
+  def attach_variant_images(product)
+    product.variants.each do |variant|
+      variant.variant_images.each do |vi|
+        Rails.logger.debug "👉 Processing VariantImage ID=#{vi.id || 'new'}, image=#{vi.image.inspect}, image_url(before)=#{vi.image_url}"
 
-      # Only upload if a new file was provided
-      if vi.image.is_a?(ActionDispatch::Http::UploadedFile)
-        Rails.logger.debug "📤 Uploading file #{vi.image.original_filename} for VariantImage ID=#{vi.id || 'new'}"
+        # Only upload if a new file was provided
+        if vi.image.is_a?(ActionDispatch::Http::UploadedFile)
+          Rails.logger.debug "📤 Uploading file #{vi.image.original_filename} for VariantImage ID=#{vi.id || 'new'}"
 
-        if (uploaded_url = upload_to_supabase(vi.image))
-          vi.update(image_url: uploaded_url)
-          Rails.logger.debug "✅ Uploaded successfully: #{uploaded_url}"
+          if (uploaded_url = upload_to_supabase(vi.image))
+            vi.update(image_url: uploaded_url)
+            Rails.logger.debug "✅ Uploaded successfully: #{uploaded_url}"
+          else
+            Rails.logger.error "❌ Upload failed for VariantImage ID=#{vi.id || 'new'}"
+          end
         else
-          Rails.logger.error "❌ Upload failed for VariantImage ID=#{vi.id || 'new'}"
+          Rails.logger.debug "ℹ️ No new file uploaded for VariantImage ID=#{vi.id || 'new'}, keeping existing image_url=#{vi.image_url}"
         end
-      else
-        Rails.logger.debug "ℹ️ No new file uploaded for VariantImage ID=#{vi.id || 'new'}, keeping existing image_url=#{vi.image_url}"
       end
     end
   end
-end
-
 end
