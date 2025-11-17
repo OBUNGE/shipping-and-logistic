@@ -211,50 +211,36 @@ document.addEventListener("turbo:load", () => {
     });
   }
 
-  
-// --- Variant images ---
-function addVariantImageToBlock(variantBlock) {
-  const templateHtml = document.getElementById("variant-image-template").innerHTML;
-  if (!templateHtml) return;
+  // --- Variant images ---
+  function addVariantImageToBlock(variantBlock) {
+    const templateHtml = document.getElementById("variant-image-template").innerHTML;
+    if (!templateHtml) return;
 
-  // ✅ Reuse the parent variant's ID
-  const parentInput = variantBlock.querySelector("input[name*='variants_attributes']");
-  const parentIdMatch = parentInput?.name.match(/variants_attributes\]
+    const uniqueId = new Date().getTime();
+    const html = templateHtml
+      .replace(/NEW_RECORD/g, `new_${uniqueId}`)
+      .replace(/NEW_IMAGE/g, `new_${uniqueId}`);
 
+    const wrapper = document.createElement("div");
+    wrapper.innerHTML = html.trim();
+    const imageBlock = wrapper.firstElementChild;
 
-
-\[([^\]
-
-]+)\]
-
-/);
-  const parentId = parentIdMatch ? parentIdMatch[1] : `new_${Date.now()}`;
-  const uniqueImageId = Date.now();
-
-  const html = templateHtml
-    .replace(/NEW_RECORD/g, parentId)   // use parent variant ID
-    .replace(/NEW_IMAGE/g, `new_${uniqueImageId}`);
-
-  const wrapper = document.createElement("div");
-  wrapper.innerHTML = html.trim();
-  const imageBlock = wrapper.firstElementChild;
-
-  if (imageBlock) {
-    variantBlock.querySelector(".color-image-actions").appendChild(imageBlock);
-    bindDeleteButtons(imageBlock);
+    if (imageBlock) {
+      variantBlock.querySelector(".color-image-actions").appendChild(imageBlock);
+      bindDeleteButtons(imageBlock);
+    }
   }
-}
 
-function bindAddImageButtons(container) {
-  container.querySelectorAll(".variant-block .add-variant-image-btn").forEach(btn => {
-    btn.removeEventListener("click", btn._boundClick);
-    btn._boundClick = (e) => {
-      const variantBlock = e.target.closest(".variant-block");
-      addVariantImageToBlock(variantBlock);
-    };
-    btn.addEventListener("click", btn._boundClick);
-  });
-}
+  function bindAddImageButtons(container) {
+    container.querySelectorAll(".variant-block .add-variant-image-btn").forEach(btn => {
+      btn.removeEventListener("click", btn._boundClick);
+           btn._boundClick = (e) => {
+        const variantBlock = e.target.closest(".variant-block");
+        addVariantImageToBlock(variantBlock);
+      };
+      btn.addEventListener("click", btn._boundClick);
+    });
+  }
 
 // --- Generic addFields ---
 window.addFields = function(containerId) {
@@ -269,7 +255,7 @@ window.addFields = function(containerId) {
   }
 
   const template = templateEl.innerHTML;
-  const uniqueId = Date.now();
+  const uniqueId = new Date().getTime();
   const newBlockHtml = template.replace(/NEW_RECORD/g, `new_${uniqueId}`);
 
   const wrapper = document.createElement("div");
@@ -293,9 +279,9 @@ window.addFields = function(containerId) {
   bindDeleteButtons(newBlock);
 };
 
-// --- Initial bindings ---
-bindVariantDropdowns(document);
-bindDeleteButtons(document);
-bindAddImageButtons(document);
+  // --- Initial bindings ---
+  bindVariantDropdowns(document);
+  bindDeleteButtons(document);
+  bindAddImageButtons(document);
 });
 </script>
