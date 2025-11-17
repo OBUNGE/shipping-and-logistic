@@ -153,6 +153,7 @@
   <%= form.fields_for :variants do |variant_fields| %>
     <div class="border p-3 mb-2 bg-light rounded variant-block">
       <div class="row g-2">
+        <!-- Variant Type -->
         <div class="col-md-4">
           <%= variant_fields.label :name, "Type", class: "form-label small" %>
           <%= variant_fields.select :name,
@@ -161,9 +162,10 @@
                 class: "form-select form-select-sm variant-type",
                 required: true %>
         </div>
+
+        <!-- Variant Value -->
         <div class="col-md-4">
           <%= variant_fields.label :value, "Option", class: "form-label small" %>
-          <!-- ✅ Select with data-current for JS auto-fill -->
           <%= variant_fields.select :value,
                 [],
                 {},
@@ -171,6 +173,8 @@
                 required: true,
                 data: { current: variant_fields.object.value } %>
         </div>
+
+        <!-- Price Modifier -->
         <div class="col-md-3">
           <%= variant_fields.label :price_modifier, "Price Modifier", class: "form-label small" %>
           <%= variant_fields.number_field :price_modifier,
@@ -178,6 +182,8 @@
                 placeholder: "e.g. 50.00",
                 class: "form-control form-control-sm" %>
         </div>
+
+        <!-- Delete Variant -->
         <div class="col-md-1 d-flex align-items-end">
           <%= variant_fields.hidden_field :_destroy, class: "destroy-flag" %>
           <button type="button" class="btn btn-sm btn-outline-danger delete-variant">Delete</button>
@@ -192,21 +198,26 @@
               <!-- ✅ Show existing image -->
               <%= image_tag image_fields.object.image_url, class: "img-thumbnail mb-1 variant-image-preview" %>
             <% end %>
+
             <!-- ✅ File field with preview support -->
             <%= image_fields.file_field :image,
                   class: "form-control form-control-sm",
                   accept: "image/*",
                   onchange: "previewVariantImage(event)" %>
+
             <%= image_fields.hidden_field :_destroy, class: "destroy-flag" %>
             <button type="button" class="btn btn-sm btn-outline-danger delete-variant-image">Delete</button>
           </div>
         <% end %>
+
+        <!-- Add new image button -->
         <button type="button" class="btn btn-sm btn-outline-secondary add-variant-image-btn">Add color image</button>
       </div>
     </div>
   <% end %>
 </div>
 
+<!-- Add new variant button -->
 <button type="button" class="btn btn-sm btn-outline-primary mt-2" onclick="addFields('variant-fields')">➕ Add Variant</button>
 
 <!-- 🔧 Hidden Variant Template -->
@@ -222,15 +233,16 @@
           <% end %>
         </select>
       </div>
+
       <div class="col-md-4">
         <label class="form-label small">Option</label>
-        <!-- ✅ Select with data-current -->
         <select name="product[variants_attributes][NEW_RECORD][value]"
                 class="form-select form-select-sm variant-value"
                 data-current="">
           <option value="">Select Option</option>
         </select>
       </div>
+
       <div class="col-md-3">
         <label class="form-label small">Price Modifier</label>
         <input type="number" step="0.01"
@@ -238,6 +250,7 @@
                class="form-control form-control-sm"
                placeholder="e.g. 50.00" />
       </div>
+
       <div class="col-md-1 d-flex align-items-end">
         <input type="hidden"
                name="product[variants_attributes][NEW_RECORD][_destroy]"
@@ -246,6 +259,8 @@
         <button type="button" class="btn btn-sm btn-outline-danger delete-variant">Delete</button>
       </div>
     </div>
+
+    <!-- Color images only -->
     <div class="mt-2 d-none color-image-actions">
       <button type="button" class="btn btn-sm btn-outline-secondary add-variant-image-btn">Add color image</button>
     </div>
@@ -260,10 +275,12 @@
            class="form-control form-control-sm"
            accept="image/*"
            onchange="previewVariantImage(event)" />
+
     <input type="hidden"
            name="product[variants_attributes][NEW_RECORD][variant_images_attributes][NEW_IMAGE][_destroy]"
            class="destroy-flag"
            value="false" />
+
     <button type="button" class="btn btn-sm btn-outline-danger delete-variant-image">Delete</button>
   </div>
 </div>
