@@ -206,7 +206,7 @@ class ProductsController < ApplicationController
       :inventory_csv,
       variants_attributes: [
         :id, :name, :value, :price_modifier, :_destroy,
-        variant_images_attributes: [:id, :image_url, :_destroy]
+        variant_images_attributes: [:id, :image, :image_url, :_destroy]
       ],
       inventories_attributes: [:id, :location, :quantity, :_destroy],
       product_images_attributes: [:id, :image_url, :_destroy]
@@ -265,15 +265,26 @@ class ProductsController < ApplicationController
     product.update(gallery_image_urls: existing_urls + new_urls)
   end
 
-  def attach_variant_images(product)
-    product.variants.each do |variant|
-      variant.variant_images.each do |vi|
-        # If a file was uploaded, upload to Supabase and set image_url
-        if vi.image.is_a?(ActionDispatch::Http::UploadedFile)
-          uploaded_url = upload_to_supabase(vi.image)
+def attach_variant_images(product)
+  product.variants.each do |variant|
+    variant.variant_images.each do |vi|
+      Rails.logger.debug "👉 Processing VariantImage ID=#{vi.id || 'new'}, image=#{vi.image.inspect}, image_url(before)=#{vi.image_url}"
+
+      # Only upload if a new file was provided
+      if vi.image.is_a?(ActionDispatch::Http::UploadedFile)
+        Rails.logger.debug "📤 Uploading file #{vi.image.original_filename} for VariantImage ID=#{vi.id || 'new'}"
+
+        if (uploaded_url = upload_to_supabase(vi.image))
           vi.update(image_url: uploaded_url)
+          Rails.logger.debug "✅ Uploaded successfully: #{uploaded_url}"
+        else
+          Rails.logger.error "❌ Upload failed for VariantImage ID=#{vi.id || 'new'}"
         end
+      else
+        Rails.logger.debug "ℹ️ No new file uploaded for VariantImage ID=#{vi.id || 'new'}, keeping existing image_url=#{vi.image_url}"
       end
     end
   end
+end
+
 end
