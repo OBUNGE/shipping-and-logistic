@@ -21,9 +21,13 @@ class Variant < ApplicationRecord
     product.price + (price_modifier || 0)
   end
 
-  # === Image Helper ===
+  # === Image Helpers ===
+  def image_urls
+    variant_images.pluck(:image_url).compact
+  end
+
   def primary_image_url
-    variant_images.map(&:image_url).find(&:present?)
+    image_urls.first
   end
 
   # === Custom Methods ===
