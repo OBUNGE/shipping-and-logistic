@@ -210,23 +210,14 @@ document.addEventListener("turbo:load", () => {
       });
     });
   }
-
-  // --- Add Variant Image ---
+// --- Add Variant Image ---
 function addVariantImageToBlock(variantBlock) {
   const templateHtml = document.getElementById("variant-image-template").innerHTML;
   if (!templateHtml) return;
 
   // ✅ Extract parent variant ID from its hidden input name
   const parentInput = variantBlock.querySelector("input[name*='variants_attributes']");
-  const parentIdMatch = parentInput?.name.match(/variants_attributes\]
-
-
-
-\[([^\]
-
-]+)\]
-
-/);
+  const parentIdMatch = parentInput?.name.match(/variants_attributes]\[([^]]+)]/);
   const parentId = parentIdMatch ? parentIdMatch[1] : `new_${Date.now()}`;
 
   // ✅ Generate a unique ID only for the image
@@ -246,16 +237,18 @@ function addVariantImageToBlock(variantBlock) {
   }
 }
 
-  function bindAddImageButtons(container) {
-    container.querySelectorAll(".variant-block .add-variant-image-btn").forEach(btn => {
-      btn.removeEventListener("click", btn._boundClick);
-           btn._boundClick = (e) => {
-        const variantBlock = e.target.closest(".variant-block");
-        addVariantImageToBlock(variantBlock);
-      };
-      btn.addEventListener("click", btn._boundClick);
-    });
-  }
+function bindAddImageButtons(container) {
+  container.querySelectorAll(".variant-block .add-variant-image-btn").forEach(btn => {
+    btn.removeEventListener("click", btn._boundClick);
+
+    btn._boundClick = (e) => {
+      const variantBlock = e.target.closest(".variant-block");
+      addVariantImageToBlock(variantBlock);
+    };
+
+    btn.addEventListener("click", btn._boundClick);
+  });
+}
 
 // --- Generic addFields ---
 window.addFields = function(containerId) {
@@ -274,7 +267,7 @@ window.addFields = function(containerId) {
   const newBlockHtml = template.replace(/NEW_RECORD/g, `new_${uniqueId}`);
 
   const wrapper = document.createElement("div");
-  wrapper.innerHTML = newBlockHtml.trim(); 
+  wrapper.innerHTML = newBlockHtml.trim();
   const newBlock = wrapper.firstElementChild;
   if (!newBlock) return;
 
@@ -284,8 +277,9 @@ window.addFields = function(containerId) {
     bindVariantDropdowns(newBlock);
     bindAddImageButtons(newBlock);
 
-    // ✅ If the new variant is Color, immediately add an image block
+    // ✅ Automatically add image block when variant type is "Color"
     const typeSelect = newBlock.querySelector(".variant-type");
+
     if (typeSelect && typeSelect.value === "Color") {
       addVariantImageToBlock(newBlock);
     }
@@ -294,9 +288,9 @@ window.addFields = function(containerId) {
   bindDeleteButtons(newBlock);
 };
 
-  // --- Initial bindings ---
-  bindVariantDropdowns(document);
-  bindDeleteButtons(document);
-  bindAddImageButtons(document);
+// --- Initial bindings ---
+bindVariantDropdowns(document);
+bindDeleteButtons(document);
+bindAddImageButtons(document);
 });
 </script>
