@@ -88,7 +88,7 @@ class ProductsController < ApplicationController
   end
 
 def edit
-  @product = Product.includes(variants: :variant_images, :inventories, :product_images)
+  @product = Product.includes(:inventories, :product_images, variants: :variant_images)
                     .find_by!(slug: params[:slug])
 
   build_nested_fields(@product)
