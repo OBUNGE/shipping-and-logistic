@@ -235,7 +235,7 @@ document.addEventListener("turbo:load", () => {
   function bindAddImageButtons(container) {
     container.querySelectorAll(".variant-block .add-variant-image-btn").forEach(btn => {
       btn.removeEventListener("click", btn._boundClick);
-            btn._boundClick = (e) => {
+           btn._boundClick = (e) => {
         const variantBlock = e.target.closest(".variant-block");
         addVariantImageToBlock(variantBlock);
       };
@@ -243,36 +243,42 @@ document.addEventListener("turbo:load", () => {
     });
   }
 
-  // --- Generic addFields ---
-  window.addFields = function(containerId) {
-    const container = document.getElementById(containerId);
-    if (!container) return;
+// --- Generic addFields ---
+window.addFields = function(containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
 
-    const templateId = containerId.replace("-fields", "-template");
-    const templateEl = document.getElementById(templateId);
-    if (!templateEl) {
-      console.error("Template not found for", templateId);
-      return;
+  const templateId = containerId.replace("-fields", "-template");
+  const templateEl = document.getElementById(templateId);
+  if (!templateEl) {
+    console.error("Template not found for", templateId);
+    return;
+  }
+
+  const template = templateEl.innerHTML;
+  const uniqueId = new Date().getTime();
+  const newBlockHtml = template.replace(/NEW_RECORD/g, `new_${uniqueId}`);
+
+  const wrapper = document.createElement("div");
+  wrapper.innerHTML = newBlockHtml.trim(); 
+  const newBlock = wrapper.firstElementChild;
+  if (!newBlock) return;
+
+  container.appendChild(newBlock);
+
+  if (containerId === "variant-fields") {
+    bindVariantDropdowns(newBlock);
+    bindAddImageButtons(newBlock);
+
+    // ✅ If the new variant is Color, immediately add an image block
+    const typeSelect = newBlock.querySelector(".variant-type");
+    if (typeSelect && typeSelect.value === "Color") {
+      addVariantImageToBlock(newBlock);
     }
+  }
 
-    const template = templateEl.innerHTML;
-    const uniqueId = new Date().getTime();
-    const newBlockHtml = template.replace(/NEW_RECORD/g, `new_${uniqueId}`);
-
-    const wrapper = document.createElement("div");
-    wrapper.innerHTML = newBlockHtml.trim(); 
-    const newBlock = wrapper.firstElementChild;
-    if (!newBlock) return;
-
-    container.appendChild(newBlock);
-
-    if (containerId === "variant-fields") {
-      bindVariantDropdowns(newBlock);
-      bindAddImageButtons(newBlock);
-    }
-
-    bindDeleteButtons(newBlock);
-  };
+  bindDeleteButtons(newBlock);
+};
 
   // --- Initial bindings ---
   bindVariantDropdowns(document);
