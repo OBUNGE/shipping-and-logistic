@@ -1,112 +1,118 @@
 <h2 class="fs-4 fw-semibold mb-3">🛒  edit Product</h2>
 <%= render "form", product: @product %>
+
 <script>
-  //==================================================================
-  // 1. GLOBAL HELPER FUNCTIONS (called by onchange/onclick)
-  //==================================================================
+document.addEventListener("DOMContentLoaded", () => {
+  const priceField = document.getElementById("product_price");
+  const shippingField = document.getElementById("product_shipping_cost");
+  const totalCostSpan = document.getElementById("total-cost");
 
-  // 🖼️ Main image preview
-  function previewMainImage(event) {
-    const output = document.getElementById("main-image-preview");
-    const file = event.target.files[0];
-    if (file) {
-      output.src = URL.createObjectURL(file);
-      output.onload = () => URL.revokeObjectURL(output.src);
-      output.style.display = "block";
-    }
+  function updateTotal() {
+    const price = parseFloat(priceField?.value) || 0;
+    const shipping = parseFloat(shippingField?.value) || 0;
+    const total = price + shipping;
+    if (totalCostSpan) totalCostSpan.textContent = `KES ${total.toFixed(2)}`;
   }
 
-  // 🖼️ Gallery "Add More Images" button
-  function addGalleryInput() {
-    const container = document.getElementById("gallery-inputs");
-    const newField = document.createElement("input");
-    newField.type = "file";
-    newField.name = "gallery_images[]";
-    newField.className = "form-control form-control-sm mb-2";
-    newField.accept = "image/*";
-    newField.multiple = true;
-    newField.onchange = previewGalleryImages; // Hook up preview
-    container.appendChild(newField);
+  priceField?.addEventListener("input", updateTotal);
+  shippingField?.addEventListener("input", updateTotal);
+});
+
+// --- Main image preview ---
+function previewMainImage(event) {
+  const output = document.getElementById("main-image-preview");
+  const file = event.target.files[0];
+  if (file && output) {
+    output.src = URL.createObjectURL(file);
+    output.onload = () => URL.revokeObjectURL(output.src);
+    output.style.display = "block";
+  } else if (output) {
+    output.src = "";
+    output.style.display = "none";
   }
+}
 
-  // 🖼️ Gallery preview for *new* uploads
-  function previewGalleryImages(event) {
-    const previewContainer = document.getElementById("gallery-preview");
-    
-    // Loop through files from the input that triggered this
-    Array.from(event.target.files).forEach(file => {
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const wrapper = document.createElement("div");
-        wrapper.className = "col-4 text-center";
-        wrapper.innerHTML = `<img src="${e.target.result}" class="img-fluid rounded shadow-sm mb-1" style="max-height: 150px;">`;
-        previewContainer.appendChild(wrapper);
-      };
-      reader.readAsDataURL(file);
-    });
-  }
+// --- Gallery image preview ---
+function previewGalleryImages(event) {
+  const previewContainer = document.getElementById("gallery-preview");
+  if (!previewContainer) return;
+  previewContainer.innerHTML = "";
 
-  // 🎨 Variant image preview
-  window.previewVariantImage = function(event) {
-    const input = event.target;
-    const file = input.files[0];
-    const block = input.closest(".variant-image-block");
-    if (!block || !file) return;
+  Array.from(event.target.files).forEach((file, index) => {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const wrapper = document.createElement("div");
+      wrapper.className = "col-md-3 mb-2 text-center preview-item";
+      wrapper.draggable = true;
+      wrapper.dataset.index = index;
 
-    let preview = block.querySelector(".variant-image-preview");
+      const img = document.createElement("img");
+      img.src = e.target.result;
+      img.className = "img-thumbnail";
+      img.style.maxHeight = "150px";
+
+      const removeBtn = document.createElement("button");
+      removeBtn.className = "btn btn-sm btn-outline-danger mt-2";
+      removeBtn.textContent = "Remove";
+      removeBtn.onclick = () => wrapper.remove();
+
+      wrapper.appendChild(img);
+      wrapper.appendChild(removeBtn);
+      previewContainer.appendChild(wrapper);
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+// --- Variant image preview ---
+function previewVariantImage(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    let preview = event.target.closest(".variant-image-block")
+                              .querySelector(".variant-image-preview");
     if (!preview) {
       preview = document.createElement("img");
-      preview.className = "img-thumbnail mb-1 variant-image-preview";
-      input.insertAdjacentElement("beforebegin", preview);
+      preview.className = "img-thumbnail mt-2 variant-image-preview";
+      event.target.closest(".variant-image-block").appendChild(preview);
     }
-    
-    preview.src = URL.createObjectURL(file);
-    preview.onload = () => URL.revokeObjectURL(preview.src);
-  }
-
-  // ➕ Generic "Add Fields" button (for Variants & Inventory)
-  window.addFields = function(containerId) {
-    const container = document.getElementById(containerId);
-    if (!container) return;
-
-    const templateId = containerId.replace("-fields", "-template");
-    const templateEl = document.getElementById(templateId);
-    if (!templateEl) {
-      console.error("Template not found:", templateId);
-      return;
-    }
-
-    const template = templateEl.innerHTML;
-    const uniqueId = `new_${Date.now()}`;
-    const newBlockHtml = template.replace(/NEW_RECORD/g, uniqueId);
-
-    const wrapper = document.createElement("div");
-    wrapper.innerHTML = newBlockHtml.trim(); 
-    const newBlock = wrapper.firstElementChild;
-    if (!newBlock) return;
-
-    container.appendChild(newBlock);
-
-    // ==========================================================
-    // ✅ ✅ ✅ THIS IS THE FIX ✅ ✅ ✅
-    // After adding the new block, we must find its new buttons
-    // and dropdowns and attach our JavaScript logic to them.
-    // ==========================================================
-    if (containerId === "variant-fields") {
-      bindVariantDropdowns(newBlock);
-      bindAddImageButtons(newBlock);
-    }
-    // Always bind delete buttons for any new block
-    bindDeleteButtons(newBlock);
+    preview.src = e.target.result;
+    preview.style.maxHeight = "120px";
   };
+  reader.readAsDataURL(file);
+}
 
-  //==================================================================
-  // 2. ALL EVENT LISTENERS (run on page load)
-  //==================================================================
-  
-  // --- Define all helper functions first ---
+// --- Drag-and-drop sorting for gallery preview ---
+document.addEventListener("DOMContentLoaded", () => {
+  const container = document.querySelector(".sortable-preview");
+  let dragged;
 
-  // 🏷️ Populates variant "value" dropdown
+  container?.addEventListener("dragstart", (e) => {
+    dragged = e.target.closest(".preview-item");
+    if (dragged) dragged.style.opacity = 0.5;
+  });
+
+  container?.addEventListener("dragend", () => {
+    if (dragged) dragged.style.opacity = "";
+  });
+
+  container?.addEventListener("dragover", (e) => {
+    e.preventDefault();
+  });
+
+  container?.addEventListener("drop", (e) => {
+    e.preventDefault();
+    const target = e.target.closest(".preview-item");
+    if (target && dragged && dragged !== target) {
+      container.insertBefore(dragged, target);
+    }
+  });
+});
+
+// ✅ Variant & Inventory Dynamic Fields
+document.addEventListener("turbo:load", () => {
   const typeOptions = {
     Size: ["XS","S","M","L","XL","XXL","3XL","4XL","5XL","6XL","7XL","8XL","9XL","10XL"],
     Color: ["Red","Blue","Black","White","Green","Yellow","Purple","Orange","Pink","Gray","Brown","Cyan","Magenta","Lime","Teal","Navy","Maroon","Olive","Silver","Gold","Beige"],
@@ -115,192 +121,182 @@
     Packaging: ["Box","Bag","Sachet","Envelope","Bottle","Jar"]
   };
 
+  // --- Variant dropdowns ---
   function updateValueOptions(typeSelect) {
+    const selectedType = typeSelect.value;
     const block = typeSelect.closest(".variant-block");
-    if (!block) return;
-
     const valueSelect = block.querySelector(".variant-value");
     const actions = block.querySelector(".color-image-actions");
-    const selectedType = typeSelect.value;
-    const savedValue = valueSelect.dataset.current; 
 
-    valueSelect.innerHTML = ""; 
-    const options = typeOptions[selectedType] || [];
-    
-    if (options.length === 0) {
-      valueSelect.innerHTML = "<option value=''>Select a type first</option>";
-    } else {
-      options.forEach(opt => {
-        const option = document.createElement("option");
-        option.value = opt;
-        option.textContent = opt;
-        if (opt === savedValue) {
-          option.selected = true;
+    if (valueSelect && valueSelect.tagName.toLowerCase() === "select") {
+      const current = valueSelect.dataset.current || "";
+      valueSelect.innerHTML = "";
+      const options = typeOptions[selectedType] || [];
+      if (options.length === 0) {
+        const fallback = document.createElement("option");
+        fallback.textContent = "No options available";
+        fallback.disabled = true;
+        valueSelect.appendChild(fallback);
+      } else {
+        options.forEach(opt => {
+          const option = document.createElement("option");
+          option.value = opt;
+          option.textContent = opt;
+          valueSelect.appendChild(option);
+        });
+        if (current && options.includes(current)) {
+          valueSelect.value = current;
         }
-        valueSelect.appendChild(option);
-      });
+      }
     }
 
     if (actions) {
       actions.classList.toggle("d-none", selectedType !== "Color");
+      if (selectedType === "Color") {
+        bindAddImageButtons(block);
+      }
     }
   }
 
-  // 🏷️ Attaches logic to "Type" dropdowns
   function bindVariantDropdowns(container) {
-    container.querySelectorAll(".variant-type").forEach(typeSelect => {
-      updateValueOptions(typeSelect); // Run immediately
-      typeSelect.addEventListener("change", () => updateValueOptions(typeSelect)); // Run on change
+    container.querySelectorAll(".variant-block .variant-type").forEach(typeSelect => {
+      updateValueOptions(typeSelect);
+      typeSelect.addEventListener("change", () => updateValueOptions(typeSelect));
     });
   }
 
-  // 🎨 Adds a new variant image block
-  function addVariantImageToBlock(variantBlock) {
-    const templateHtml = document.getElementById("variant-image-template").innerHTML;
-    if (!templateHtml) return;
-
-    const parentInput = variantBlock.querySelector("select[name*='[name]'], input[name*='[name]']");
-    if (!parentInput) {
-      console.error("Could not find parent variant name/value field. Cannot add image.");
-      return;
-    }
-
-    const parentIdMatch = parentInput.name.match(/variants_attributes\]\[([^\]]+)\]/);
-    if (!parentIdMatch) {
-      console.error("Could not extract parent variant ID from name:", parentInput.name);
-      return;
-    }
-
-    const parentId = parentIdMatch[1]; 
-    const uniqueImageId = `new_${Date.now()}`;
-
-    const html = templateHtml
-      .replace(/NEW_RECORD/g, parentId)
-      .replace(/NEW_IMAGE/g, uniqueImageId);
-
-    const wrapper = document.createElement("div");
-    wrapper.innerHTML = html.trim();
-    const imageBlock = wrapper.firstElementChild;
-
-    if (imageBlock) {
-      variantBlock.querySelector(".color-image-actions").appendChild(imageBlock);
-      bindDeleteButtons(imageBlock); // Bind delete for the new button
-    }
-  }
-
-  // 🎨 Attaches logic to "Add color image" buttons
-  function bindAddImageButtons(container) {
-    container.querySelectorAll(".add-variant-image-btn").forEach(btn => {
-      if (btn.dataset.bound) return; // Prevents double-binding
-      btn.dataset.bound = "true";
-      
-      btn.addEventListener("click", (e) => {
-        const variantBlock = e.target.closest(".variant-block");
-        addVariantImageToBlock(variantBlock);
-      });
-    });
-  }
-
-  // ❌ Attaches logic to all "Delete" buttons
+  // --- Delete buttons (gallery, variant, inventory) ---
   function bindDeleteButtons(container) {
-    // Delete Gallery Image (for Supabase)
+    // Gallery delete: append hidden input dynamically
     container.querySelectorAll(".delete-gallery-image").forEach(button => {
-      if (button.dataset.bound) return;
-      button.dataset.bound = "true";
-
       button.addEventListener("click", (e) => {
-        const block = e.target.closest(".gallery-image-block");
         const url = e.target.dataset.url;
-        if (!url) return;
-
-        const hiddenInput = document.createElement("input");
-        hiddenInput.type = "hidden";
-        hiddenInput.name = "remove_gallery[]";
-        hiddenInput.value = url;
-        
-        block.closest("form").appendChild(hiddenInput);
-        block.style.display = "none";
+        const form = e.target.closest("form");
+        if (form && url) {
+          const hidden = document.createElement("input");
+          hidden.type = "hidden";
+          hidden.name = "remove_gallery[]";
+          hidden.value = url;
+          form.appendChild(hidden);
+        }
+        const block = e.target.closest(".gallery-image-block");
+        if (block) block.style.display = "none";
       });
     });
 
-    // Delete Variant
     container.querySelectorAll(".delete-variant").forEach(button => {
-      if (button.dataset.bound) return;
-      button.dataset.bound = "true";
-
       button.addEventListener("click", (e) => {
         const block = e.target.closest(".variant-block");
-        const destroyField = block.querySelector("input.destroy-flag");
+        const destroyField = block?.querySelector("input.destroy-flag");
         if (destroyField) destroyField.value = "true";
-        block.style.display = "none";
+        if (block) block.style.display = "none";
       });
     });
 
-    // Delete Variant Image
     container.querySelectorAll(".delete-variant-image").forEach(button => {
-      if (button.dataset.bound) return;
-      button.dataset.bound = "true";
-
       button.addEventListener("click", (e) => {
         const block = e.target.closest(".variant-image-block");
-        const destroyField = block.querySelector("input.destroy-flag");
+        const destroyField = block?.querySelector("input.destroy-flag");
         if (destroyField) destroyField.value = "true";
-        block.style.display = "none";
+        if (block) block.style.display = "none";
+      });
+    });
+
+    container.querySelectorAll(".remove-inventory").forEach(button => {
+      button.addEventListener("click", (e) => {
+        const block = e.target.closest(".inventory-block");
+        const destroyField = block?.querySelector("input.destroy-flag");
+        if (destroyField) destroyField.value = "true";
+        if (block) block.style.display = "none";
       });
     });
   }
-
-
-  // --- Run all binders on page load ---
-  document.addEventListener("turbo:load", () => {
-    
-    // --- 🏷️ Subcategory Loader ---
-    const categorySelect = document.getElementById("category-select");
-    const subcategorySelect = document.getElementById("subcategory-select");
-    
-    if (categorySelect && subcategorySelect) {
-      categorySelect.addEventListener("change", (event) => {
-        const categoryId = event.target.value;
-        if (!categoryId) {
-          subcategorySelect.innerHTML = "<option value=''>Select a subcategory</option>";
-          return;
-        }
-
-        // Assumes a route like: get '/categories/:id/subcategories'
-        fetch(`/categories/${categoryId}/subcategories`) 
-          .then(response => response.json())
-          .then(data => {
-            subcategorySelect.innerHTML = "<option value=''>Select a subcategory</option>";
-            data.forEach(sub => {
-              subcategorySelect.innerHTML += `<option value="${sub.id}">${sub.name}</option>`;
-            });
-          })
-          .catch(error => console.error("Error fetching subcategories:", error));
-      });
-    }
-
-    // --- 💰 Total Cost Calculator ---
-    const priceField = document.getElementById("product_price");
-    const shippingField = document.getElementById("product_shipping_cost");
-    const totalCostSpan = document.getElementById("total-cost");
-
-    function updateTotalCost() {
-      const price = parseFloat(priceField.value) || 0;
-      const shipping = parseFloat(shippingField.value) || 0;
-      const total = price + shipping;
-      // Mimic KES format
-      totalCostSpan.textContent = `KES ${total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-    }
-
-    if (priceField && shippingField && totalCostSpan) {
-       priceField.addEventListener("input", updateTotalCost);
-       shippingField.addEventListener("input", updateTotalCost);
-    }
-    
-    // --- Run all binders for elements already on the page ---
-    bindVariantDropdowns(document);
-    bindAddImageButtons(document);
-    bindDeleteButtons(document);
   
-  }); // End of turbo:load listener
+function addVariantImageToBlock(variantBlock) {
+  const templateHtml = document.getElementById("variant-image-template").innerHTML;
+  if (!templateHtml) return;
+
+  // ✅ Extract parent variant ID from its hidden input name
+  const parentInput = variantBlock.querySelector("input[name*='variants_attributes']");
+  const parentIdMatch = parentInput?.name.match(/variants_attributes\]
+
+
+
+\[([^\]
+
+]+)\]
+
+/);
+  const parentId = parentIdMatch ? parentIdMatch[1] : `new_${Date.now()}`;
+
+  // ✅ Generate a unique ID only for the image
+  const uniqueImageId = Date.now();
+
+  const html = templateHtml
+    .replace(/NEW_RECORD/g, parentId)   // reuse parent variant ID
+    .replace(/NEW_IMAGE/g, `new_${uniqueImageId}`);
+
+  const wrapper = document.createElement("div");
+  wrapper.innerHTML = html.trim();
+  const imageBlock = wrapper.firstElementChild;
+
+  if (imageBlock) {
+    variantBlock.querySelector(".color-image-actions").appendChild(imageBlock);
+    bindDeleteButtons(imageBlock);
+  }
+}
+
+  function bindAddImageButtons(container) {
+    container.querySelectorAll(".variant-block .add-variant-image-btn").forEach(btn => {
+      btn.removeEventListener("click", btn._boundClick);
+           btn._boundClick = (e) => {
+        const variantBlock = e.target.closest(".variant-block");
+        addVariantImageToBlock(variantBlock);
+      };
+      btn.addEventListener("click", btn._boundClick);
+    });
+  }
+
+// --- Generic addFields ---
+window.addFields = function(containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  const templateId = containerId.replace("-fields", "-template");
+  const templateEl = document.getElementById(templateId);
+  if (!templateEl) {
+    console.error("Template not found for", templateId);
+    return;
+  }
+
+  const template = templateEl.innerHTML;
+  const uniqueId = new Date().getTime();
+  const newBlockHtml = template.replace(/NEW_RECORD/g, `new_${uniqueId}`);
+
+  const wrapper = document.createElement("div");
+  wrapper.innerHTML = newBlockHtml.trim(); 
+  const newBlock = wrapper.firstElementChild;
+  if (!newBlock) return;
+
+  container.appendChild(newBlock);
+
+  if (containerId === "variant-fields") {
+    bindVariantDropdowns(newBlock);
+    bindAddImageButtons(newBlock);
+
+    // ✅ If the new variant is Color, immediately add an image block
+    const typeSelect = newBlock.querySelector(".variant-type");
+    if (typeSelect && typeSelect.value === "Color") {
+      addVariantImageToBlock(newBlock);
+    }
+  }
+
+  bindDeleteButtons(newBlock);
+};
+
+  // --- Initial bindings ---
+  bindVariantDropdowns(document);
+  bindDeleteButtons(document);
+  bindAddImageButtons(document);
+});
 </script>
