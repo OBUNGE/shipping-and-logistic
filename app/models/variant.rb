@@ -5,9 +5,8 @@ class Variant < ApplicationRecord
   has_many :order_items
 
   # === Nested Image Support ===
-  accepts_nested_attributes_for :variant_images,
-                                allow_destroy: true,
-                                reject_if: :all_blank
+  # ⚠️ Removed reject_if: :all_blank so file uploads are not discarded
+  accepts_nested_attributes_for :variant_images, allow_destroy: true
 
   # === Validations ===
   validates :name, :value, presence: true
