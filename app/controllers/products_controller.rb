@@ -87,9 +87,12 @@ class ProductsController < ApplicationController
     render plain: "Product creation error: #{e.message}", status: 500
   end
 
-  def edit
-    build_nested_fields(@product)
-  end
+def edit
+  @product = Product.includes(variants: :variant_images, :inventories, :product_images)
+                    .find_by!(slug: params[:slug])
+
+  build_nested_fields(@product)
+end
 
   def update
     if params[:product][:image].present?
