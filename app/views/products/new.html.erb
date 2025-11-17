@@ -47,7 +47,7 @@
   }
 
   // 🎨 Variant image preview
-  function previewVariantImage(event) {
+  window.previewVariantImage = function(event) {
     const input = event.target;
     const file = input.files[0];
     const block = input.closest(".variant-image-block");
@@ -71,7 +71,10 @@
 
     const templateId = containerId.replace("-fields", "-template");
     const templateEl = document.getElementById(templateId);
-    if (!templateEl) return;
+    if (!templateEl) {
+      console.error("Template not found:", templateId);
+      return;
+    }
 
     const template = templateEl.innerHTML;
     const uniqueId = `new_${Date.now()}`;
@@ -84,19 +87,173 @@
 
     container.appendChild(newBlock);
 
-    // Re-bind JS for the new block
+    // ==========================================================
+    // ✅ ✅ ✅ THIS IS THE FIX ✅ ✅ ✅
+    // After adding the new block, we must find its new buttons
+    // and dropdowns and attach our JavaScript logic to them.
+    // ==========================================================
     if (containerId === "variant-fields") {
       bindVariantDropdowns(newBlock);
       bindAddImageButtons(newBlock);
     }
+    // Always bind delete buttons for any new block
     bindDeleteButtons(newBlock);
   };
 
   //==================================================================
   // 2. ALL EVENT LISTENERS (run on page load)
   //==================================================================
-  document.addEventListener("turbo:load", () => {
+  
+  // --- Define all helper functions first ---
 
+  // 🏷️ Populates variant "value" dropdown
+  const typeOptions = {
+    Size: ["XS","S","M","L","XL","XXL","3XL","4XL","5XL","6XL","7XL","8XL","9XL","10XL"],
+    Color: ["Red","Blue","Black","White","Green","Yellow","Purple","Orange","Pink","Gray","Brown","Cyan","Magenta","Lime","Teal","Navy","Maroon","Olive","Silver","Gold","Beige"],
+    Material: ["Cotton","Leather","Polyester","Plastic","Metal","Wood","Glass","Silk","Wool","Denim"],
+    Storage: ["64GB","128GB","256GB","512GB","1TB","2TB","4TB"],
+    Packaging: ["Box","Bag","Sachet","Envelope","Bottle","Jar"]
+  };
+
+  function updateValueOptions(typeSelect) {
+    const block = typeSelect.closest(".variant-block");
+    if (!block) return;
+
+    const valueSelect = block.querySelector(".variant-value");
+    const actions = block.querySelector(".color-image-actions");
+    const selectedType = typeSelect.value;
+    const savedValue = valueSelect.dataset.current; 
+
+    valueSelect.innerHTML = ""; 
+    const options = typeOptions[selectedType] || [];
+    
+    if (options.length === 0) {
+      valueSelect.innerHTML = "<option value=''>Select a type first</option>";
+    } else {
+      options.forEach(opt => {
+        const option = document.createElement("option");
+        option.value = opt;
+        option.textContent = opt;
+        if (opt === savedValue) {
+          option.selected = true;
+        }
+        valueSelect.appendChild(option);
+      });
+    }
+
+    if (actions) {
+      actions.classList.toggle("d-none", selectedType !== "Color");
+    }
+  }
+
+  // 🏷️ Attaches logic to "Type" dropdowns
+  function bindVariantDropdowns(container) {
+    container.querySelectorAll(".variant-type").forEach(typeSelect => {
+      updateValueOptions(typeSelect); // Run immediately
+      typeSelect.addEventListener("change", () => updateValueOptions(typeSelect)); // Run on change
+    });
+  }
+
+  // 🎨 Adds a new variant image block
+  function addVariantImageToBlock(variantBlock) {
+    const templateHtml = document.getElementById("variant-image-template").innerHTML;
+    if (!templateHtml) return;
+
+    const parentInput = variantBlock.querySelector("select[name*='[name]'], input[name*='[name]']");
+    if (!parentInput) {
+      console.error("Could not find parent variant name/value field. Cannot add image.");
+      return;
+    }
+
+    const parentIdMatch = parentInput.name.match(/variants_attributes\]\[([^\]]+)\]/);
+    if (!parentIdMatch) {
+      console.error("Could not extract parent variant ID from name:", parentInput.name);
+      return;
+    }
+
+    const parentId = parentIdMatch[1]; 
+    const uniqueImageId = `new_${Date.now()}`;
+
+    const html = templateHtml
+      .replace(/NEW_RECORD/g, parentId)
+      .replace(/NEW_IMAGE/g, uniqueImageId);
+
+    const wrapper = document.createElement("div");
+    wrapper.innerHTML = html.trim();
+    const imageBlock = wrapper.firstElementChild;
+
+    if (imageBlock) {
+      variantBlock.querySelector(".color-image-actions").appendChild(imageBlock);
+      bindDeleteButtons(imageBlock); // Bind delete for the new button
+    }
+  }
+
+  // 🎨 Attaches logic to "Add color image" buttons
+  function bindAddImageButtons(container) {
+    container.querySelectorAll(".add-variant-image-btn").forEach(btn => {
+      if (btn.dataset.bound) return; // Prevents double-binding
+      btn.dataset.bound = "true";
+      
+      btn.addEventListener("click", (e) => {
+        const variantBlock = e.target.closest(".variant-block");
+        addVariantImageToBlock(variantBlock);
+      });
+    });
+  }
+
+  // ❌ Attaches logic to all "Delete" buttons
+  function bindDeleteButtons(container) {
+    // Delete Gallery Image (for Supabase)
+    container.querySelectorAll(".delete-gallery-image").forEach(button => {
+      if (button.dataset.bound) return;
+      button.dataset.bound = "true";
+
+      button.addEventListener("click", (e) => {
+        const block = e.target.closest(".gallery-image-block");
+        const url = e.target.dataset.url;
+        if (!url) return;
+
+        const hiddenInput = document.createElement("input");
+        hiddenInput.type = "hidden";
+        hiddenInput.name = "remove_gallery[]";
+        hiddenInput.value = url;
+        
+        block.closest("form").appendChild(hiddenInput);
+        block.style.display = "none";
+      });
+    });
+
+    // Delete Variant
+    container.querySelectorAll(".delete-variant").forEach(button => {
+      if (button.dataset.bound) return;
+      button.dataset.bound = "true";
+
+      button.addEventListener("click", (e) => {
+        const block = e.target.closest(".variant-block");
+        const destroyField = block.querySelector("input.destroy-flag");
+        if (destroyField) destroyField.value = "true";
+        block.style.display = "none";
+      });
+    });
+
+    // Delete Variant Image
+    container.querySelectorAll(".delete-variant-image").forEach(button => {
+      if (button.dataset.bound) return;
+      button.dataset.bound = "true";
+
+      button.addEventListener("click", (e) => {
+        const block = e.target.closest(".variant-image-block");
+        const destroyField = block.querySelector("input.destroy-flag");
+        if (destroyField) destroyField.value = "true";
+        block.style.display = "none";
+      });
+    });
+  }
+
+
+  // --- Run all binders on page load ---
+  document.addEventListener("turbo:load", () => {
+    
     // --- 🏷️ Subcategory Loader ---
     const categorySelect = document.getElementById("category-select");
     const subcategorySelect = document.getElementById("subcategory-select");
@@ -109,8 +266,8 @@
           return;
         }
 
-        // This assumes you have a route like: get '/categories/:id/subcategories', to: 'categories#subcategories'
-        fetch(`/categories/${categoryId}/subcategories`)
+        // Assumes a route like: get '/categories/:id/subcategories'
+        fetch(`/categories/${categoryId}/subcategories`) 
           .then(response => response.json())
           .then(data => {
             subcategorySelect.innerHTML = "<option value=''>Select a subcategory</option>";
@@ -131,8 +288,7 @@
       const price = parseFloat(priceField.value) || 0;
       const shipping = parseFloat(shippingField.value) || 0;
       const total = price + shipping;
-      // This assumes your `display_price` helper formats as "KES 1,500.00"
-      // We mimic that format.
+      // Mimic KES format
       totalCostSpan.textContent = `KES ${total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     }
 
@@ -140,150 +296,8 @@
        priceField.addEventListener("input", updateTotalCost);
        shippingField.addEventListener("input", updateTotalCost);
     }
-
-    // --- 🔀 Variant & Dynamic Field Functions ---
-
-    const typeOptions = {
-      Size: ["XS","S","M","L","XL","XXL","3XL","4XL","5XL","6XL","7XL","8XL","9XL","10XL"],
-      Color: ["Red","Blue","Black","White","Green","Yellow","Purple","Orange","Pink","Gray","Brown","Cyan","Magenta","Lime","Teal","Navy","Maroon","Olive","Silver","Gold","Beige"],
-      Material: ["Cotton","Leather","Polyester","Plastic","Metal","Wood","Glass","Silk","Wool","Denim"],
-      Storage: ["64GB","128GB","256GB","512GB","1TB","2TB","4TB"],
-      Packaging: ["Box","Bag","Sachet","Envelope","Bottle","Jar"]
-    };
-
-    function updateValueOptions(typeSelect) {
-      const block = typeSelect.closest(".variant-block");
-      if (!block) return;
-
-      const valueSelect = block.querySelector(".variant-value");
-      const actions = block.querySelector(".color-image-actions");
-      const selectedType = typeSelect.value;
-      const savedValue = valueSelect.dataset.current; 
-
-      valueSelect.innerHTML = ""; 
-      const options = typeOptions[selectedType] || [];
-      
-      if (options.length === 0) {
-        valueSelect.innerHTML = "<option value=''>Select a type first</option>";
-      } else {
-        options.forEach(opt => {
-          const option = document.createElement("option");
-          option.value = opt;
-          option.textContent = opt;
-          if (opt === savedValue) {
-            option.selected = true;
-          }
-          valueSelect.appendChild(option);
-        });
-      }
-
-      if (actions) {
-        actions.classList.toggle("d-none", selectedType !== "Color");
-      }
-    }
-
-    function bindVariantDropdowns(container) {
-      container.querySelectorAll(".variant-type").forEach(typeSelect => {
-        updateValueOptions(typeSelect); 
-        typeSelect.addEventListener("change", () => updateValueOptions(typeSelect));
-      });
-    }
-
-    function addVariantImageToBlock(variantBlock) {
-      const templateHtml = document.getElementById("variant-image-template").innerHTML;
-      if (!templateHtml) return;
-
-      const parentInput = variantBlock.querySelector("select[name*='[name]'], input[name*='[name]']");
-      if (!parentInput) {
-        console.error("Could not find parent variant name/value field. Cannot add image.");
-        return;
-      }
-
-      const parentIdMatch = parentInput.name.match(/variants_attributes\]\[([^\]]+)\]/);
-      if (!parentIdMatch) {
-        console.error("Could not extract parent variant ID from name:", parentInput.name);
-        return;
-      }
-
-      const parentId = parentIdMatch[1]; 
-      const uniqueImageId = `new_${Date.now()}`;
-
-      const html = templateHtml
-        .replace(/NEW_RECORD/g, parentId)
-        .replace(/NEW_IMAGE/g, uniqueImageId);
-
-      const wrapper = document.createElement("div");
-      wrapper.innerHTML = html.trim();
-      const imageBlock = wrapper.firstElementChild;
-
-      if (imageBlock) {
-        variantBlock.querySelector(".color-image-actions").appendChild(imageBlock);
-        bindDeleteButtons(imageBlock);
-      }
-    }
-
-    function bindAddImageButtons(container) {
-      container.querySelectorAll(".add-variant-image-btn").forEach(btn => {
-        if (btn.dataset.bound) return; 
-        btn.dataset.bound = "true";
-        
-        btn.addEventListener("click", (e) => {
-          const variantBlock = e.target.closest(".variant-block");
-          addVariantImageToBlock(variantBlock);
-        });
-      });
-    }
-
-    function bindDeleteButtons(container) {
-      // Delete Gallery Image (for Supabase)
-      container.querySelectorAll(".delete-gallery-image").forEach(button => {
-        // Prevent re-binding
-        if (button.dataset.bound) return;
-        button.dataset.bound = "true";
-
-        button.addEventListener("click", (e) => {
-          const block = e.target.closest(".gallery-image-block");
-          const url = e.target.dataset.url;
-          if (!url) return;
-
-          const hiddenInput = document.createElement("input");
-          hiddenInput.type = "hidden";
-          hiddenInput.name = "remove_gallery[]";
-          hiddenInput.value = url;
-          
-          block.closest("form").appendChild(hiddenInput);
-          block.style.display = "none";
-        });
-      });
-
-      // Delete Variant
-      container.querySelectorAll(".delete-variant").forEach(button => {
-        if (button.dataset.bound) return;
-        button.dataset.bound = "true";
-
-        button.addEventListener("click", (e) => {
-          const block = e.target.closest(".variant-block");
-          const destroyField = block.querySelector("input.destroy-flag");
-          if (destroyField) destroyField.value = "true";
-          block.style.display = "none";
-        });
-      });
-
-      // Delete Variant Image
-      container.querySelectorAll(".delete-variant-image").forEach(button => {
-        if (button.dataset.bound) return;
-        button.dataset.bound = "true";
-
-        button.addEventListener("click", (e) => {
-          const block = e.target.closest(".variant-image-block");
-          const destroyField = block.querySelector("input.destroy-flag");
-          if (destroyField) destroyField.value = "true";
-          block.style.display = "none";
-        });
-      });
-    }
-
-    // --- Initial Run on Page Load ---
+    
+    // --- Run all binders for elements already on the page ---
     bindVariantDropdowns(document);
     bindAddImageButtons(document);
     bindDeleteButtons(document);
