@@ -212,25 +212,40 @@ document.addEventListener("turbo:load", () => {
     });
   }
 
-  // --- Variant images ---
-  function addVariantImageToBlock(variantBlock) {
-    const templateHtml = document.getElementById("variant-image-template").innerHTML;
-    if (!templateHtml) return;
+  // --- Add Variant Image ---
+function addVariantImageToBlock(variantBlock) {
+  const templateHtml = document.getElementById("variant-image-template").innerHTML;
+  if (!templateHtml) return;
 
-    const uniqueId = new Date().getTime();
-    const html = templateHtml
-      .replace(/NEW_RECORD/g, `new_${uniqueId}`)
-      .replace(/NEW_IMAGE/g, `new_${uniqueId}`);
+  // ✅ Extract parent variant ID from its hidden input name
+  const parentInput = variantBlock.querySelector("input[name*='variants_attributes']");
+  const parentIdMatch = parentInput?.name.match(/variants_attributes\]
 
-    const wrapper = document.createElement("div");
-    wrapper.innerHTML = html.trim();
-    const imageBlock = wrapper.firstElementChild;
 
-    if (imageBlock) {
-      variantBlock.querySelector(".color-image-actions").appendChild(imageBlock);
-      bindDeleteButtons(imageBlock);
-    }
+
+\[([^\]
+
+]+)\]
+
+/);
+  const parentId = parentIdMatch ? parentIdMatch[1] : `new_${Date.now()}`;
+
+  // ✅ Generate a unique ID only for the image
+  const uniqueImageId = Date.now();
+
+  const html = templateHtml
+    .replace(/NEW_RECORD/g, parentId)   // reuse parent variant ID
+    .replace(/NEW_IMAGE/g, `new_${uniqueImageId}`);
+
+  const wrapper = document.createElement("div");
+  wrapper.innerHTML = html.trim();
+  const imageBlock = wrapper.firstElementChild;
+
+  if (imageBlock) {
+    variantBlock.querySelector(".color-image-actions").appendChild(imageBlock);
+    bindDeleteButtons(imageBlock);
   }
+}
 
   function bindAddImageButtons(container) {
     container.querySelectorAll(".variant-block .add-variant-image-btn").forEach(btn => {
@@ -286,3 +301,8 @@ window.addFields = function(containerId) {
   bindAddImageButtons(document);
 });
 </script>
+<style>
+  .preview-item {
+    cursor: move;
+  }
+</style>
