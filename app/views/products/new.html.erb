@@ -164,25 +164,8 @@ document.addEventListener("turbo:load", () => {
     });
   }
 
-  // --- Delete buttons (gallery, variant, inventory) ---
+  // --- Delete buttons ---
   function bindDeleteButtons(container) {
-    // Gallery delete: append hidden input dynamically
-    container.querySelectorAll(".delete-gallery-image").forEach(button => {
-      button.addEventListener("click", (e) => {
-        const url = e.target.dataset.url;
-        const form = e.target.closest("form");
-        if (form && url) {
-          const hidden = document.createElement("input");
-          hidden.type = "hidden";
-          hidden.name = "remove_gallery[]";
-          hidden.value = url;
-          form.appendChild(hidden);
-        }
-        const block = e.target.closest(".gallery-image-block");
-        if (block) block.style.display = "none";
-      });
-    });
-
     container.querySelectorAll(".delete-variant").forEach(button => {
       button.addEventListener("click", (e) => {
         const block = e.target.closest(".variant-block");
@@ -200,26 +183,30 @@ document.addEventListener("turbo:load", () => {
         if (block) block.style.display = "none";
       });
     });
-
-    container.querySelectorAll(".remove-inventory").forEach(button => {
-      button.addEventListener("click", (e) => {
-        const block = e.target.closest(".inventory-block");
-        const destroyField = block?.querySelector("input.destroy-flag");
-        if (destroyField) destroyField.value = "true";
-        if (block) block.style.display = "none";
-      });
-    });
   }
 
-  // --- Variant images ---
+  // --- Variant images (updated to reuse parent ID) ---
   function addVariantImageToBlock(variantBlock) {
     const templateHtml = document.getElementById("variant-image-template").innerHTML;
     if (!templateHtml) return;
 
-    const uniqueId = new Date().getTime();
+    // ✅ Reuse parent variant ID
+    const parentInput = variantBlock.querySelector("input[name*='variants_attributes']");
+    const parentIdMatch = parentInput?.name.match(/variants_attributes\]
+
+
+
+\[([^\]
+
+]+)\]
+
+/);
+    const parentId = parentIdMatch ? parentIdMatch[1] : `new_${Date.now()}`;
+    const uniqueImageId = Date.now();
+
     const html = templateHtml
-      .replace(/NEW_RECORD/g, `new_${uniqueId}`)
-      .replace(/NEW_IMAGE/g, `new_${uniqueId}`);
+      .replace(/NEW_RECORD/g, parentId)   // use parent variant ID
+      .replace(/NEW_IMAGE/g, `new_${uniqueImageId}`);
 
     const wrapper = document.createElement("div");
     wrapper.innerHTML = html.trim();
@@ -234,7 +221,7 @@ document.addEventListener("turbo:load", () => {
   function bindAddImageButtons(container) {
     container.querySelectorAll(".variant-block .add-variant-image-btn").forEach(btn => {
       btn.removeEventListener("click", btn._boundClick);
-           btn._boundClick = (e) => {
+      btn._boundClick = (e) => {
         const variantBlock = e.target.closest(".variant-block");
         addVariantImageToBlock(variantBlock);
       };
@@ -242,20 +229,20 @@ document.addEventListener("turbo:load", () => {
     });
   }
 
-// --- Generic addFields ---
-window.addFields = function(containerId) {
-  const container = document.getElementById(containerId);
-  if (!container) return;
+  // --- Generic addFields ---
+  window.addFields = function(containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
 
-  const templateId = containerId.replace("-fields", "-template");
-  const templateEl = document.getElementById(templateId);
-  if (!templateEl) {
-    console.error("Template not found for", templateId);
-    return;
-  }
+    const templateId = containerId.replace("-fields", "-template");
+    const templateEl = document.getElementById(templateId);
+    if (!templateEl) {
+      console.error("Template not found for", templateId);
+      return;
+    }
 
-  const template = templateEl.innerHTML;
-  const uniqueId = new Date().getTime();
+      const template = templateEl.innerHTML;
+  const uniqueId = Date.now();
   const newBlockHtml = template.replace(/NEW_RECORD/g, `new_${uniqueId}`);
 
   const wrapper = document.createElement("div");
