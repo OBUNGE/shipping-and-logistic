@@ -216,13 +216,7 @@ document.addEventListener("turbo:load", () => {
 
     // Extract parent variant ID
     const parentInput = variantBlock.querySelector("input[name*='variants_attributes']");
-    const parentIdMatch = parentInput?.name.match(/variants_attributes\]
-
-
-
-\[(new_\d+|\d+)\]
-
-/);
+    const parentIdMatch = parentInput?.name.match(/variants_attributes\]\[(new_\d+|\d+)\]/);
     const parentId = parentIdMatch ? parentIdMatch[1] : `new_${Date.now()}`;
 
     // One unique ID per image block
