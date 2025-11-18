@@ -153,7 +153,7 @@ document.addEventListener("turbo:load", () => {
   };
 
   // -----------------------------
-  // 6. Variant Value Auto-Populate (new)
+  // 6. Variant Value Auto-Populate
   // -----------------------------
   const typeOptions = {
     Color: ["Black","Blue","Red","Green","White"],
@@ -177,6 +177,12 @@ document.addEventListener("turbo:load", () => {
       option.textContent = opt;
       valueSelect.appendChild(option);
     });
+
+    // 🔀 Toggle image upload block visibility
+    const actions = block.querySelector(".color-image-actions");
+    if (actions) {
+      actions.classList.toggle("d-none", selected !== "Color");
+    }
   }
 
   document.querySelectorAll("select[name*='[name]']").forEach(typeSelect => {
