@@ -11,7 +11,10 @@ console.log("product_form.js loaded ✅")
 window.addFields = function(containerId) {
   const container = document.getElementById(containerId);
   const templateId = containerId.replace("-fields", "-template");
-  const template = document.getElementById(templateId)?.innerHTML;
+  
+  // 🎯 FIX: Access content using .content property for <template> tag
+  const templateElement = document.getElementById(templateId);
+  const template = templateElement?.content.innerHTML; 
   if (!container || !template) return;
 
   const uniqueId = `new_${Date.now()}`;
@@ -32,7 +35,10 @@ window.addFields = function(containerId) {
  */
 window.addVariant = function() {
   const container = document.getElementById("variant-fields");
-  const template = document.getElementById("variant-template")?.innerHTML;
+  
+  // 🎯 FIX: Access content using .content property for <template> tag
+  const templateElement = document.getElementById("variant-template");
+  const template = templateElement?.content.innerHTML;
   if (!container || !template) return;
 
   const uniqueId = `new_${Date.now()}`;
@@ -64,7 +70,10 @@ window.addVariant = function() {
  */
 window.addVariantImageToBlock = function(variantBlock) {
   const actionsContainer = variantBlock.querySelector(".color-image-actions");
-  const templateHtml = document.getElementById("variant-image-template")?.innerHTML;
+  
+  // 🎯 FIX: Access content using .content property for <template> tag
+  const templateElement = document.getElementById("variant-image-template");
+  const templateHtml = templateElement?.content.innerHTML;
   if (!actionsContainer || !templateHtml) return;
 
   // Find the parent variant's unique ID from its input field name
