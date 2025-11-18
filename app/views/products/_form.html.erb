@@ -157,33 +157,99 @@
   <% end %>
 </div>
 
-<!-- Hidden template for new variant image fields -->
-<div id="variant-image-template" style="display:none;">
-  <div class="border p-2 mb-2 bg-light rounded variant-image-block">
-    <input type="file"
-           name="product[variants_attributes][NEW_RECORD][variant_images_attributes][NEW_IMAGE][image]"
-           class="form-control form-control-sm"
-           accept="image/*"
-           onchange="previewVariantImage(event)" />
+<!-- Hidden template for new variant fields (used before save) -->
+<div id="variant-template" style="display:none;">
+  <div class="border p-3 mb-2 bg-light rounded variant-block">
+    <div class="row g-2">
+      <!-- Variant Type -->
+      <div class="col-md-4">
+        <label class="form-label small">Type</label>
+        <select name="product[variants_attributes][NEW_RECORD][name]"
+                class="form-select form-select-sm variant-type" required>
+          <option value="">Select type</option>
+          <option value="Color">Color</option>
+          <option value="Size">Size</option>
+          <option value="Storage">Storage</option>
+          <option value="Material">Material</option>
+          <option value="Packaging">Packaging</option>
+        </select>
+      </div>
 
-    <input type="hidden"
-           name="product[variants_attributes][NEW_RECORD][variant_images_attributes][NEW_IMAGE][_destroy]"
-           class="destroy-flag" />
+      <!-- Variant Value -->
+      <div class="col-md-4">
+        <label class="form-label small">Option</label>
+        <select name="product[variants_attributes][NEW_RECORD][value]"
+                class="form-select form-select-sm variant-value" required>
+        </select>
+      </div>
 
-    <button type="button"
-            class="btn btn-sm btn-outline-danger delete-variant-image">
-      Delete
-    </button>
+      <!-- Price Modifier -->
+      <div class="col-md-3">
+        <label class="form-label small">Price Modifier</label>
+        <input type="number"
+               step="0.01"
+               name="product[variants_attributes][NEW_RECORD][price_modifier]"
+               placeholder="e.g. 50.00"
+               class="form-control form-control-sm" />
+      </div>
+
+      <!-- Delete Variant -->
+      <div class="col-md-1 d-flex align-items-end">
+        <input type="hidden"
+               name="product[variants_attributes][NEW_RECORD][_destroy]"
+               class="destroy-flag" />
+        <button type="button"
+                class="btn btn-sm btn-outline-danger delete-variant">
+          Delete
+        </button>
+      </div>
+    </div>
+
+    <!-- 🎨 Variant Images (only for Color) -->
+    <div class="mt-2 color-image-actions d-none">
+      <!-- Hidden template for new variant image fields -->
+      <div id="variant-image-template" style="display:none;">
+        <div class="border p-2 mb-2 bg-light rounded variant-image-block">
+          <input type="file"
+                 name="product[variants_attributes][NEW_RECORD][variant_images_attributes][NEW_IMAGE][image]"
+                 class="form-control form-control-sm"
+                 accept="image/*"
+                 onchange="previewVariantImage(event)" />
+
+          <input type="hidden"
+                 name="product[variants_attributes][NEW_RECORD][variant_images_attributes][NEW_IMAGE][_destroy]"
+                 class="destroy-flag" />
+
+          <button type="button"
+                  class="btn btn-sm btn-outline-danger delete-variant-image">
+            Delete
+          </button>
+        </div>
+      </div>
+
+      <button type="button"
+              class="btn btn-sm btn-outline-secondary add-variant-image-btn">
+        ➕ Add color image
+      </button>
+    </div>
   </div>
 </div>
 
-
+<!-- Add Variant Button -->
 <div class="mt-2">
-  <%= button_to "➕ Add Variant",
-        add_variant_product_path(@product),
-        method: :post,
-        data: { turbo_stream: true },
-        class: "btn btn-sm btn-outline-primary" %>
+  <% if @product.persisted? %>
+    <%= button_to "➕ Add Variant",
+          add_variant_product_path(@product),
+          method: :post,
+          data: { turbo_stream: true },
+          class: "btn btn-sm btn-outline-primary" %>
+  <% else %>
+    <!-- For new product form, use JS cloning -->
+    <button type="button"
+            class="btn btn-sm btn-outline-primary add-variant-btn">
+      ➕ Add Variant
+    </button>
+  <% end %>
 </div>
 
 <div id="variants_count"><%= @product.variants.count %></div>

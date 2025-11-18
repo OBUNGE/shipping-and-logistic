@@ -218,14 +218,13 @@ document.addEventListener("turbo:load", () => {
   bindDeleteButtons(document);
 
     // -----------------------------
-  // 8. Add new variant image dynamically (before save)
+  // 9. Add new variant dynamically (before save)
   // -----------------------------
   document.addEventListener("click", e => {
-    if (e.target.classList.contains("add-variant-image-btn")) {
-      const block = e.target.closest(".variant-block");
-      const container = block.querySelector(".color-image-actions");
+    if (e.target.classList.contains("add-variant-btn")) {
+      const container = document.getElementById("variant-fields");
+      const template = document.getElementById("variant-template");
 
-      const template = document.getElementById("variant-image-template");
       if (template && container) {
         const clone = template.firstElementChild.cloneNode(true);
 
@@ -235,13 +234,13 @@ document.addEventListener("turbo:load", () => {
           .replace(/NEW_RECORD/g, timestamp)
           .replace(/NEW_IMAGE/g, timestamp + "_img");
 
-        container.insertBefore(clone, e.target);
+        container.appendChild(clone);
       }
     }
 
-    if (e.target.classList.contains("delete-variant-image")) {
+    if (e.target.classList.contains("delete-variant")) {
       e.preventDefault();
-      e.target.closest(".variant-image-block").remove();
+      e.target.closest(".variant-block").remove();
     }
   });
 

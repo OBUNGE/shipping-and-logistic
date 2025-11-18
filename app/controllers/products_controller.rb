@@ -239,14 +239,26 @@ class ProductsController < ApplicationController
     "gallery_image_#{Digest::MD5.hexdigest(url)}"
   end
 
-  def build_nested_fields(product)
-    product.variants.build if product.variants.empty?
-    product.variants.select { |v| v.name == "Color" }.each do |color_variant|
-      color_variant.variant_images.build if color_variant.variant_images.empty?
+def build_nested_fields(product)
+  # Ensure at least one variant exists
+  if product.variants.empty?
+    variant = product.variants.build(name: "Color") # default to Color
+    variant.variant_images.build # prebuild one image field
+  else
+    # For existing variants, ensure Color has at least one image
+    product.variants.each do |variant|
+      if variant.name == "Color" && variant.variant_images.empty?
+        variant.variant_images.build
+      end
     end
-    product.inventories.build if product.inventories.empty?
-    product.product_images.build if product.product_images.empty?
   end
+
+  # Ensure at least one inventory record
+  product.inventories.build if product.inventories.empty?
+
+  # If you truly have a product_images association
+  product.product_images.build if product.respond_to?(:product_images) && product.product_images.empty?
+end
 
   def product_params
     params.require(:product).permit(
