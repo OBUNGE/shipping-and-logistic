@@ -7,6 +7,7 @@
 //= link controllers/hello_controller.js
 //= link controllers/index.js
 //= link application.js
+//= link product_form.js
 
 
 
