@@ -379,34 +379,3 @@
 <% end %>
 
 
-<script>
-  function addGalleryInput() {
-    const container = document.getElementById("gallery-inputs");
-    const input = document.createElement("input");
-    input.type = "file";
-    input.name = "product[gallery_images][]";
-    input.accept = "image/*";
-    input.className = "form-control form-control-sm mb-2";
-    container.appendChild(input);
-  }
-
-  document.addEventListener("turbo:load", () => {
-    const categorySelect = document.getElementById("category-select");
-    const subcategorySelect = document.getElementById("subcategory-select");
-
-    if (categorySelect && subcategorySelect) {
-      categorySelect.addEventListener("change", (e) => {
-        const categoryId = e.target.value;
-
-        fetch(`/categories/${categoryId}/subcategories.json`)
-          .then(res => res.json())
-          .then(data => {
-            subcategorySelect.innerHTML = "<option value=''>Select a subcategory</option>";
-            data.forEach(sub => {
-              subcategorySelect.innerHTML += `<option value="${sub.id}">${sub.name}</option>`;
-            });
-          });
-      });
-    }
-  });
-</script>
