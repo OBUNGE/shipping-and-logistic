@@ -4,6 +4,40 @@ class ProductsController < ApplicationController
 
   require "csv"
 
+  # DELETE /products/:id/remove_gallery
+  def remove_gallery
+    url = params[:url]
+    if @product.gallery_image_urls.delete(url)
+      @product.save
+      respond_to do |format|
+        format.turbo_stream { render turbo_stream: turbo_stream.remove(dom_id_for_gallery(url)) }
+        format.html { redirect_to @product, notice: "Gallery image removed." }
+      end
+    else
+      redirect_to @product, alert: "Image not found."
+    end
+  end
+
+  # DELETE /products/:id/remove_variant
+  def remove_variant
+    variant = @product.variants.find(params[:id])
+    variant.destroy
+    respond_to do |format|
+      format.turbo_stream { render turbo_stream: turbo_stream.remove(dom_id(variant)) }
+      format.html { redirect_to @product, notice: "Variant removed." }
+    end
+  end
+
+  # DELETE /products/:id/remove_variant_image
+  def remove_variant_image
+    image = @product.variant_images.find(params[:id])
+    image.destroy
+    respond_to do |format|
+      format.turbo_stream { render turbo_stream: turbo_stream.remove(dom_id(image)) }
+      format.html { redirect_to @product, notice: "Variant image removed." }
+    end
+  end
+
   def index
     @products = Product.includes(:variants, :inventories)
                        .order(created_at: :desc)
@@ -182,6 +216,11 @@ class ProductsController < ApplicationController
     @product = Product.friendly.find(slug)
   rescue ActiveRecord::RecordNotFound
     redirect_to products_path, alert: "Product not found"
+  end
+
+   # Helper to generate DOM IDs for Turbo removal
+  def dom_id_for_gallery(url)
+    "gallery_image_#{Digest::MD5.hexdigest(url)}"
   end
 
   def build_nested_fields(product)
