@@ -248,8 +248,13 @@ function bindAddImageButtons(container) {
 window.addFields = function(containerId) {
   const container = document.getElementById(containerId);
   const template = document.getElementById(containerId.replace("-fields", "-template")).innerHTML;
-  const unique = `new_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
-  const html = template.replace(/NEW_RECORD/g, unique);
+  
+  // Generate unique IDs for block + any nested images
+  const blockId = `new_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+  const imageId = `img_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+
+  // Replace placeholders recursively
+  let html = template.replace(/NEW_RECORD/g, blockId).replace(/NEW_IMAGE/g, imageId);
 
   const wrapper = document.createElement("div");
   wrapper.innerHTML = html.trim();
@@ -260,6 +265,7 @@ window.addFields = function(containerId) {
   bindDeleteButtons(newBlock);
   bindAddImageButtons(newBlock);
 };
+
 
 // Initial binding on page load
 bindVariantDropdowns(document);
