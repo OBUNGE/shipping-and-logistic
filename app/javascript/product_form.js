@@ -12,7 +12,7 @@ window.addFields = function(containerId) {
   const container = document.getElementById(containerId);
   const templateId = containerId.replace("-fields", "-template");
   
-  // 🎯 FIX: Access content using .content property for <template> tag
+  // FIX: Access content using .content property for <template> tag
   const templateElement = document.getElementById(templateId);
   const template = templateElement?.content.innerHTML; 
   if (!container || !template) return;
@@ -36,7 +36,7 @@ window.addFields = function(containerId) {
 window.addVariant = function() {
   const container = document.getElementById("variant-fields");
   
-  // 🎯 FIX: Access content using .content property for <template> tag
+  // FIX: Access content using .content property for <template> tag
   const templateElement = document.getElementById("variant-template");
   const template = templateElement?.content.innerHTML;
   if (!container || !template) return;
@@ -71,7 +71,7 @@ window.addVariant = function() {
 window.addVariantImageToBlock = function(variantBlock) {
   const actionsContainer = variantBlock.querySelector(".color-image-actions");
   
-  // 🎯 FIX: Access content using .content property for <template> tag
+  // FIX: Access content using .content property for <template> tag
   const templateElement = document.getElementById("variant-image-template");
   const templateHtml = templateElement?.content.innerHTML;
   if (!actionsContainer || !templateHtml) return;
