@@ -14,19 +14,17 @@ class Product < ApplicationRecord
 
   # === Supabase Image Fields ===
   # Store gallery image URLs in a JSON/text column
-  # Rails 8+ style
-attribute :gallery_image_urls, :json, default: []
-
+  attribute :gallery_image_urls, :json, default: []
 
   # === Nested Attributes ===
   accepts_nested_attributes_for :variants,
                                 allow_destroy: true,
                                 reject_if: ->(attrs) { attrs['name'].blank? && attrs['value'].blank? }
 
-
   accepts_nested_attributes_for :inventories,
                                 allow_destroy: true,
                                 reject_if: :all_blank
+
   accepts_nested_attributes_for :product_images,
                                 allow_destroy: true,
                                 reject_if: :all_blank
@@ -119,7 +117,7 @@ attribute :gallery_image_urls, :json, default: []
 
   # === SEO Helpers ===
   def seo_title
-    "#{title} | AfriXpress Marketplace"
+    "#{title} | tajaone.app"
   end
 
   def seo_description
@@ -137,8 +135,17 @@ attribute :gallery_image_urls, :json, default: []
 
   private
 
+  # Prebuild nested records so forms always render correctly
   def build_nested_fields
-    variants.build if variants.empty?
+    if variants.empty?
+      variant = variants.build
+      variant.variant_images.build   # ensure file field shows in new form
+    else
+      variants.each do |v|
+        v.variant_images.build if v.variant_images.empty?
+      end
+    end
+
     inventories.build if inventories.empty?
     product_images.build if product_images.empty?
   end
