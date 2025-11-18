@@ -41,6 +41,7 @@ Rails.application.routes.draw do
       delete :remove_variant       # expects params[:id] for variant
       delete :remove_variant_image # expects params[:id] for variant image
       delete :remove_gallery       # expects params[:url] or :image_id
+      post   :add_variant_image       # adds a new variant image via Turbo Stream
     end
 
     # Legacy gallery image route (if still needed)
