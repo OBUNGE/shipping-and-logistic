@@ -1,12 +1,12 @@
-// app/javascript/product_form.js
 console.log("product_form.js loaded ✅")
 
-document.addEventListener("turbo:load", () => {
+// Use DOMContentLoaded to ensure binding works even with Turbo Streams
+document.addEventListener("DOMContentLoaded", () => {
   // -----------------------------
   // Debug banner
   // -----------------------------
   const banner = document.createElement("div");
-  banner.textContent = "felixomondi odhiambo";
+  banner.textContent = "felix omondi odhiambo";
   banner.style.position = "fixed";
   banner.style.bottom = "10px";
   banner.style.right = "10px";
@@ -152,8 +152,8 @@ document.addEventListener("turbo:load", () => {
     preview.onload = () => URL.revokeObjectURL(preview.src);
   };
 
-    // -----------------------------
-  // 6. Variant Value Auto-Populate
+  // -----------------------------
+  // 6. Variant Value Auto-Populate + Toggle Image Upload
   // -----------------------------
   const typeOptions = {
     Color: ["Black","Blue","Red","Green","White"],
@@ -182,7 +182,7 @@ document.addEventListener("turbo:load", () => {
       valueSelect.appendChild(option);
     });
 
-    // 🔀 Toggle image upload block visibility
+    // Toggle image upload block visibility
     const actions = block.querySelector(".color-image-actions");
     if (actions) {
       if (selected === "Color") {
