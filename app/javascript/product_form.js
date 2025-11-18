@@ -137,7 +137,7 @@ document.addEventListener("turbo:load", () => {
   }
 
   // -----------------------------
-  // 5. Variant Image Preview (new)
+  // 5. Variant Image Preview
   // -----------------------------
   window.previewVariantImage = function(event) {
     const file = event.target.files[0];
@@ -148,14 +148,44 @@ document.addEventListener("turbo:load", () => {
     preview.className = "img-thumbnail mt-2";
     preview.style.maxHeight = "150px";
 
-    // Insert preview right after the file input
     event.target.insertAdjacentElement("afterend", preview);
-
     preview.onload = () => URL.revokeObjectURL(preview.src);
   };
 
   // -----------------------------
-  // 6. Delete Gallery Images (persisted)
+  // 6. Variant Value Auto-Populate (new)
+  // -----------------------------
+  const typeOptions = {
+    Color: ["Black","Blue","Red","Green","White"],
+    Size: ["XS","S","M","L","XL","XXL"],
+    Storage: ["64GB","128GB","256GB","512GB","1TB"],
+    Material: ["Cotton","Leather","Polyester","Plastic","Metal","Wood"],
+    Packaging: ["Box","Bag","Sachet","Envelope","Bottle","Jar"]
+  };
+
+  function updateValueOptions(typeSelect) {
+    const selected = typeSelect.value;
+    const block = typeSelect.closest(".variant-block");
+    const valueSelect = block.querySelector("select[name*='[value]']");
+    if (!valueSelect) return;
+
+    valueSelect.innerHTML = "";
+    const options = typeOptions[selected] || [];
+    options.forEach(opt => {
+      const option = document.createElement("option");
+      option.value = opt;
+      option.textContent = opt;
+      valueSelect.appendChild(option);
+    });
+  }
+
+  document.querySelectorAll("select[name*='[name]']").forEach(typeSelect => {
+    updateValueOptions(typeSelect); // populate on load
+    typeSelect.addEventListener("change", () => updateValueOptions(typeSelect));
+  });
+
+  // -----------------------------
+  // 7. Delete Gallery Images (persisted)
   // -----------------------------
   function bindDeleteButtons(container) {
     container.querySelectorAll(".delete-gallery-image").forEach(btn => {
@@ -174,6 +204,5 @@ document.addEventListener("turbo:load", () => {
     });
   }
 
-  // Initial binding on page load
   bindDeleteButtons(document);
 });
