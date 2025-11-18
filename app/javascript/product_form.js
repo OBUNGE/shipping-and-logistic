@@ -245,6 +245,7 @@ document.addEventListener("turbo:load", () => {
   bindDeleteButtons(document);
   bindAddImageButtons(document);
 });
+
 // -----------------------------------------------------------------------------------------------------
 // ---------------------------------------------------------------------------------------------
 // End of app/javascript/product_form.js
