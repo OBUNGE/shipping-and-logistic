@@ -1,7 +1,6 @@
-console.log("product_form.js loaded ")
+console.log("product_form.js loaded");
 
-// Use DOMContentLoaded to ensure binding works even with Turbo Streams
-
+// Use turbo:load so bindings re‑apply after Turbo Stream updates
 document.addEventListener("turbo:load", () => {
   // -----------------------------
   // Debug banner
@@ -170,10 +169,8 @@ document.addEventListener("turbo:load", () => {
     const valueSelect = block.querySelector("select[name*='[value]']");
     if (!valueSelect) return;
 
-    // Debug log
     console.log("updateValueOptions fired. Selected:", selected);
 
-    // Populate options
     valueSelect.innerHTML = "";
     const options = typeOptions[selected] || [];
     options.forEach(opt => {
@@ -183,7 +180,6 @@ document.addEventListener("turbo:load", () => {
       valueSelect.appendChild(option);
     });
 
-    // Toggle image upload block visibility
     const actions = block.querySelector(".color-image-actions");
     if (actions) {
       if (selected === "Color") {

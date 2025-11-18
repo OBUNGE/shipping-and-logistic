@@ -150,7 +150,7 @@
   <div id="gallery-preview" class="row mt-2 sortable-preview"></div>
 </div>
 
-<%= f.fields_for :variants do |variant_fields| %>
+<%= form.fields_for :variants do |variant_fields| %>
   <%= render "variant_fields", f: variant_fields %>
 <% end %>
 

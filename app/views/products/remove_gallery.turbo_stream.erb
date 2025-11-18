@@ -1,0 +1,5 @@
+<%= turbo_stream.remove dom_id_for_gallery(params[:url]) %>
+
+<%= turbo_stream.update "gallery_count" do %>
+  <%= @product.gallery_image_urls.size %>
+<% end %>

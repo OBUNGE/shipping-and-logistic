@@ -1,27 +1,31 @@
 class ProductsController < ApplicationController
   before_action :authenticate_user!, except: [:index, :show]
-  before_action :set_product, only: [:show, :edit, :update, :destroy, :bulk_inventory_upload]
+  before_action :set_product, only: [
+    :show, :edit, :update, :destroy,
+    :bulk_inventory_upload,
+    :add_variant, :remove_gallery, :remove_variant, :remove_variant_image
+  ]
 
   require "csv"
 
-
+  # POST /products/:slug/add_variant
   def add_variant
-  @product = Product.find_by!(slug: params[:slug])
-  @variant = @product.variants.build
-  @variant.variant_images.build
+    @variant = @product.variants.build
+    @variant.variant_images.build
 
-  respond_to do |format|
-    format.turbo_stream
+    respond_to do |format|
+      format.turbo_stream # renders app/views/products/add_variant.turbo_stream.erb
+      format.html { redirect_to edit_product_path(@product) }
+    end
   end
-end
 
-  # DELETE /products/:id/remove_gallery
+  # DELETE /products/:slug/remove_gallery
   def remove_gallery
     url = params[:url]
     if @product.gallery_image_urls.delete(url)
       @product.save
       respond_to do |format|
-        format.turbo_stream { render turbo_stream: turbo_stream.remove(dom_id_for_gallery(url)) }
+        format.turbo_stream # renders app/views/products/remove_gallery.turbo_stream.erb
         format.html { redirect_to @product, notice: "Gallery image removed." }
       end
     else
@@ -29,22 +33,23 @@ end
     end
   end
 
-  # DELETE /products/:id/remove_variant
+  # DELETE /products/:slug/remove_variant/:id
   def remove_variant
-    variant = @product.variants.find(params[:id])
-    variant.destroy
+    @variant = @product.variants.find(params[:id])
+    @variant.destroy
     respond_to do |format|
-      format.turbo_stream { render turbo_stream: turbo_stream.remove(dom_id(variant)) }
+      format.turbo_stream # renders app/views/products/remove_variant.turbo_stream.erb
       format.html { redirect_to @product, notice: "Variant removed." }
     end
   end
 
-  # DELETE /products/:id/remove_variant_image
+  # DELETE /products/:slug/remove_variant_image/:id
   def remove_variant_image
-    image = @product.variant_images.find(params[:id])
-    image.destroy
+    @variant_image = VariantImage.find(params[:id])
+    @variant = @variant_image.variant
+    @variant_image.destroy
     respond_to do |format|
-      format.turbo_stream { render turbo_stream: turbo_stream.remove(dom_id(image)) }
+      format.turbo_stream # renders app/views/products/remove_variant_image.turbo_stream.erb
       format.html { redirect_to @product, notice: "Variant image removed." }
     end
   end
