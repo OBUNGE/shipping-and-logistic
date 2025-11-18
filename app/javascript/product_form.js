@@ -1,6 +1,161 @@
 console.log("product_form.js loaded ✅")
 
-// Use DOMContentLoaded to ensure binding works even with Turbo Streams
+// ----------------------------------------------------
+// GLOBAL FUNCTIONS (Used by onclick attributes in ERB)
+// ----------------------------------------------------
+
+/**
+ * Generic function to add a field by cloning a hidden template.
+ * Used for Inventory fields.
+ */
+window.addFields = function(containerId) {
+  const container = document.getElementById(containerId);
+  const templateId = containerId.replace("-fields", "-template");
+  const template = document.getElementById(templateId)?.innerHTML;
+  if (!container || !template) return;
+
+  const uniqueId = `new_${Date.now()}`;
+  // Replace the placeholder NEW_RECORD in the template with a unique ID
+  const newBlockHtml = template.replace(/NEW_RECORD/g, uniqueId);
+
+  const wrapper = document.createElement("div");
+  wrapper.innerHTML = newBlockHtml.trim();
+  const newBlock = wrapper.firstElementChild;
+  if (newBlock) {
+    container.appendChild(newBlock);
+  }
+};
+
+/**
+ * Function specifically for adding a Variant block.
+ * CRITICAL: It must re-bind the change listener and delete logic.
+ */
+window.addVariant = function() {
+  const container = document.getElementById("variant-fields");
+  const template = document.getElementById("variant-template")?.innerHTML;
+  if (!container || !template) return;
+
+  const uniqueId = `new_${Date.now()}`;
+  const newBlockHtml = template.replace(/NEW_RECORD/g, uniqueId);
+
+  const wrapper = document.createElement("div");
+  wrapper.innerHTML = newBlockHtml.trim();
+  const newBlock = wrapper.firstElementChild;
+  if (newBlock) {
+    container.appendChild(newBlock);
+
+    // Re-bind change listener for Type -> Value auto-populate and image toggle
+    const typeSelect = newBlock.querySelector("select[name*='[name]']");
+    if (typeSelect) {
+      // 1. Initial population based on default (if any) or first option
+      updateValueOptions(typeSelect); 
+      // 2. Add change listener for future updates
+      typeSelect.addEventListener("change", () => updateValueOptions(typeSelect));
+    }
+    // Re-bind delete logic for the new unsaved variant
+    bindDeleteVariant(newBlock);
+    // Re-bind the "Add color image" button
+    bindAddVariantImageButton(newBlock);
+  }
+};
+
+/**
+ * Function to add a new Variant Image field block to a specific Variant.
+ */
+window.addVariantImageToBlock = function(variantBlock) {
+  const actionsContainer = variantBlock.querySelector(".color-image-actions");
+  const templateHtml = document.getElementById("variant-image-template")?.innerHTML;
+  if (!actionsContainer || !templateHtml) return;
+
+  // Find the parent variant's unique ID from its input field name
+  const parentInputName = variantBlock.querySelector("select[name*='[name]']")?.name;
+  const parentIdMatch = parentInputName.match(/variants_attributes\]\[([^\]]+)\]/);
+  if (!parentIdMatch) {
+    console.error("Could not determine parent variant ID for image template.");
+    return;
+  }
+  const parentId = parentIdMatch[1];
+  const uniqueImageId = `new_${Date.now()}`;
+
+  // Replace placeholders in the image template
+  const html = templateHtml
+    .replace(/NEW_RECORD/g, parentId) // Uses parent variant ID
+    .replace(/NEW_IMAGE/g, uniqueImageId); // Uses unique image ID
+
+  const wrapper = document.createElement("div");
+  wrapper.innerHTML = html.trim();
+  const imageBlock = wrapper.firstElementChild;
+
+  if (imageBlock) {
+    // Insert the new image block before the "Add color image" button
+    const addButton = actionsContainer.querySelector(".add-variant-image-btn");
+    actionsContainer.insertBefore(imageBlock, addButton);
+    // Re-bind delete logic for the new unsaved variant image
+    bindDeleteVariantImage(imageBlock);
+  }
+};
+
+// ----------------------------------------------------
+// BINDING FUNCTIONS (Used inside DOMContentLoaded)
+// ----------------------------------------------------
+
+/**
+ * Binds the click event to the "Add color image" button within a container (or document).
+ */
+function bindAddVariantImageButton(container) {
+  container.querySelectorAll(".add-variant-image-btn").forEach(btn => {
+    // Clone and replace to remove any previously bound events, ensuring clean re-binding
+    const newBtn = btn.cloneNode(true); 
+    btn.parentNode.replaceChild(newBtn, btn);
+
+    newBtn.addEventListener("click", (e) => {
+      const variantBlock = e.target.closest(".variant-block");
+      window.addVariantImageToBlock(variantBlock);
+    });
+  });
+}
+
+/**
+ * Binds JS delete button logic for UNPERSISTED (new) variants.
+ * Sets the hidden _destroy field and hides the block.
+ */
+function bindDeleteVariant(container) {
+  container.querySelectorAll(".delete-variant").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const variantBlock = btn.closest(".variant-block");
+      const destroyField = variantBlock.querySelector(".destroy-flag");
+      
+      if (destroyField) {
+        destroyField.value = "true";
+      }
+      variantBlock.style.display = "none";
+    });
+  });
+}
+
+/**
+ * Binds JS delete button logic for UNPERSISTED (new) variant images.
+ * Sets the hidden _destroy field and hides the block.
+ */
+function bindDeleteVariantImage(container) {
+  container.querySelectorAll(".delete-variant-image").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const imageBlock = btn.closest(".variant-image-block");
+      const destroyField = imageBlock.querySelector(".destroy-flag");
+      
+      if (destroyField) {
+        destroyField.value = "true";
+      }
+      imageBlock.style.display = "none";
+    });
+  });
+}
+
+
+// ----------------------------------------------------
+// DOM CONTENT LOADED
+// ----------------------------------------------------
+
 document.addEventListener("DOMContentLoaded", () => {
   // -----------------------------
   // Debug banner
@@ -163,6 +318,7 @@ document.addEventListener("DOMContentLoaded", () => {
     Packaging: ["Box","Bag","Sachet","Envelope","Bottle","Jar"]
   };
 
+  // Note: This function is defined inside DOMContentLoaded but used globally after the fact
   function updateValueOptions(typeSelect) {
     const selected = typeSelect.value;
     const block = typeSelect.closest(".variant-block");
@@ -173,7 +329,7 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log("updateValueOptions fired. Selected:", selected);
 
     // Populate options
-    valueSelect.innerHTML = "";
+    valueSelect.innerHTML = "<option value=''>Select Option</option>"; // Add placeholder back
     const options = typeOptions[selected] || [];
     options.forEach(opt => {
       const option = document.createElement("option");
@@ -219,46 +375,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   bindDeleteButtons(document);
-
-   // -----------------------------
-  // 8. Add Variant Image Dynamically
+  
   // -----------------------------
-  document.querySelectorAll(".add-variant-image-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const block = btn.closest(".color-image-actions");
-      if (!block) return;
-
-      const wrapper = document.createElement("div");
-      wrapper.className = "border p-2 mb-2 bg-light rounded variant-image-block";
-
-      // File input
-      const input = document.createElement("input");
-      input.type = "file";
-      input.name = "product[variants_attributes][][variant_images_attributes][][image]";
-      input.className = "form-control form-control-sm";
-      input.accept = "image/*";
-      input.onchange = window.previewVariantImage;
-
-      // Hidden _destroy field
-      const destroy = document.createElement("input");
-      destroy.type = "hidden";
-      destroy.name = "product[variants_attributes][][variant_images_attributes][][_destroy]";
-      destroy.className = "destroy-flag";
-
-      // Delete button
-      const deleteBtn = document.createElement("button");
-      deleteBtn.type = "button";
-      deleteBtn.className = "btn btn-sm btn-outline-danger mt-2 delete-variant-image";
-      deleteBtn.textContent = "Delete";
-      deleteBtn.addEventListener("click", () => wrapper.remove());
-
-      // Assemble
-      wrapper.appendChild(input);
-      wrapper.appendChild(destroy);
-      wrapper.appendChild(deleteBtn);
-
-      block.insertBefore(wrapper, btn); // insert before the "Add color image" button
-    });
-  });
+  // 8. Bind Dynamic Variant/Image Deletion (for existing unsaved blocks)
+  // -----------------------------
+  bindDeleteVariant(document);
+  bindDeleteVariantImage(document);
+  bindAddVariantImageButton(document);
 });
-
