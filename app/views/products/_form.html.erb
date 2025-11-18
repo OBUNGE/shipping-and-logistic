@@ -184,7 +184,7 @@
                 class: "form-control form-control-sm" %>
         </div>
 
-        <!-- Delete -->
+        <!-- Delete Variant -->
         <div class="col-md-1 d-flex align-items-end">
           <%= variant_fields.hidden_field :_destroy, class: "destroy-flag" %>
           <button type="button" class="btn btn-sm btn-outline-danger delete-variant">Delete</button>
@@ -195,12 +195,15 @@
       <div class="mt-2 color-image-actions d-none">
         <%= variant_fields.fields_for :variant_images do |image_fields| %>
           <% if image_fields.object.image_url.present? %>
-            <%= image_tag image_fields.object.image_url, class: "img-thumbnail mb-2 variant-image-preview" %>
+            <%= image_tag image_fields.object.image_url,
+                  class: "img-thumbnail mb-2 variant-image-preview" %>
           <% end %>
+
           <%= image_fields.file_field :image,
                 class: "form-control form-control-sm",
                 accept: "image/*",
                 onchange: "previewVariantImage(event)" %>
+
           <%= image_fields.hidden_field :_destroy, class: "destroy-flag" %>
           <button type="button" class="btn btn-sm btn-outline-danger delete-variant-image">Delete</button>
         <% end %>

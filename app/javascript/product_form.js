@@ -152,7 +152,7 @@ document.addEventListener("turbo:load", () => {
     preview.onload = () => URL.revokeObjectURL(preview.src);
   };
 
-  // -----------------------------
+    // -----------------------------
   // 6. Variant Value Auto-Populate
   // -----------------------------
   const typeOptions = {
@@ -169,6 +169,10 @@ document.addEventListener("turbo:load", () => {
     const valueSelect = block.querySelector("select[name*='[value]']");
     if (!valueSelect) return;
 
+    // Debug log
+    console.log("updateValueOptions fired. Selected:", selected);
+
+    // Populate options
     valueSelect.innerHTML = "";
     const options = typeOptions[selected] || [];
     options.forEach(opt => {
@@ -181,7 +185,11 @@ document.addEventListener("turbo:load", () => {
     // 🔀 Toggle image upload block visibility
     const actions = block.querySelector(".color-image-actions");
     if (actions) {
-      actions.classList.toggle("d-none", selected !== "Color");
+      if (selected === "Color") {
+        actions.classList.remove("d-none");
+      } else {
+        actions.classList.add("d-none");
+      }
     }
   }
 
