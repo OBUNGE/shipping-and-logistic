@@ -109,9 +109,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
-
-// ✅ Variant & Inventory Dynamic Fields
+// ----------------------------------------------
+//  Variant & Inventory Dynamic Fields
+// ----------------------------------------------
 document.addEventListener("turbo:load", () => {
+
   const typeOptions = {
     Size: ["XS","S","M","L","XL","XXL","3XL","4XL","5XL","6XL","7XL","8XL","9XL","10XL"],
     Color: ["Red","Blue","Black","White","Green","Yellow","Purple","Orange","Pink","Gray","Brown","Cyan","Magenta","Lime","Teal","Navy","Maroon","Olive","Silver","Gold","Beige"],
@@ -120,176 +122,132 @@ document.addEventListener("turbo:load", () => {
     Packaging: ["Box","Bag","Sachet","Envelope","Bottle","Jar"]
   };
 
-  // --- Variant dropdowns ---
+  // -----------------------------
+  // 1. Update Value Options
+  // -----------------------------
   function updateValueOptions(typeSelect) {
-    const selectedType = typeSelect.value;
+    const selected = typeSelect.value;
     const block = typeSelect.closest(".variant-block");
     const valueSelect = block.querySelector(".variant-value");
     const actions = block.querySelector(".color-image-actions");
 
-    if (valueSelect && valueSelect.tagName.toLowerCase() === "select") {
-      const current = valueSelect.dataset.current || "";
-      valueSelect.innerHTML = "";
-      const options = typeOptions[selectedType] || [];
-      if (options.length === 0) {
-        const fallback = document.createElement("option");
-        fallback.textContent = "No options available";
-        fallback.disabled = true;
-        valueSelect.appendChild(fallback);
-      } else {
-        options.forEach(opt => {
-          const option = document.createElement("option");
-          option.value = opt;
-          option.textContent = opt;
-          valueSelect.appendChild(option);
-        });
-        if (current && options.includes(current)) {
-          valueSelect.value = current;
-        }
-      }
-    }
+    valueSelect.innerHTML = "";
+    const options = typeOptions[selected] || [];
 
-    if (actions) {
-      actions.classList.toggle("d-none", selectedType !== "Color");
-      if (selectedType === "Color") {
-        bindAddImageButtons(block);
-      }
-    }
+    options.forEach(opt => {
+      const option = document.createElement("option");
+      option.value = opt;
+      option.textContent = opt;
+      valueSelect.appendChild(option);
+    });
+
+    // Show image upload if Color
+    actions.classList.toggle("d-none", selected !== "Color");
+    if (selected === "Color") bindAddImageButtons(block);
   }
 
   function bindVariantDropdowns(container) {
-    container.querySelectorAll(".variant-block .variant-type").forEach(typeSelect => {
-      updateValueOptions(typeSelect);
-      typeSelect.addEventListener("change", () => updateValueOptions(typeSelect));
+    container.querySelectorAll(".variant-type").forEach(sel => {
+      updateValueOptions(sel);
+      sel.addEventListener("change", () => updateValueOptions(sel));
     });
   }
 
-  // --- Delete buttons (gallery, variant, inventory) ---
+  // -----------------------------
+  // 2. Delete Buttons
+  // -----------------------------
   function bindDeleteButtons(container) {
-    // Gallery delete: append hidden input dynamically
-    container.querySelectorAll(".delete-gallery-image").forEach(button => {
-      button.addEventListener("click", (e) => {
-        const url = e.target.dataset.url;
-        const form = e.target.closest("form");
-        if (form && url) {
-          const hidden = document.createElement("input");
-          hidden.type = "hidden";
-          hidden.name = "remove_gallery[]";
-          hidden.value = url;
-          form.appendChild(hidden);
-        }
-        const block = e.target.closest(".gallery-image-block");
-        if (block) block.style.display = "none";
+    container.querySelectorAll(".delete-variant").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const block = btn.closest(".variant-block");
+        block.querySelector("input.destroy-flag").value = "true";
+        block.style.display = "none";
       });
     });
 
-    container.querySelectorAll(".delete-variant").forEach(button => {
-      button.addEventListener("click", (e) => {
-        const block = e.target.closest(".variant-block");
-        const destroyField = block?.querySelector("input.destroy-flag");
-        if (destroyField) destroyField.value = "true";
-        if (block) block.style.display = "none";
+    container.querySelectorAll(".delete-variant-image").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const block = btn.closest(".variant-image-block");
+        block.querySelector("input.destroy-flag").value = "true";
+        block.style.display = "none";
       });
     });
 
-    container.querySelectorAll(".delete-variant-image").forEach(button => {
-      button.addEventListener("click", (e) => {
-        const block = e.target.closest(".variant-image-block");
-        const destroyField = block?.querySelector("input.destroy-flag");
-        if (destroyField) destroyField.value = "true";
-        if (block) block.style.display = "none";
-      });
-    });
+    container.querySelectorAll(".delete-gallery-image").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const url = btn.dataset.url;
+        const form = btn.closest("form");
+        const hidden = document.createElement("input");
+        hidden.type = "hidden";
+        hidden.name = "remove_gallery[]";
+        hidden.value = url;
+        form.appendChild(hidden);
 
-    container.querySelectorAll(".remove-inventory").forEach(button => {
-      button.addEventListener("click", (e) => {
-        const block = e.target.closest(".inventory-block");
-        const destroyField = block?.querySelector("input.destroy-flag");
-        if (destroyField) destroyField.value = "true";
-        if (block) block.style.display = "none";
+        btn.closest(".gallery-image-block").style.display = "none";
       });
     });
   }
-  // --- Add Variant Image ---
-function addVariantImageToBlock(variantBlock) {
-  const templateHtml = document.getElementById("variant-image-template").innerHTML;
-  if (!templateHtml) return;
 
-  // ✅ Extract parent variant ID from its hidden input name
-  const parentInput = variantBlock.querySelector("input[name*='variants_attributes']");
-  const parentIdMatch = parentInput?.name.match(/variants_attributes\]\[(new_\d+|\d+)\]/);
+  // -----------------------------
+  // 3. Add Variant Image
+  // -----------------------------
+  function addVariantImageToBlock(variantBlock) {
+    const template = document.getElementById("variant-image-template").innerHTML;
 
-  const parentId = parentIdMatch ? parentIdMatch[1] : `new_${Date.now()}`;
+    const parentInput = variantBlock.querySelector("input[name*='variants_attributes']");
+    const parentIdMatch = parentInput?.name.match(/variants_attributes\]\[(new_\d+|\d+)\]/);
+    const parentId = parentIdMatch ? parentIdMatch[1] : `new_${Date.now()}`;
 
-  // ✅ Generate a unique ID only for the image
-  const uniqueImageId = Date.now();
+    const uniqueImageId = `new_${Date.now()}`;
 
-  const html = templateHtml
-    .replace(/NEW_RECORD/g, parentId)   // reuse parent variant ID
-    .replace(/NEW_IMAGE/g, `new_${uniqueImageId}`);
+    const html = template
+      .replace(/NEW_RECORD/g, parentId)
+      .replace(/NEW_IMAGE/g, uniqueImageId);
 
-  const wrapper = document.createElement("div");
-  wrapper.innerHTML = html.trim();
-  const imageBlock = wrapper.firstElementChild;
+    const wrapper = document.createElement("div");
+    wrapper.innerHTML = html.trim();
 
-  if (imageBlock) {
-    variantBlock.querySelector(".color-image-actions").appendChild(imageBlock);
-    bindDeleteButtons(imageBlock);
-  }
-}
+    const block = wrapper.firstElementChild;
+    variantBlock.querySelector(".color-image-actions").append(block);
 
-function bindAddImageButtons(container) {
-  container.querySelectorAll(".variant-block .add-variant-image-btn").forEach(btn => {
-    btn.removeEventListener("click", btn._boundClick);
-
-    btn._boundClick = (e) => {
-      const variantBlock = e.target.closest(".variant-block");
-      addVariantImageToBlock(variantBlock);
-    };
-
-    btn.addEventListener("click", btn._boundClick);
-  });
-}
-
-// --- Generic addFields ---
-window.addFields = function(containerId) {
-  const container = document.getElementById(containerId);
-  if (!container) return;
-
-  const templateId = containerId.replace("-fields", "-template");
-  const templateEl = document.getElementById(templateId);
-  if (!templateEl) {
-    console.error("Template not found for", templateId);
-    return;
+    bindDeleteButtons(block);
   }
 
-  const template = templateEl.innerHTML;
-  const uniqueId = new Date().getTime();
-  const newBlockHtml = template.replace(/NEW_RECORD/g, `new_${uniqueId}`);
-
-  const wrapper = document.createElement("div");
-  wrapper.innerHTML = newBlockHtml.trim();
-  const newBlock = wrapper.firstElementChild;
-  if (!newBlock) return;
-
-  container.appendChild(newBlock);
-
-  if (containerId === "variant-fields") {
-    bindVariantDropdowns(newBlock);
-    bindAddImageButtons(newBlock);
-
-    // ✅ Automatically add image block when variant type is "Color"
-    const typeSelect = newBlock.querySelector(".variant-type");
-    if (typeSelect && typeSelect.value === "Color") {
-      addVariantImageToBlock(newBlock);
-    }
+  function bindAddImageButtons(container) {
+    container.querySelectorAll(".add-variant-image-btn").forEach(btn => {
+      btn.removeEventListener("click", btn._click);
+      btn._click = () => {
+        const block = btn.closest(".variant-block");
+        addVariantImageToBlock(block);
+      };
+      btn.addEventListener("click", btn._click);
+    });
   }
 
-  bindDeleteButtons(newBlock);
-};
+  // -----------------------------
+  // 4. Add Fields (variant/inventory)
+  // -----------------------------
+  window.addFields = function(containerId) {
+    const container = document.getElementById(containerId);
+    const template = document.getElementById(containerId.replace("-fields", "-template")).innerHTML;
 
-// --- Initial bindings ---
-document.addEventListener("turbo:load", () => {
+    const unique = `new_${Date.now()}`;
+    const html = template.replace(/NEW_RECORD/g, unique);
+
+    const wrapper = document.createElement("div");
+    wrapper.innerHTML = html.trim();
+
+    const block = wrapper.firstElementChild;
+    container.append(block);
+
+    bindVariantDropdowns(block);
+    bindDeleteButtons(block);
+    bindAddImageButtons(block);
+  };
+
+  // -----------------------------
+  // Initial Calls
+  // -----------------------------
   bindVariantDropdowns(document);
   bindDeleteButtons(document);
   bindAddImageButtons(document);
