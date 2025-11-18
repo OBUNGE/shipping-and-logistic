@@ -3,6 +3,20 @@ console.log("product_form.js loaded ✅")
 
 document.addEventListener("turbo:load", () => {
   // -----------------------------
+  // Debug banner
+  // -----------------------------
+  const banner = document.createElement("div");
+  banner.textContent = "✅ Product Form JS Active";
+  banner.style.position = "fixed";
+  banner.style.bottom = "10px";
+  banner.style.right = "10px";
+  banner.style.background = "green";
+  banner.style.color = "white";
+  banner.style.padding = "5px 10px";
+  banner.style.zIndex = 9999;
+  document.body.appendChild(banner);
+
+  // -----------------------------
   // 1. Price + Shipping Total
   // -----------------------------
   const priceField = document.getElementById("product_price");
@@ -123,130 +137,132 @@ document.addEventListener("turbo:load", () => {
     });
   }
 
-  // -----------------------------
-  // 5. Variant / Inventory Dynamic Fields
-  // -----------------------------
-  const typeOptions = {
-    Size: ["XS","S","M","L","XL","XXL","3XL","4XL","5XL","6XL","7XL","8XL","9XL","10XL"],
-    Color: ["Red","Blue","Black","White","Green","Yellow","Purple","Orange","Pink","Gray","Brown","Cyan","Magenta","Lime","Teal","Navy","Maroon","Olive","Silver","Gold","Beige"],
-    Material: ["Cotton","Leather","Polyester","Plastic","Metal","Wood","Glass","Silk","Wool","Denim"],
-    Storage: ["64GB","128GB","256GB","512GB","1TB","2TB","4TB"],
-    Packaging: ["Box","Bag","Sachet","Envelope","Bottle","Jar"]
-  };
+// -----------------------------
+// 5. Variant / Inventory Dynamic Fields
+// -----------------------------
+const typeOptions = {
+  Size: ["XS","S","M","L","XL","XXL","3XL","4XL","5XL","6XL","7XL","8XL","9XL","10XL"],
+  Color: ["Red","Blue","Black","White","Green","Yellow","Purple","Orange","Pink","Gray","Brown","Cyan","Magenta","Lime","Teal","Navy","Maroon","Olive","Silver","Gold","Beige"],
+  Material: ["Cotton","Leather","Polyester","Plastic","Metal","Wood","Glass","Silk","Wool","Denim"],
+  Storage: ["64GB","128GB","256GB","512GB","1TB","2TB","4TB"],
+  Packaging: ["Box","Bag","Sachet","Envelope","Bottle","Jar"]
+};
 
-  function updateValueOptions(typeSelect) {
-    const selected = typeSelect.value;
-    const block = typeSelect.closest(".variant-block");
-    const valueSelect = block.querySelector(".variant-value");
-    const actions = block.querySelector(".color-image-actions");
-    if (!valueSelect) return;
+// Update variant value options based on type
+function updateValueOptions(typeSelect) {
+  const selected = typeSelect.value;
+  const block = typeSelect.closest(".variant-block");
+  const valueSelect = block.querySelector(".variant-value");
+  const actions = block.querySelector(".color-image-actions");
+  if (!valueSelect) return;
 
-    valueSelect.innerHTML = "";
-    const options = typeOptions[selected] || [];
-    options.forEach(opt => {
-      const option = document.createElement("option");
-      option.value = opt;
-      option.textContent = opt;
-      valueSelect.appendChild(option);
-    });
+  valueSelect.innerHTML = "";
+  const options = typeOptions[selected] || [];
+  options.forEach(opt => {
+    const option = document.createElement("option");
+    option.value = opt;
+    option.textContent = opt;
+    valueSelect.appendChild(option);
+  });
 
-    // Show image upload if Color
-    if (actions) actions.classList.toggle("d-none", selected !== "Color");
-  }
+  // Show image upload if Color
+  if (actions) actions.classList.toggle("d-none", selected !== "Color");
+}
 
-  function bindVariantDropdowns(container) {
-    container.querySelectorAll(".variant-type").forEach(sel => {
-      updateValueOptions(sel);
-      sel.addEventListener("change", () => updateValueOptions(sel));
-    });
-  }
+// Bind dropdowns in a container
+function bindVariantDropdowns(container) {
+  container.querySelectorAll(".variant-type").forEach(sel => {
+    updateValueOptions(sel);
+    sel.addEventListener("change", () => updateValueOptions(sel));
+  });
+}
 
-  function bindDeleteButtons(container) {
-    container.querySelectorAll(".delete-variant").forEach(btn => {
-      btn.removeEventListener("click", btn._handler);
-      btn._handler = () => {
-        const block = btn.closest(".variant-block");
-        block.querySelector("input.destroy-flag").value = "true";
-        block.style.display = "none";
-      };
-      btn.addEventListener("click", btn._handler);
-    });
+// Bind delete buttons
+function bindDeleteButtons(container) {
+  container.querySelectorAll(".delete-variant").forEach(btn => {
+    btn.removeEventListener("click", btn._handler);
+    btn._handler = () => {
+      const block = btn.closest(".variant-block");
+      block.querySelector("input.destroy-flag").value = "true";
+      block.style.display = "none";
+    };
+    btn.addEventListener("click", btn._handler);
+  });
 
-    container.querySelectorAll(".delete-variant-image").forEach(btn => {
-      btn.removeEventListener("click", btn._handler);
-      btn._handler = () => {
-        const block = btn.closest(".variant-image-block");
-        block.querySelector("input.destroy-flag").value = "true";
-        block.style.display = "none";
-      };
-      btn.addEventListener("click", btn._handler);
-    });
+  container.querySelectorAll(".delete-variant-image").forEach(btn => {
+    btn.removeEventListener("click", btn._handler);
+    btn._handler = () => {
+      const block = btn.closest(".variant-image-block");
+      block.querySelector("input.destroy-flag").value = "true";
+      block.style.display = "none";
+    };
+    btn.addEventListener("click", btn._handler);
+  });
 
-    container.querySelectorAll(".delete-gallery-image").forEach(btn => {
-      btn.removeEventListener("click", btn._handler);
-      btn._handler = () => {
-        const url = btn.dataset.url;
-        const form = btn.closest("form");
-        const hidden = document.createElement("input");
-        hidden.type = "hidden";
-        hidden.name = "remove_gallery[]";
-        hidden.value = url;
-        form.appendChild(hidden);
-        btn.closest(".gallery-image-block").style.display = "none";
-      };
-      btn.addEventListener("click", btn._handler);
-    });
-  }
+  container.querySelectorAll(".delete-gallery-image").forEach(btn => {
+    btn.removeEventListener("click", btn._handler);
+    btn._handler = () => {
+      const url = btn.dataset.url;
+      const form = btn.closest("form");
+      const hidden = document.createElement("input");
+      hidden.type = "hidden";
+      hidden.name = "remove_gallery[]";
+      hidden.value = url;
+      form.appendChild(hidden);
+      btn.closest(".gallery-image-block").style.display = "none";
+    };
+    btn.addEventListener("click", btn._handler);
+  });
+}
 
-  function addVariantImageToBlock(variantBlock) {
-    const template = document.getElementById("variant-image-template").innerHTML;
-    const parentInput = variantBlock.querySelector("input[name*='variants_attributes']");
-    const parentIdMatch = parentInput?.name.match(/variants_attributes\]\[(new_\d+|\d+)\]/);
-    const parentId = parentIdMatch ? parentIdMatch[1] : `new_${Date.now()}`;
-    const uniqueImageId = `new_${Date.now()}`;
-    const html = template.replace(/NEW_RECORD/g, parentId).replace(/NEW_IMAGE/g, uniqueImageId);
+// Add a variant image
+function addVariantImageToBlock(variantBlock) {
+  const template = document.getElementById("variant-image-template").innerHTML;
+  const parentInput = variantBlock.querySelector("input[name*='variants_attributes']");
+  const parentIdMatch = parentInput?.name.match(/variants_attributes\]\[(new_\d+|\d+)\]/);
+  const parentId = parentIdMatch ? parentIdMatch[1] : `new_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+  const uniqueImageId = `img_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+  const html = template.replace(/NEW_RECORD/g, parentId).replace(/NEW_IMAGE/g, uniqueImageId);
 
-    const wrapper = document.createElement("div");
-    wrapper.innerHTML = html.trim();
-    const block = wrapper.firstElementChild;
-    variantBlock.querySelector(".color-image-actions").append(block);
+  const wrapper = document.createElement("div");
+  wrapper.innerHTML = html.trim();
+  const block = wrapper.firstElementChild;
+  variantBlock.querySelector(".color-image-actions").append(block);
 
-    bindDeleteButtons(block);
-  }
+  bindDeleteButtons(block);
+}
 
-  function bindAddImageButtons(container) {
-    container.querySelectorAll(".add-variant-image-btn").forEach(btn => {
-      btn.removeEventListener("click", btn._handler);
-      btn._handler = () => {
-        const block = btn.closest(".variant-block");
-        addVariantImageToBlock(block);
-      };
-      btn.addEventListener("click", btn._handler);
-    });
-  }
+// Bind add-image buttons
+function bindAddImageButtons(container) {
+  container.querySelectorAll(".add-variant-image-btn").forEach(btn => {
+    btn.removeEventListener("click", btn._handler);
+    btn._handler = () => {
+      const block = btn.closest(".variant-block");
+      addVariantImageToBlock(block);
+    };
+    btn.addEventListener("click", btn._handler);
+  });
+}
 
-  window.addFields = function(containerId) {
-    const container = document.getElementById(containerId);
-    const template = document.getElementById(containerId.replace("-fields", "-template")).innerHTML;
-    const unique = `new_${Date.now()}`;
-    const html = template.replace(/NEW_RECORD/g, unique);
+// Add new variant block
+window.addFields = function(containerId) {
+  const container = document.getElementById(containerId);
+  const template = document.getElementById(containerId.replace("-fields", "-template")).innerHTML;
+  const unique = `new_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+  const html = template.replace(/NEW_RECORD/g, unique);
 
-    const wrapper = document.createElement("div");
-    wrapper.innerHTML = html.trim();
-    container.append(wrapper.firstElementChild);
+  const wrapper = document.createElement("div");
+  wrapper.innerHTML = html.trim();
+  container.append(wrapper.firstElementChild);
 
-    bindVariantDropdowns(container.lastElementChild);
-    bindDeleteButtons(container.lastElementChild);
-    bindAddImageButtons(container.lastElementChild);
-  };
+  const newBlock = container.lastElementChild;
+  bindVariantDropdowns(newBlock);
+  bindDeleteButtons(newBlock);
+  bindAddImageButtons(newBlock);
+};
 
-  // Initial binding
-  bindVariantDropdowns(document);
-  bindDeleteButtons(document);
-  bindAddImageButtons(document);
+// Initial binding on page load
+bindVariantDropdowns(document);
+bindDeleteButtons(document);
+bindAddImageButtons(document);
 });
-
-// -----------------------------------------------------------------------------------------------------
-// ---------------------------------------------------------------------------------------------
-// End of app/javascript/product_form.js
-// -----------------------------------------------------------------------------------------------------
