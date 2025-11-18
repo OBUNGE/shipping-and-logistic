@@ -149,68 +149,10 @@
   <button type="button" class="btn btn-sm btn-outline-primary mt-2" onclick="addGalleryInput()">➕ Add More Images</button>
   <div id="gallery-preview" class="row mt-2 sortable-preview"></div>
 </div>
-<!-- 🔀 Variants -->
-<div id="variant-fields">
-  <%= form.fields_for :variants do |variant_fields| %>
-    <div class="border p-3 mb-2 bg-light rounded variant-block">
-      <div class="row g-2">
-        <!-- Type -->
-        <div class="col-md-4">
-          <%= variant_fields.label :name, "Type", class: "form-label small" %>
-          <%= variant_fields.select :name,
-                ["Color","Size","Storage","Material","Packaging"],
-                {},
-                class: "form-select form-select-sm variant-type",
-                required: true %>
-        </div>
 
-        <!-- Value -->
-        <div class="col-md-4">
-          <%= variant_fields.label :value, "Option", class: "form-label small" %>
-          <%= variant_fields.select :value,
-                [],
-                {},
-                class: "form-select form-select-sm variant-value",
-                required: true,
-                data: { current: variant_fields.object.value } %>
-        </div>
-
-        <!-- Price Modifier -->
-        <div class="col-md-3">
-          <%= variant_fields.label :price_modifier, "Price Modifier", class: "form-label small" %>
-          <%= variant_fields.number_field :price_modifier,
-                step: 0.01,
-                placeholder: "e.g. 50.00",
-                class: "form-control form-control-sm" %>
-        </div>
-
-        <!-- Delete Variant -->
-        <div class="col-md-1 d-flex align-items-end">
-          <%= variant_fields.hidden_field :_destroy, class: "destroy-flag" %>
-          <button type="button" class="btn btn-sm btn-outline-danger delete-variant">Delete</button>
-        </div>
-      </div>
-
-      <!-- 🎨 Image upload block (always rendered, hidden by default) -->
-      <div class="mt-2 color-image-actions d-none">
-        <%= variant_fields.fields_for :variant_images do |image_fields| %>
-          <% if image_fields.object.image_url.present? %>
-            <%= image_tag image_fields.object.image_url,
-                  class: "img-thumbnail mb-2 variant-image-preview" %>
-          <% end %>
-
-          <%= image_fields.file_field :image,
-                class: "form-control form-control-sm",
-                accept: "image/*",
-                onchange: "previewVariantImage(event)" %>
-
-          <%= image_fields.hidden_field :_destroy, class: "destroy-flag" %>
-          <button type="button" class="btn btn-sm btn-outline-danger delete-variant-image">Delete</button>
-        <% end %>
-      </div>
-    </div>
-  <% end %>
-</div>
+<%= f.fields_for :variants do |variant_fields| %>
+  <%= render "variant_fields", f: variant_fields %>
+<% end %>
 
 
 <!-- 🏬 Inventory -->

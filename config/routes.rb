@@ -4,6 +4,7 @@ Rails.application.routes.draw do
   ActiveAdmin.routes(self)
 
   devise_for :users
+
   # Role switching
   post "toggle_role",   to: "users#toggle_role",   as: :toggle_role
   post "become_seller", to: "users#become_seller", as: :become_seller
@@ -29,19 +30,23 @@ Rails.application.routes.draw do
     resources :inventories, only: [:new, :create, :edit, :update, :destroy]
 
     member do
+      # Image management
       post   :upload_additional_images
       delete :delete_additional_image
       post   :bulk_inventory_upload
       delete :delete_image
 
-      # ✅ Turbo-friendly custom deletes
-      delete :remove_gallery      # expects params[:url] or :image_id
-      delete :remove_variant      # expects params[:id] for variant
+      # ✅ Turbo-friendly custom actions
+      post   :add_variant          # builds a new variant via Turbo Stream
+      delete :remove_variant       # expects params[:id] for variant
       delete :remove_variant_image # expects params[:id] for variant image
+      delete :remove_gallery       # expects params[:url] or :image_id
     end
 
     # Legacy gallery image route (if still needed)
-    delete "gallery_images/:image_id", to: "products#remove_gallery_image", as: :remove_gallery_image
+    delete "gallery_images/:image_id",
+           to: "products#remove_gallery_image",
+           as: :remove_gallery_image
   end
 
   # === M-PESA Callback (single global route) ===

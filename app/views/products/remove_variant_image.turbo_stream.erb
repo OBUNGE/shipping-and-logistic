@@ -1,0 +1,5 @@
+<%= turbo_stream.remove dom_id(@variant_image) %>
+
+<%= turbo_stream.update "variant_images_count" do %>
+  <%= @variant.variant_images.count %>
+<% end %>

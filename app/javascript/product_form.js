@@ -1,7 +1,8 @@
 console.log("product_form.js loaded ")
 
 // Use DOMContentLoaded to ensure binding works even with Turbo Streams
-document.addEventListener("DOMContentLoaded", () => {
+
+document.addEventListener("turbo:load", () => {
   // -----------------------------
   // Debug banner
   // -----------------------------

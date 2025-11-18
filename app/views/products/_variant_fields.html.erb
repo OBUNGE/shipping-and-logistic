@@ -1,0 +1,84 @@
+<div id="<%= dom_id(f.object) %>" class="border p-3 mb-2 bg-light rounded variant-block">
+  <div class="row g-2">
+    <!-- Variant Type -->
+    <div class="col-md-4">
+      <%= f.label :name, "Type", class: "form-label small" %>
+      <%= f.select :name,
+            ["Color","Size","Storage","Material","Packaging"],
+            {},
+            class: "form-select form-select-sm variant-type",
+            required: true %>
+    </div>
+
+    <!-- Variant Value -->
+    <div class="col-md-4">
+      <%= f.label :value, "Option", class: "form-label small" %>
+      <%= f.select :value,
+            [],
+            {},
+            class: "form-select form-select-sm variant-value",
+            required: true,
+            data: { current: f.object.value } %>
+    </div>
+
+    <!-- Price Modifier -->
+    <div class="col-md-3">
+      <%= f.label :price_modifier, "Price Modifier", class: "form-label small" %>
+      <%= f.number_field :price_modifier,
+            step: 0.01,
+            placeholder: "e.g. 50.00",
+            class: "form-control form-control-sm" %>
+    </div>
+
+    <!-- Delete Variant -->
+    <div class="col-md-1 d-flex align-items-end">
+      <%= f.hidden_field :_destroy, class: "destroy-flag" %>
+
+      <% if f.object.persisted? %>
+        <!-- ✅ Turbo delete for persisted variant -->
+        <%= button_to "Delete",
+              remove_variant_product_path(@product, id: f.object.id),
+              method: :delete,
+              form: { data: { turbo_confirm: "Remove this variant?" } },
+              class: "btn btn-sm btn-outline-danger" %>
+      <% else %>
+        <!-- For new unsaved variants, JS delete sets _destroy -->
+        <button type="button" class="btn btn-sm btn-outline-danger delete-variant">Delete</button>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- 🎨 Variant Images (only for Color) -->
+  <div class="mt-2 color-image-actions <%= 'd-none' unless f.object.name == 'Color' %>">
+    <%= f.fields_for :variant_images do |image_fields| %>
+      <div id="<%= dom_id(image_fields.object) %>" class="border p-2 mb-2 bg-light rounded variant-image-block">
+        <% if image_fields.object.image_url.present? %>
+          <%= image_tag image_fields.object.image_url,
+                class: "img-thumbnail mb-2 variant-image-preview" %>
+        <% end %>
+
+        <%= image_fields.file_field :image,
+              class: "form-control form-control-sm",
+              accept: "image/*",
+              onchange: "previewVariantImage(event)" %>
+
+        <%= image_fields.hidden_field :_destroy, class: "destroy-flag" %>
+
+        <% if image_fields.object.persisted? %>
+          <!-- ✅ Turbo delete for persisted image -->
+          <%= button_to "Delete",
+                remove_variant_image_product_path(@product, id: image_fields.object.id),
+                method: :delete,
+                form: { data: { turbo_confirm: "Remove this image?" } },
+                class: "btn btn-sm btn-outline-danger" %>
+        <% else %>
+          <!-- For new unsaved images, JS delete sets _destroy -->
+          <button type="button" class="btn btn-sm btn-outline-danger delete-variant-image">Delete</button>
+        <% end %>
+      </div>
+    <% end %>
+
+    <!-- Add new image dynamically -->
+    <button type="button" class="btn btn-sm btn-outline-secondary add-variant-image-btn">Add color image</button>
+  </div>
+</div>

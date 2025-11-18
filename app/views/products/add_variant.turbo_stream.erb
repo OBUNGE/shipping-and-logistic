@@ -1,0 +1,7 @@
+<%= turbo_stream.append "variant-fields" do %>
+  <%= render "variant_fields", f: form_builder_for(@variant) %>
+<% end %>
+
+<%= turbo_stream.update "variants_count" do %>
+  <%= @product.variants.count %>
+<% end %>

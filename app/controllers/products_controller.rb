@@ -4,6 +4,17 @@ class ProductsController < ApplicationController
 
   require "csv"
 
+
+  def add_variant
+  @product = Product.find_by!(slug: params[:slug])
+  @variant = @product.variants.build
+  @variant.variant_images.build
+
+  respond_to do |format|
+    format.turbo_stream
+  end
+end
+
   # DELETE /products/:id/remove_gallery
   def remove_gallery
     url = params[:url]

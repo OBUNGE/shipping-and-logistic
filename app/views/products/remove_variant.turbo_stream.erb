@@ -1,0 +1,5 @@
+<%= turbo_stream.remove dom_id(@variant) %>
+
+<%= turbo_stream.update "variants_count" do %>
+  <%= @product.variants.count %>
+<% end %>
