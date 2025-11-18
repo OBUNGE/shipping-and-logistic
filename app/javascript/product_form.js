@@ -137,63 +137,9 @@ document.addEventListener("turbo:load", () => {
   }
 
   // -----------------------------
-  // 5. Variant / Inventory Dynamic Fields
+  // 5. Delete Gallery Images (persisted)
   // -----------------------------
-  const typeOptions = {
-    Size: ["XS","S","M","L","XL","XXL","3XL","4XL","5XL","6XL","7XL","8XL","9XL","10XL"],
-    Color: ["Red","Blue","Black","White","Green","Yellow","Purple","Orange","Pink","Gray","Brown","Cyan","Magenta","Lime","Teal","Navy","Maroon","Olive","Silver","Gold","Beige"],
-    Material: ["Cotton","Leather","Polyester","Plastic","Metal","Wood","Glass","Silk","Wool","Denim"],
-    Storage: ["64GB","128GB","256GB","512GB","1TB","2TB","4TB"],
-    Packaging: ["Box","Bag","Sachet","Envelope","Bottle","Jar"]
-  };
-
-  function updateValueOptions(typeSelect) {
-    const selected = typeSelect.value;
-    const block = typeSelect.closest(".variant-block");
-    const valueSelect = block.querySelector(".variant-value");
-    const actions = block.querySelector(".color-image-actions");
-    if (!valueSelect) return;
-
-    valueSelect.innerHTML = "";
-    const options = typeOptions[selected] || [];
-    options.forEach(opt => {
-      const option = document.createElement("option");
-      option.value = opt;
-      option.textContent = opt;
-      valueSelect.appendChild(option);
-    });
-
-    if (actions) actions.classList.toggle("d-none", selected !== "Color");
-  }
-
-  function bindVariantDropdowns(container) {
-    container.querySelectorAll(".variant-type").forEach(sel => {
-      updateValueOptions(sel);
-      sel.addEventListener("change", () => updateValueOptions(sel));
-    });
-  }
-
   function bindDeleteButtons(container) {
-    container.querySelectorAll(".delete-variant").forEach(btn => {
-      btn.removeEventListener("click", btn._handler);
-      btn._handler = () => {
-        const block = btn.closest(".variant-block");
-        block.querySelector("input.destroy-flag").value = "true";
-        block.style.display = "none";
-      };
-      btn.addEventListener("click", btn._handler);
-    });
-
-    container.querySelectorAll(".delete-variant-image").forEach(btn => {
-      btn.removeEventListener("click", btn._handler);
-      btn._handler = () => {
-        const block = btn.closest(".variant-image-block");
-        block.querySelector("input.destroy-flag").value = "true";
-        block.style.display = "none";
-      };
-      btn.addEventListener("click", btn._handler);
-    });
-
     container.querySelectorAll(".delete-gallery-image").forEach(btn => {
       btn.removeEventListener("click", btn._handler);
       btn._handler = () => {
@@ -210,65 +156,7 @@ document.addEventListener("turbo:load", () => {
     });
   }
 
-  // Add a variant image
-  function addVariantImageToBlock(variantBlock) {
-    const template = document.getElementById("variant-image-template").innerHTML;
-
-    // Extract parent variant ID
-    const parentInput = variantBlock.querySelector("input[name*='variants_attributes']");
-    const parentIdMatch = parentInput?.name.match(/variants_attributes\]\[(new_\d+|\d+)\]/);
-    const parentId = parentIdMatch ? parentIdMatch[1] : `new_${Date.now()}`;
-
-    // One unique ID per image block
-    const uniqueImageId = `new_${Date.now()}`;
-    const html = template
-      .replace(/NEW_RECORD/g, parentId)
-      .replace(/NEW_IMAGE/g, uniqueImageId);
-
-    const wrapper = document.createElement("div");
-    wrapper.innerHTML = html.trim();
-    const block = wrapper.firstElementChild;
-    variantBlock.querySelector(".color-image-actions").append(block);
-
-    bindDeleteButtons(block);
-  }
-
-  function bindAddImageButtons(container) {
-    container.querySelectorAll(".add-variant-image-btn").forEach(btn => {
-      btn.removeEventListener("click", btn._handler);
-      btn._handler = () => {
-        const block = btn.closest(".variant-block");
-        addVariantImageToBlock(block);
-      };
-      btn.addEventListener("click", btn._handler);
-    });
-  }
-
-  // Add new variant block
-  window.addFields = function(containerId) {
-    const container = document.getElementById(containerId);
-    const template = document.getElementById(containerId.replace("-fields", "-template")).innerHTML;
-
-    // One unique ID per variant block
-    const blockId = `new_${Date.now()}`;
-    const html = template.replace(/NEW_RECORD/g, blockId); // do NOT replace NEW_IMAGE here
-
-    const wrapper = document.createElement("div");
-    wrapper.innerHTML = html.trim();
-    const newBlock = wrapper.firstElementChild;
-    container.appendChild(newBlock);
-
-    bindVariantDropdowns(newBlock);
-    bindDeleteButtons(newBlock);
-    bindAddImageButtons(newBlock);
-
-    // If Color is preselected, show actions (image additions are explicit via button)
-    const typeSelect = newBlock.querySelector(".variant-type");
-    if (typeSelect) updateValueOptions(typeSelect);
-  };
-
   // Initial binding on page load
-  bindVariantDropdowns(document);
   bindDeleteButtons(document);
-  bindAddImageButtons(document);
 });
+    // Re-bind after Turbo visits

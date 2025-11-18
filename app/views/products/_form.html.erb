@@ -150,148 +150,93 @@
   <div id="gallery-preview" class="row mt-2 sortable-preview"></div>
 </div>
 
-<!-- 🔀 Variants -->
+<!-- 🔀 Variants (hard-coded for testing) -->
 <div id="variant-fields">
-  <%= form.fields_for :variants do |variant_fields| %>
-    <div id="<%= dom_id(variant_fields.object) %>" class="border p-3 mb-2 bg-light rounded variant-block">
-      <div class="row g-2">
-        <!-- Variant Type -->
-        <div class="col-md-4">
-          <%= variant_fields.label :name, "Type", class: "form-label small" %>
-          <%= variant_fields.select :name,
-                ["Size","Color","Material","Storage","Packaging"],
-                {},
-                class: "form-select form-select-sm variant-type",
-                required: true %>
-        </div>
 
-        <!-- Variant Value -->
-        <div class="col-md-4">
-          <%= variant_fields.label :value, "Option", class: "form-label small" %>
-          <%= variant_fields.select :value,
-                [],
-                {},
-                class: "form-select form-select-sm variant-value",
-                required: true,
-                data: { current: variant_fields.object.value } %>
-        </div>
-
-        <!-- Price Modifier -->
-        <div class="col-md-3">
-          <%= variant_fields.label :price_modifier, "Price Modifier", class: "form-label small" %>
-          <%= variant_fields.number_field :price_modifier,
-                step: 0.01,
-                placeholder: "e.g. 50.00",
-                class: "form-control form-control-sm" %>
-        </div>
-
-        <!-- Delete Variant -->
-        <div class="col-md-1 d-flex align-items-end">
-          <%= variant_fields.hidden_field :_destroy, class: "destroy-flag" %>
-          <% if variant_fields.object.persisted? %>
-            <%= button_to "Delete",
-                  remove_variant_product_path(@product, id: variant_fields.object.id),
-                  method: :delete,
-                  form: { data: { turbo_confirm: "Remove this variant?" } },
-                  class: "btn btn-sm btn-outline-danger" %>
-          <% else %>
-            <button type="button" class="btn btn-sm btn-outline-danger delete-variant">Delete</button>
-          <% end %>
-        </div>
-      </div>
-
-      <!-- 🎨 Variant Images (only for Color) -->
-      <div class="mt-2 color-image-actions <%= 'd-none' unless variant_fields.object.name == 'Color' %>">
-        <%= variant_fields.fields_for :variant_images do |image_fields| %>
-          <div id="<%= dom_id(image_fields.object) %>" class="border p-2 mb-2 bg-light rounded variant-image-block">
-            <% if image_fields.object.image_url.present? %>
-              <%= image_tag image_fields.object.image_url, class: "img-thumbnail mb-1 variant-image-preview" %>
-            <% end %>
-
-            <%= image_fields.file_field :image,
-                  class: "form-control form-control-sm",
-                  accept: "image/*" %>
-
-            <%= image_fields.hidden_field :_destroy, class: "destroy-flag" %>
-            <% if image_fields.object.persisted? %>
-              <%= button_to "Delete",
-                    remove_variant_image_product_path(@product, id: image_fields.object.id),
-                    method: :delete,
-                    form: { data: { turbo_confirm: "Remove this image?" } },
-                    class: "btn btn-sm btn-outline-danger" %>
-            <% else %>
-              <button type="button" class="btn btn-sm btn-outline-danger delete-variant-image">Delete</button>
-            <% end %>
-          </div>
-        <% end %>
-
-        <button type="button" class="btn btn-sm btn-outline-secondary add-variant-image-btn">Add color image</button>
-      </div>
-    </div>
-  <% end %>
-</div>
-
-<!-- 🔧 Variant Template (now visible for manual testing) -->
-<div id="variant-template">
+  <!-- Variant 1: Color -->
   <div class="border p-3 mb-2 bg-light rounded variant-block">
     <div class="row g-2">
       <div class="col-md-4">
         <label class="form-label small">Type</label>
-        <select name="product[variants_attributes][new_12345][name]" class="form-select form-select-sm variant-type">
-          <option value="">Select Type</option>
-          <% ["Size","Color","Material","Storage","Packaging"].each do |type| %>
-            <option value="<%= type %>"><%= type %></option>
-          <% end %>
+        <select name="product[variants_attributes][0][name]" class="form-select form-select-sm" required>
+          <option value="Color" selected>Color</option>
         </select>
       </div>
 
       <div class="col-md-4">
         <label class="form-label small">Option</label>
-        <select name="product[variants_attributes][new_12345][value]"
-                class="form-select form-select-sm variant-value"
-                data-current="">
-          <option value="">Select Option</option>
+        <select name="product[variants_attributes][0][value]" class="form-select form-select-sm" required>
+          <option value="Black" selected>Black</option>
+          <option value="Blue">Blue</option>
+          <option value="Red">Red</option>
         </select>
       </div>
 
       <div class="col-md-3">
         <label class="form-label small">Price Modifier</label>
         <input type="number" step="0.01"
-               name="product[variants_attributes][new_12345][price_modifier]"
+               name="product[variants_attributes][0][price_modifier]"
                class="form-control form-control-sm"
                placeholder="e.g. 50.00" />
       </div>
 
       <div class="col-md-1 d-flex align-items-end">
-        <input type="hidden"
-               name="product[variants_attributes][new_12345][_destroy]"
-               class="destroy-flag"
-               value="false" />
-        <button type="button" class="btn btn-sm btn-outline-danger delete-variant">Delete</button>
+        <input type="hidden" name="product[variants_attributes][0][_destroy]" value="false" />
       </div>
     </div>
 
-    <div class="mt-2 color-image-actions">
-      <button type="button" class="btn btn-sm btn-outline-secondary add-variant-image-btn">Add color image</button>
+    <!-- Variant 1 image -->
+    <div class="mt-2">
+      <input type="file"
+             name="product[variants_attributes][0][variant_images_attributes][0][image]"
+             class="form-control form-control-sm"
+             accept="image/*" />
+      <input type="hidden" name="product[variants_attributes][0][variant_images_attributes][0][_destroy]" value="false" />
     </div>
   </div>
-</div>
 
-<!-- ✅ Variant Image Template (now visible for manual testing) -->
-<div id="variant-image-template">
-  <div class="border p-2 mb-2 bg-light rounded variant-image-block">
-    <input type="file"
-           name="product[variants_attributes][new_12345][variant_images_attributes][new_67890][image]"
-           class="form-control form-control-sm"
-           accept="image/*" />
+  <!-- Variant 2: Storage -->
+  <div class="border p-3 mb-2 bg-light rounded variant-block">
+    <div class="row g-2">
+      <div class="col-md-4">
+        <label class="form-label small">Type</label>
+        <select name="product[variants_attributes][1][name]" class="form-select form-select-sm" required>
+          <option value="Storage" selected>Storage</option>
+        </select>
+      </div>
 
-    <input type="hidden"
-           name="product[variants_attributes][new_12345][variant_images_attributes][new_67890][_destroy]"
-           class="destroy-flag"
-           value="false" />
+      <div class="col-md-4">
+        <label class="form-label small">Option</label>
+        <select name="product[variants_attributes][1][value]" class="form-select form-select-sm" required>
+          <option value="64GB" selected>64GB</option>
+          <option value="128GB">128GB</option>
+          <option value="256GB">256GB</option>
+        </select>
+      </div>
 
-    <button type="button" class="btn btn-sm btn-outline-danger delete-variant-image">Delete</button>
+      <div class="col-md-3">
+        <label class="form-label small">Price Modifier</label>
+        <input type="number" step="0.01"
+               name="product[variants_attributes][1][price_modifier]"
+               class="form-control form-control-sm"
+               placeholder="e.g. 100.00" />
+      </div>
+
+      <div class="col-md-1 d-flex align-items-end">
+        <input type="hidden" name="product[variants_attributes][1][_destroy]" value="false" />
+      </div>
+    </div>
+
+    <!-- Variant 2 image -->
+    <div class="mt-2">
+      <input type="file"
+             name="product[variants_attributes][1][variant_images_attributes][0][image]"
+             class="form-control form-control-sm"
+             accept="image/*" />
+      <input type="hidden" name="product[variants_attributes][1][variant_images_attributes][0][_destroy]" value="false" />
+    </div>
   </div>
+
 </div>
 
 <!-- 🏬 Inventory -->
