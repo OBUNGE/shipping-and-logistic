@@ -219,4 +219,46 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   bindDeleteButtons(document);
+
+   // -----------------------------
+  // 8. Add Variant Image Dynamically
+  // -----------------------------
+  document.querySelectorAll(".add-variant-image-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const block = btn.closest(".color-image-actions");
+      if (!block) return;
+
+      const wrapper = document.createElement("div");
+      wrapper.className = "border p-2 mb-2 bg-light rounded variant-image-block";
+
+      // File input
+      const input = document.createElement("input");
+      input.type = "file";
+      input.name = "product[variants_attributes][][variant_images_attributes][][image]";
+      input.className = "form-control form-control-sm";
+      input.accept = "image/*";
+      input.onchange = window.previewVariantImage;
+
+      // Hidden _destroy field
+      const destroy = document.createElement("input");
+      destroy.type = "hidden";
+      destroy.name = "product[variants_attributes][][variant_images_attributes][][_destroy]";
+      destroy.className = "destroy-flag";
+
+      // Delete button
+      const deleteBtn = document.createElement("button");
+      deleteBtn.type = "button";
+      deleteBtn.className = "btn btn-sm btn-outline-danger mt-2 delete-variant-image";
+      deleteBtn.textContent = "Delete";
+      deleteBtn.addEventListener("click", () => wrapper.remove());
+
+      // Assemble
+      wrapper.appendChild(input);
+      wrapper.appendChild(destroy);
+      wrapper.appendChild(deleteBtn);
+
+      block.insertBefore(wrapper, btn); // insert before the "Add color image" button
+    });
+  });
 });
+
