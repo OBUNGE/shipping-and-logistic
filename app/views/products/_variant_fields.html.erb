@@ -79,6 +79,10 @@
     <% end %>
 
     <!-- Add new image dynamically -->
-    <button type="button" class="btn btn-sm btn-outline-secondary add-variant-image-btn">Add color image</button>
+    <<%= button_to "➕ Add color image",
+      add_variant_image_product_path(@product, id: f.object.id),
+      method: :post,
+      data: { turbo_stream: true },
+      class: "btn btn-sm btn-outline-secondary" %>
   </div>
 </div>

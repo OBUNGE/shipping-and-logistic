@@ -150,9 +150,21 @@
   <div id="gallery-preview" class="row mt-2 sortable-preview"></div>
 </div>
 
-<%= form.fields_for :variants do |variant_fields| %>
-  <%= render "variant_fields", f: variant_fields %>
-<% end %>
+<div id="variant-fields">
+  <%= form.fields_for :variants do |variant_fields| %>
+    <%= render "variant_fields", f: variant_fields %>
+  <% end %>
+</div>
+
+<div class="mt-2">
+  <%= button_to "➕ Add Variant",
+        add_variant_product_path(@product),
+        method: :post,
+        data: { turbo_stream: true },
+        class: "btn btn-sm btn-outline-primary" %>
+</div>
+
+<div id="variants_count"><%= @product.variants.count %></div>
 
 
 <!-- 🏬 Inventory -->

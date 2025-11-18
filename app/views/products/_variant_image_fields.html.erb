@@ -1,0 +1,8 @@
+<div id="<%= dom_id(f.object) %>" class="border p-2 mb-2 bg-light rounded variant-image-block">
+  <%= f.file_field :image,
+        class: "form-control form-control-sm",
+        accept: "image/*",
+        onchange: "previewVariantImage(event)" %>
+  <%= f.hidden_field :_destroy, class: "destroy-flag" %>
+  <button type="button" class="btn btn-sm btn-outline-danger delete-variant-image">Delete</button>
+</div>
