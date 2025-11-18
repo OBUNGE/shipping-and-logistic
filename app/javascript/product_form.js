@@ -1,4 +1,5 @@
 // app/javascript/product_form.js
+console.log("product_form.js loaded ✅")
 
 document.addEventListener("turbo:load", () => {
   // -----------------------------
