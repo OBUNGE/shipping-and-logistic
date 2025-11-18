@@ -216,4 +216,33 @@ document.addEventListener("turbo:load", () => {
   }
 
   bindDeleteButtons(document);
+
+    // -----------------------------
+  // 8. Add new variant image dynamically (before save)
+  // -----------------------------
+  document.addEventListener("click", e => {
+    if (e.target.classList.contains("add-variant-image-btn")) {
+      const block = e.target.closest(".variant-block");
+      const container = block.querySelector(".color-image-actions");
+
+      const template = document.getElementById("variant-image-template");
+      if (template && container) {
+        const clone = template.firstElementChild.cloneNode(true);
+
+        // Unique timestamp for nested attributes
+        const timestamp = new Date().getTime();
+        clone.innerHTML = clone.innerHTML
+          .replace(/NEW_RECORD/g, timestamp)
+          .replace(/NEW_IMAGE/g, timestamp + "_img");
+
+        container.insertBefore(clone, e.target);
+      }
+    }
+
+    if (e.target.classList.contains("delete-variant-image")) {
+      e.preventDefault();
+      e.target.closest(".variant-image-block").remove();
+    }
+  });
+
 });

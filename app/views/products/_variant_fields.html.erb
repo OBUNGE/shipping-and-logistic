@@ -79,10 +79,18 @@
     <% end %>
 
     <!-- Add new image dynamically -->
-    <<%= button_to "➕ Add color image",
-      add_variant_image_product_path(@product, id: f.object.id),
-      method: :post,
-      data: { turbo_stream: true },
-      class: "btn btn-sm btn-outline-secondary" %>
+<% if @product.persisted? && f.object.persisted? %>
+  <%= button_to "➕ Add color image",
+        add_variant_image_product_path(@product, id: f.object.id),
+        method: :post,
+        data: { turbo_stream: true },
+        class: "btn btn-sm btn-outline-secondary" %>
+<% else %>
+  <!-- For new unsaved variants, use JS cloning -->
+  <button type="button"
+          class="btn btn-sm btn-outline-secondary add-variant-image-btn">
+    ➕ Add color image
+  </button>
+<% end %>
   </div>
 </div>

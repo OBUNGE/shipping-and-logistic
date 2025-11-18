@@ -150,11 +150,33 @@
   <div id="gallery-preview" class="row mt-2 sortable-preview"></div>
 </div>
 
+<!-- Variants -->
 <div id="variant-fields">
   <%= form.fields_for :variants do |variant_fields| %>
     <%= render "variant_fields", f: variant_fields %>
   <% end %>
 </div>
+
+<!-- Hidden template for new variant image fields -->
+<div id="variant-image-template" style="display:none;">
+  <div class="border p-2 mb-2 bg-light rounded variant-image-block">
+    <input type="file"
+           name="product[variants_attributes][NEW_RECORD][variant_images_attributes][NEW_IMAGE][image]"
+           class="form-control form-control-sm"
+           accept="image/*"
+           onchange="previewVariantImage(event)" />
+
+    <input type="hidden"
+           name="product[variants_attributes][NEW_RECORD][variant_images_attributes][NEW_IMAGE][_destroy]"
+           class="destroy-flag" />
+
+    <button type="button"
+            class="btn btn-sm btn-outline-danger delete-variant-image">
+      Delete
+    </button>
+  </div>
+</div>
+
 
 <div class="mt-2">
   <%= button_to "➕ Add Variant",
