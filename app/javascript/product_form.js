@@ -137,7 +137,25 @@ document.addEventListener("turbo:load", () => {
   }
 
   // -----------------------------
-  // 5. Delete Gallery Images (persisted)
+  // 5. Variant Image Preview (new)
+  // -----------------------------
+  window.previewVariantImage = function(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const preview = document.createElement("img");
+    preview.src = URL.createObjectURL(file);
+    preview.className = "img-thumbnail mt-2";
+    preview.style.maxHeight = "150px";
+
+    // Insert preview right after the file input
+    event.target.insertAdjacentElement("afterend", preview);
+
+    preview.onload = () => URL.revokeObjectURL(preview.src);
+  };
+
+  // -----------------------------
+  // 6. Delete Gallery Images (persisted)
   // -----------------------------
   function bindDeleteButtons(container) {
     container.querySelectorAll(".delete-gallery-image").forEach(btn => {
@@ -159,4 +177,3 @@ document.addEventListener("turbo:load", () => {
   // Initial binding on page load
   bindDeleteButtons(document);
 });
-    // Re-bind after Turbo visits
