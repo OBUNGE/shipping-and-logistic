@@ -191,8 +191,8 @@
         </div>
       </div>
 
-      <!-- 🎨 Image upload block (always rendered, hidden unless type=Color) -->
-      <div class="mt-2 color-image-actions <%= 'd-none' unless variant_fields.object.name == 'Color' %>">
+      <!-- 🎨 Image upload block (always rendered, hidden by default) -->
+      <div class="mt-2 color-image-actions d-none">
         <%= variant_fields.fields_for :variant_images do |image_fields| %>
           <% if image_fields.object.image_url.present? %>
             <%= image_tag image_fields.object.image_url, class: "img-thumbnail mb-2 variant-image-preview" %>
