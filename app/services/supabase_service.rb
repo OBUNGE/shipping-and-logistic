@@ -1,13 +1,16 @@
 # app/services/supabase_service.rb
 require "faraday"
 require "securerandom"
+require "uri"
 
 class SupabaseService
   def self.upload(file, path_prefix: "variant_images")
     return nil unless file
 
-    filename = "#{path_prefix}/#{SecureRandom.uuid}-#{file.original_filename}"
-    bucket   = "product-images"
+    # Encode filename to be URI-safe
+    safe_name = URI.encode_www_form_component(file.original_filename)
+    filename  = "#{path_prefix}/#{SecureRandom.uuid}-#{safe_name}"
+    bucket    = "product-images"
 
     conn = Faraday.new(
       url: ENV["SUPABASE_URL"],
@@ -18,10 +21,8 @@ class SupabaseService
       }
     )
 
-    # ✅ Build full upload URL
     upload_url = "#{ENV["SUPABASE_URL"]}/storage/v1/object/#{bucket}/#{filename}"
 
-    # Upload file to Supabase Storage
     resp = conn.post(upload_url, file.tempfile.read)
 
     unless resp.success?
@@ -29,7 +30,7 @@ class SupabaseService
       return nil
     end
 
-    # ✅ Return public URL
+    # Public URL (same encoding)
     "#{ENV["SUPABASE_URL"]}/storage/v1/object/public/#{bucket}/#{filename}"
   end
 end
