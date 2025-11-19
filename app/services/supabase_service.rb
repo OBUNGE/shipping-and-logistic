@@ -12,21 +12,24 @@ class SupabaseService
     conn = Faraday.new(
       url: ENV["SUPABASE_URL"],
       headers: {
-        "apikey"       => ENV["SUPABASE_SECRET_ACCESS_KEY"],
-        "Authorization"=> "Bearer #{ENV["SUPABASE_SECRET_ACCESS_KEY"]}",
-        "Content-Type" => "application/octet-stream"
+        "apikey"        => ENV["SUPABASE_SECRET_ACCESS_KEY"],
+        "Authorization" => "Bearer #{ENV["SUPABASE_SECRET_ACCESS_KEY"]}",
+        "Content-Type"  => "application/octet-stream"
       }
     )
 
+    # ✅ Build full upload URL
+    upload_url = "#{ENV["SUPABASE_URL"]}/storage/v1/object/#{bucket}/#{filename}"
+
     # Upload file to Supabase Storage
-    resp = conn.post("/storage/v1/object/#{bucket}/#{filename}", file.tempfile.read)
+    resp = conn.post(upload_url, file.tempfile.read)
 
     unless resp.success?
       Rails.logger.error("Supabase upload failed: #{resp.status} - #{resp.body}")
       return nil
     end
 
-    # Return public URL
+    # ✅ Return public URL
     "#{ENV["SUPABASE_URL"]}/storage/v1/object/public/#{bucket}/#{filename}"
   end
 end
