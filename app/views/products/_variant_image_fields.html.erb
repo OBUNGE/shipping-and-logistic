@@ -1,8 +1,23 @@
 <div id="<%= dom_id(f.object) %>" class="border p-2 mb-2 bg-light rounded variant-image-block">
+  <% if f.object.image_url.present? %>
+    <%= image_tag f.object.image_url,
+          class: "img-thumbnail mb-2 variant-image-preview" %>
+  <% end %>
+
   <%= f.file_field :image,
         class: "form-control form-control-sm",
         accept: "image/*",
         onchange: "previewVariantImage(event)" %>
+
   <%= f.hidden_field :_destroy, class: "destroy-flag" %>
-  <button type="button" class="btn btn-sm btn-outline-danger delete-variant-image">Delete</button>
+
+  <% if f.object.persisted? %>
+    <%= button_to "Delete",
+          remove_variant_image_product_path(@product, id: f.object.id),
+          method: :delete,
+          form: { data: { turbo_confirm: "Remove this image?" } },
+          class: "btn btn-sm btn-outline-danger" %>
+  <% else %>
+    <button type="button" class="btn btn-sm btn-outline-danger delete-variant-image">Delete</button>
+  <% end %>
 </div>

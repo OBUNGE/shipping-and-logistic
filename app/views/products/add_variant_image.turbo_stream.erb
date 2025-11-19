@@ -1,0 +1,7 @@
+<%= turbo_stream.append dom_id(@variant, :images) do %>
+  <%= render "variant_image_fields", f: form_builder_for(@variant_image) %>
+<% end %>
+
+<%= turbo_stream.update "variant_images_count" do %>
+  <%= @variant.variant_images.count %>
+<% end %>

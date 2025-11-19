@@ -48,49 +48,42 @@
     </div>
   </div>
 
-  <!-- 🎨 Variant Images (only for Color) -->
-  <div class="mt-2 color-image-actions <%= 'd-none' unless f.object.name == 'Color' %>">
-    <%= f.fields_for :variant_images do |image_fields| %>
-      <div id="<%= dom_id(image_fields.object) %>" class="border p-2 mb-2 bg-light rounded variant-image-block">
-        <% if image_fields.object.image_url.present? %>
-          <%= image_tag image_fields.object.image_url,
-                class: "img-thumbnail mb-2 variant-image-preview" %>
-        <% end %>
+<!-- 🎨 Variant Images (only for Color) -->
+<div class="mt-2 color-image-actions <%= 'd-none' unless f.object.name == 'Color' %>">
+  <%= f.fields_for :variant_images do |image_fields| %>
+    <%= render "variant_image_fields", f: image_fields %>
+  <% end %>
 
-        <%= image_fields.file_field :image,
-              class: "form-control form-control-sm",
-              accept: "image/*",
-              onchange: "previewVariantImage(event)" %>
+  <% if @product.persisted? && f.object.persisted? %>
+    <%= button_to "➕ Add color image",
+          add_variant_image_product_path(@product, id: f.object.id),
+          method: :post,
+          data: { turbo_stream: true },
+          class: "btn btn-sm btn-outline-secondary" %>
+  <% else %>
+    <!-- For new unsaved variants, use JS cloning -->
+    <button type="button"
+            class="btn btn-sm btn-outline-secondary add-variant-image-btn">
+      ➕ Add color image
+    </button>
+  <% end %>
+</div>
 
-        <%= image_fields.hidden_field :_destroy, class: "destroy-flag" %>
+</div>
+<div id="variant-image-template" style="display:none;">
+  <div class="border p-2 mb-2 bg-light rounded variant-image-block">
+    <input type="file"
+           name="product[variants_attributes][NEW_RECORD][variant_images_attributes][NEW_IMAGE][image]"
+           class="form-control form-control-sm"
+           accept="image/*"
+           onchange="previewVariantImage(event)"
+           disabled />
 
-        <% if image_fields.object.persisted? %>
-          <!-- ✅ Turbo delete for persisted image -->
-          <%= button_to "Delete",
-                remove_variant_image_product_path(@product, id: image_fields.object.id),
-                method: :delete,
-                form: { data: { turbo_confirm: "Remove this image?" } },
-                class: "btn btn-sm btn-outline-danger" %>
-        <% else %>
-          <!-- For new unsaved images, JS delete sets _destroy -->
-          <button type="button" class="btn btn-sm btn-outline-danger delete-variant-image">Delete</button>
-        <% end %>
-      </div>
-    <% end %>
+    <input type="hidden"
+           name="product[variants_attributes][NEW_RECORD][variant_images_attributes][NEW_IMAGE][_destroy]"
+           class="destroy-flag"
+           disabled />
 
-    <!-- Add new image dynamically -->
-<% if @product.persisted? && f.object.persisted? %>
-  <%= button_to "➕ Add color image",
-        add_variant_image_product_path(@product, id: f.object.id),
-        method: :post,
-        data: { turbo_stream: true },
-        class: "btn btn-sm btn-outline-secondary" %>
-<% else %>
-  <!-- For new unsaved variants, use JS cloning -->
-  <button type="button"
-          class="btn btn-sm btn-outline-secondary add-variant-image-btn">
-    ➕ Add color image
-  </button>
-<% end %>
+    <button type="button" class="btn btn-sm btn-outline-danger delete-variant-image">Delete</button>
   </div>
 </div>

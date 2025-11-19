@@ -17,7 +17,19 @@ class ProductsController < ApplicationController
       format.turbo_stream # renders app/views/products/add_variant.turbo_stream.erb
       format.html { redirect_to edit_product_path(@product) }
     end
+  end 
+
+  
+  def add_variant_image
+  @variant = @product.variants.find(params[:id])
+  @variant_image = @variant.variant_images.build
+
+  respond_to do |format|
+    format.turbo_stream
+    format.html { redirect_to edit_product_path(@product) }
   end
+end
+
 
   # DELETE /products/:slug/remove_gallery
   def remove_gallery

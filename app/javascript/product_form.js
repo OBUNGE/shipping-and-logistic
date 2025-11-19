@@ -220,28 +220,52 @@ document.addEventListener("turbo:load", () => {
     // -----------------------------
   // 9. Add new variant dynamically (before save)
   // -----------------------------
-  document.addEventListener("click", e => {
-    if (e.target.classList.contains("add-variant-btn")) {
-      const container = document.getElementById("variant-fields");
-      const template = document.getElementById("variant-template");
+document.addEventListener("click", e => {
+  if (e.target.classList.contains("add-variant-btn")) {
+    const container = document.getElementById("variant-fields");
+    const template = document.getElementById("variant-template");
 
-      if (template && container) {
-        const clone = template.firstElementChild.cloneNode(true);
+    if (template && container) {
+      const clone = template.firstElementChild.cloneNode(true);
 
-        // Unique timestamp for nested attributes
-        const timestamp = new Date().getTime();
-        clone.innerHTML = clone.innerHTML
-          .replace(/NEW_RECORD/g, timestamp)
-          .replace(/NEW_IMAGE/g, timestamp + "_img");
+      // Unique timestamp for nested attributes
+      const timestamp = new Date().getTime();
+      clone.innerHTML = clone.innerHTML
+        .replace(/NEW_RECORD/g, timestamp)
+        .replace(/NEW_IMAGE/g, timestamp + "_img");
 
-        container.appendChild(clone);
-      }
+      // Enable all disabled inputs/selects
+      clone.querySelectorAll("[disabled]").forEach(el => el.removeAttribute("disabled"));
+
+      container.appendChild(clone);
     }
+  }
 
-    if (e.target.classList.contains("delete-variant")) {
-      e.preventDefault();
-      e.target.closest(".variant-block").remove();
-    }
-  });
+  if (e.target.classList.contains("delete-variant")) {
+    e.preventDefault();
+    e.target.closest(".variant-block").remove();
+  }
+});
+
+
+if (e.target.classList.contains("add-variant-image-btn")) {
+  const block = e.target.closest(".variant-block");
+  const container = block.querySelector(".color-image-actions");
+  const template = document.getElementById("variant-image-template");
+
+  if (template && container) {
+    const clone = template.firstElementChild.cloneNode(true);
+
+    const timestamp = new Date().getTime();
+    clone.innerHTML = clone.innerHTML
+      .replace(/NEW_RECORD/g, timestamp)
+      .replace(/NEW_IMAGE/g, timestamp + "_img");
+
+    clone.querySelectorAll("[disabled]").forEach(el => el.removeAttribute("disabled"));
+
+    container.insertBefore(clone, e.target);
+  }
+}
+
 
 });

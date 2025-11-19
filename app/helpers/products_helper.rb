@@ -1,17 +1,23 @@
 module ProductsHelper
-  # Builds a form builder for a nested variant so we can render the partial
-  def form_builder_for(variant)
-    # Create a dummy form builder for Product, then nest into variants
-    product = variant.product || Product.new
-    form_builder = ActionView::Helpers::FormBuilder.new(
-      :product,
-      product,
-      self,
-      {}
-    )
+  # Builds a nested form builder for either a Variant or a VariantImage
+  def form_builder_for(record)
+    product =
+      if record.is_a?(VariantImage)
+        record.variant&.product || Product.new
+      elsif record.is_a?(Variant)
+        record.product || Product.new
+      else
+        Product.new
+      end
 
-    form_builder.fields_for(:variants, variant) do |vf|
-      return vf
+    form_with(model: product, local: true) do |form|
+      if record.is_a?(Variant)
+        form.fields_for(:variants, record) { |vf| return vf }
+      elsif record.is_a?(VariantImage)
+        form.fields_for(:variants, record.variant) do |vf|
+          vf.fields_for(:variant_images, record) { |image_fields| return image_fields }
+        end
+      end
     end
   end
 end
