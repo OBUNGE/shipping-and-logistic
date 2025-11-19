@@ -9,10 +9,10 @@ class SupabaseService
     # Sanitize filename to avoid spaces/special chars
     safe_name = file.original_filename.parameterize(separator: "_")
     filename  = "#{path_prefix}/#{SecureRandom.uuid}-#{safe_name}"
-    bucket    = "product-images"
+    bucket    = ENV["SUPABASE_BUCKET"] # ✅ use environment variable
 
-    # Build full upload URL (public bucket)
-    upload_url = "#{ENV["SUPABASE_URL"]}/storage/v1/object/public/#{bucket}/#{filename}"
+    # Upload URL (for writing)
+    upload_url = "#{ENV["SUPABASE_URL"]}/storage/v1/object/#{bucket}/#{filename}"
 
     conn = Faraday.new(
       headers: {
@@ -29,7 +29,7 @@ class SupabaseService
       return nil
     end
 
-    # Return public URL (same path)
+    # Public URL (for browser access)
     public_url = "#{ENV["SUPABASE_URL"]}/storage/v1/object/public/#{bucket}/#{filename}"
     Rails.logger.info("✅ Supabase upload successful: #{public_url}")
     public_url
