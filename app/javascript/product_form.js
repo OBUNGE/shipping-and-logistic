@@ -278,6 +278,18 @@ document.addEventListener("click", (e) => {
       clone.querySelectorAll("select[name*='[name]']").forEach(typeSelect => {
         updateValueOptions(typeSelect);
       });
+
+      // 🔑 If it's a Color variant clone, auto-copy preview from first Color
+      const firstColorPreview = document.querySelector(".variant-image-preview");
+      if (firstColorPreview) {
+        const newBlock = clone.querySelector(".color-image-actions");
+        if (newBlock) {
+          const preview = document.createElement("img");
+          preview.className = "img-thumbnail mb-2 variant-image-preview";
+          preview.src = firstColorPreview.src;
+          newBlock.insertBefore(preview, newBlock.firstChild);
+        }
+      }
     }
   }
 
@@ -316,4 +328,5 @@ document.addEventListener("click", (e) => {
     e.target.closest(".variant-image-block").remove();
   }
 });
+
 }); 
