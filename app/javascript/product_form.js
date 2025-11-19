@@ -216,7 +216,6 @@ document.addEventListener("turbo:load", () => {
   }
 
   bindDeleteButtons(document);
-
 // -----------------------------
 // 9. Add new variant dynamically (before save)
 // -----------------------------
@@ -278,4 +277,4 @@ document.addEventListener("click", (e) => {
     e.preventDefault();
     e.target.closest(".variant-image-block").remove();
   }
-});
+}); // ✅ properly closed
