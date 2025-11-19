@@ -205,6 +205,11 @@ document.addEventListener("turbo:load", () => {
     }
   });
 
+  // 🔑 Run once on page load for all existing variants (edit mode)
+  document.querySelectorAll("select[name*='[name]']").forEach(typeSelect => {
+    updateValueOptions(typeSelect);
+  });
+
   // -----------------------------
   // 7. Delete Gallery Images (persisted)
   // -----------------------------
