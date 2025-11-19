@@ -1,24 +1,32 @@
 # app/services/supabase_service.rb
-require "supabase"
+require "faraday"
+require "securerandom"
 
 class SupabaseService
-  def self.client
-    @client ||= Supabase::Client.new(
-      ENV["SUPABASE_URL"],
-      ENV["SUPABASE_SECRET_ACCESS_KEY"]
-    )
-  end
-
   def self.upload(file, path_prefix: "variant_images")
     return nil unless file
 
     filename = "#{path_prefix}/#{SecureRandom.uuid}-#{file.original_filename}"
-    bucket = "product-images"
+    bucket   = "product-images"
 
-    # Upload to Supabase Storage
-    client.storage.from(bucket).upload(filename, file.tempfile)
+    conn = Faraday.new(
+      url: ENV["SUPABASE_URL"],
+      headers: {
+        "apikey"       => ENV["SUPABASE_SECRET_ACCESS_KEY"],
+        "Authorization"=> "Bearer #{ENV["SUPABASE_SECRET_ACCESS_KEY"]}",
+        "Content-Type" => "application/octet-stream"
+      }
+    )
 
-    # Get public URL
-    client.storage.from(bucket).get_public_url(filename)
+    # Upload file to Supabase Storage
+    resp = conn.post("/storage/v1/object/#{bucket}/#{filename}", file.tempfile.read)
+
+    unless resp.success?
+      Rails.logger.error("Supabase upload failed: #{resp.status} - #{resp.body}")
+      return nil
+    end
+
+    # Return public URL
+    "#{ENV["SUPABASE_URL"]}/storage/v1/object/public/#{bucket}/#{filename}"
   end
 end
