@@ -151,7 +151,8 @@ document.addEventListener("turbo:load", () => {
     event.target.insertAdjacentElement("afterend", preview);
     preview.onload = () => URL.revokeObjectURL(preview.src);
   };
-// -----------------------------
+  
+  // -----------------------------
 // 6. Variant Value Auto-Populate + Toggle Image Upload
 // -----------------------------
 const typeOptions = {
@@ -248,7 +249,6 @@ document.addEventListener("change", (e) => {
   }
 });
 
-
 // -----------------------------
 // 9. Add new variant dynamically (before save)
 // -----------------------------
@@ -298,7 +298,7 @@ document.addEventListener("click", (e) => {
 
       const timestamp = new Date().getTime();
       clone.innerHTML = clone.innerHTML
-        .replace(/NEW_RECORD/g, timestamp)
+        .replace(/NEW_RECORD/g, block.dataset.key || timestamp)
         .replace(/NEW_IMAGE/g, timestamp + "_img");
 
       // Enable all disabled inputs/selects
