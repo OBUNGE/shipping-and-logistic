@@ -226,7 +226,7 @@ document.addEventListener("click", (e) => {
 });
 
 // -----------------------------
-// 8. Preview Variant Image (live preview)
+// 8. Preview Variant Image (auto-bind for all file inputs)
 // -----------------------------
 function previewVariantImage(event) {
   const file = event.target.files[0];
@@ -240,6 +240,14 @@ function previewVariantImage(event) {
     preview.src = URL.createObjectURL(file);
   }
 }
+
+// 🔑 Event delegation: catch all file inputs dynamically
+document.addEventListener("change", (e) => {
+  if (e.target.matches("input[type='file'][name*='[image]']")) {
+    previewVariantImage(e);
+  }
+});
+
 
 // -----------------------------
 // 9. Add new variant dynamically (before save)

@@ -9,9 +9,8 @@
   <% end %>
 
   <%= f.file_field :image,
-        class: "form-control form-control-sm",
-        accept: "image/*",
-        onchange: "previewVariantImage(event)" %>
+        class: "form-control form-control-sm variant-image-input",
+        accept: "image/*" %>
 
   <%= f.hidden_field :_destroy, class: "destroy-flag" %>
 
