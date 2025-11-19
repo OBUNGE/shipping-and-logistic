@@ -152,10 +152,6 @@ document.addEventListener("turbo:load", () => {
     preview.onload = () => URL.revokeObjectURL(preview.src);
   };
 
-/// -----------------------------
-// Product Form JS
-// -----------------------------
-
   // -----------------------------
   // 6. Variant Value Auto-Populate + Toggle Image Upload
   // -----------------------------
@@ -184,6 +180,12 @@ document.addEventListener("turbo:load", () => {
       option.textContent = opt;
       valueSelect.appendChild(option);
     });
+
+    // 🔑 Select saved value if present (edit mode)
+    const savedValue = valueSelect.dataset.current || block.dataset.savedValue;
+    if (savedValue) {
+      valueSelect.value = savedValue;
+    }
 
     // Toggle image upload section
     const actions = block.querySelector(".color-image-actions");
