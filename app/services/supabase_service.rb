@@ -11,8 +11,8 @@ class SupabaseService
     filename  = "#{path_prefix}/#{SecureRandom.uuid}-#{safe_name}"
     bucket    = "product-images"
 
-    # Build full upload URL
-    upload_url = "#{ENV["SUPABASE_URL"]}/storage/v1/object/#{bucket}/#{filename}"
+    # Build full upload URL (public bucket)
+    upload_url = "#{ENV["SUPABASE_URL"]}/storage/v1/object/public/#{bucket}/#{filename}"
 
     conn = Faraday.new(
       headers: {
@@ -29,7 +29,7 @@ class SupabaseService
       return nil
     end
 
-    # Return public URL
+    # Return public URL (same path)
     public_url = "#{ENV["SUPABASE_URL"]}/storage/v1/object/public/#{bucket}/#{filename}"
     Rails.logger.info("✅ Supabase upload successful: #{public_url}")
     public_url
