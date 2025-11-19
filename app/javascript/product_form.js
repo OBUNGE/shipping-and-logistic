@@ -152,7 +152,7 @@ document.addEventListener("turbo:load", () => {
     preview.onload = () => URL.revokeObjectURL(preview.src);
   };
 
-// -----------------------------
+/// -----------------------------
 // Product Form JS
 // -----------------------------
 
@@ -175,6 +175,7 @@ document.addEventListener("turbo:load", () => {
 
     console.log("updateValueOptions fired. Selected:", selected);
 
+    // Reset options
     valueSelect.innerHTML = "";
     const options = typeOptions[selected] || [];
     options.forEach(opt => {
@@ -184,6 +185,7 @@ document.addEventListener("turbo:load", () => {
       valueSelect.appendChild(option);
     });
 
+    // Toggle image upload section
     const actions = block.querySelector(".color-image-actions");
     if (actions) {
       if (selected === "Color") {
@@ -194,32 +196,30 @@ document.addEventListener("turbo:load", () => {
     }
   }
 
-  document.querySelectorAll("select[name*='[name]']").forEach(typeSelect => {
-    updateValueOptions(typeSelect); // populate on load
-    typeSelect.addEventListener("change", () => updateValueOptions(typeSelect));
+  // 🔑 Event delegation: works for both initial and cloned variants
+  document.addEventListener("change", (e) => {
+    if (e.target.matches("select[name*='[name]']")) {
+      updateValueOptions(e.target);
+    }
   });
 
   // -----------------------------
   // 7. Delete Gallery Images (persisted)
   // -----------------------------
-  function bindDeleteButtons(container) {
-    container.querySelectorAll(".delete-gallery-image").forEach(btn => {
-      btn.removeEventListener("click", btn._handler);
-      btn._handler = () => {
-        const url = btn.dataset.url;
-        const form = btn.closest("form");
-        const hidden = document.createElement("input");
-        hidden.type = "hidden";
-        hidden.name = "remove_gallery[]";
-        hidden.value = url;
-        form.appendChild(hidden);
-        btn.closest(".gallery-image-block").style.display = "none";
-      };
-      btn.addEventListener("click", btn._handler);
-    });
-  }
-
-  bindDeleteButtons(document);
+  document.addEventListener("click", (e) => {
+    if (e.target.classList.contains("delete-gallery-image")) {
+      e.preventDefault();
+      const btn = e.target;
+      const url = btn.dataset.url;
+      const form = btn.closest("form");
+      const hidden = document.createElement("input");
+      hidden.type = "hidden";
+      hidden.name = "remove_gallery[]";
+      hidden.value = url;
+      form.appendChild(hidden);
+      btn.closest(".gallery-image-block").style.display = "none";
+    }
+  });
 
   // -----------------------------
   // 9. Add new variant dynamically (before save)
@@ -245,6 +245,11 @@ document.addEventListener("turbo:load", () => {
         );
 
         container.appendChild(clone);
+
+        // 🔑 Auto-populate immediately for new selects
+        clone.querySelectorAll("select[name*='[name]']").forEach(typeSelect => {
+          updateValueOptions(typeSelect);
+        });
       }
     }
 
@@ -283,4 +288,4 @@ document.addEventListener("turbo:load", () => {
       e.target.closest(".variant-image-block").remove();
     }
   });
-}); // ✅ fully closed, no syntax errors
+});
