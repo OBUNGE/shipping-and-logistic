@@ -151,148 +151,161 @@ document.addEventListener("turbo:load", () => {
     event.target.insertAdjacentElement("afterend", preview);
     preview.onload = () => URL.revokeObjectURL(preview.src);
   };
+// -----------------------------
+// 6. Variant Value Auto-Populate + Toggle Image Upload
+// -----------------------------
+const typeOptions = {
+  Color: ["Black","Blue","Red","Green","White"],
+  Size: ["XS","S","M","L","XL","XXL"],
+  Storage: ["64GB","128GB","256GB","512GB","1TB"],
+  Material: ["Cotton","Leather","Polyester","Plastic","Metal","Wood"],
+  Packaging: ["Box","Bag","Sachet","Envelope","Bottle","Jar"]
+};
 
-  // -----------------------------
-  // 6. Variant Value Auto-Populate + Toggle Image Upload
-  // -----------------------------
-  const typeOptions = {
-    Color: ["Black","Blue","Red","Green","White"],
-    Size: ["XS","S","M","L","XL","XXL"],
-    Storage: ["64GB","128GB","256GB","512GB","1TB"],
-    Material: ["Cotton","Leather","Polyester","Plastic","Metal","Wood"],
-    Packaging: ["Box","Bag","Sachet","Envelope","Bottle","Jar"]
-  };
+function updateValueOptions(typeSelect) {
+  const selected = typeSelect.value;
+  const block = typeSelect.closest(".variant-block");
+  const valueSelect = block.querySelector("select[name*='[value]']");
+  if (!valueSelect) return;
 
-  function updateValueOptions(typeSelect) {
-    const selected = typeSelect.value;
-    const block = typeSelect.closest(".variant-block");
-    const valueSelect = block.querySelector("select[name*='[value]']");
-    if (!valueSelect) return;
+  // Reset options
+  valueSelect.innerHTML = "";
+  const options = typeOptions[selected] || [];
+  options.forEach(opt => {
+    const option = document.createElement("option");
+    option.value = opt;
+    option.textContent = opt;
+    valueSelect.appendChild(option);
+  });
 
-    console.log("updateValueOptions fired. Selected:", selected);
+  // 🔑 Select saved value if present (edit mode)
+  const savedValue = valueSelect.dataset.current || block.dataset.savedValue;
+  if (savedValue) {
+    valueSelect.value = savedValue;
+  }
 
-    // Reset options
-    valueSelect.innerHTML = "";
-    const options = typeOptions[selected] || [];
-    options.forEach(opt => {
-      const option = document.createElement("option");
-      option.value = opt;
-      option.textContent = opt;
-      valueSelect.appendChild(option);
-    });
-
-    // 🔑 Select saved value if present (edit mode)
-    const savedValue = valueSelect.dataset.current || block.dataset.savedValue;
-    if (savedValue) {
-      valueSelect.value = savedValue;
+  // Toggle image upload section
+  const actions = block.querySelector(".color-image-actions");
+  if (actions) {
+    if (selected === "Color") {
+      actions.classList.remove("d-none");
+    } else {
+      actions.classList.add("d-none");
     }
+  }
+}
 
-    // Toggle image upload section
-    const actions = block.querySelector(".color-image-actions");
-    if (actions) {
-      if (selected === "Color") {
-        actions.classList.remove("d-none");
-      } else {
-        actions.classList.add("d-none");
-      }
+// 🔑 Event delegation: works for both initial and cloned variants
+document.addEventListener("change", (e) => {
+  if (e.target.matches("select[name*='[name]']")) {
+    updateValueOptions(e.target);
+  }
+});
+
+// 🔑 Run once on page load for all existing variants (edit mode)
+document.querySelectorAll("select[name*='[name]']").forEach(typeSelect => {
+  updateValueOptions(typeSelect);
+});
+
+// -----------------------------
+// 7. Delete Gallery Images (persisted)
+// -----------------------------
+document.addEventListener("click", (e) => {
+  if (e.target.classList.contains("delete-gallery-image")) {
+    e.preventDefault();
+    const btn = e.target;
+    const url = btn.dataset.url;
+    const form = btn.closest("form");
+    const hidden = document.createElement("input");
+    hidden.type = "hidden";
+    hidden.name = "remove_gallery[]";
+    hidden.value = url;
+    form.appendChild(hidden);
+    btn.closest(".gallery-image-block").style.display = "none";
+  }
+});
+
+// -----------------------------
+// 8. Preview Variant Image (live preview)
+// -----------------------------
+function previewVariantImage(event) {
+  const file = event.target.files[0];
+  if (file) {
+    let preview = event.target.parentNode.querySelector(".variant-image-preview");
+    if (!preview) {
+      preview = document.createElement("img");
+      preview.className = "img-thumbnail mb-2 variant-image-preview";
+      event.target.insertAdjacentElement("beforebegin", preview);
+    }
+    preview.src = URL.createObjectURL(file);
+  }
+}
+
+// -----------------------------
+// 9. Add new variant dynamically (before save)
+// -----------------------------
+document.addEventListener("click", (e) => {
+  // ➕ Add Variant
+  if (e.target.classList.contains("add-variant-btn")) {
+    const container = document.getElementById("variant-fields");
+    const template = document.getElementById("variant-template");
+
+    if (template && container) {
+      const clone = template.firstElementChild.cloneNode(true);
+
+      // Unique timestamp for nested attributes
+      const timestamp = new Date().getTime();
+      clone.innerHTML = clone.innerHTML
+        .replace(/NEW_RECORD/g, timestamp)
+        .replace(/NEW_IMAGE/g, timestamp + "_img");
+
+      // Enable all disabled inputs/selects
+      clone.querySelectorAll("[disabled]").forEach((el) =>
+        el.removeAttribute("disabled")
+      );
+
+      container.appendChild(clone);
+
+      // 🔑 Auto-populate immediately for new selects
+      clone.querySelectorAll("select[name*='[name]']").forEach(typeSelect => {
+        updateValueOptions(typeSelect);
+      });
     }
   }
 
-  // 🔑 Event delegation: works for both initial and cloned variants
-  document.addEventListener("change", (e) => {
-    if (e.target.matches("select[name*='[name]']")) {
-      updateValueOptions(e.target);
+  // ❌ Delete Variant
+  if (e.target.classList.contains("delete-variant")) {
+    e.preventDefault();
+    e.target.closest(".variant-block").remove();
+  }
+
+  // ➕ Add Variant Image
+  if (e.target.classList.contains("add-variant-image-btn")) {
+    const block = e.target.closest(".variant-block");
+    const container = block.querySelector(".color-image-actions");
+    const template = document.getElementById("variant-image-template");
+
+    if (template && container) {
+      const clone = template.firstElementChild.cloneNode(true);
+
+      const timestamp = new Date().getTime();
+      clone.innerHTML = clone.innerHTML
+        .replace(/NEW_RECORD/g, timestamp)
+        .replace(/NEW_IMAGE/g, timestamp + "_img");
+
+      // Enable all disabled inputs/selects
+      clone.querySelectorAll("[disabled]").forEach((el) =>
+        el.removeAttribute("disabled")
+      );
+
+      container.insertBefore(clone, e.target);
     }
-  });
+  }
 
-  // 🔑 Run once on page load for all existing variants (edit mode)
-  document.querySelectorAll("select[name*='[name]']").forEach(typeSelect => {
-    updateValueOptions(typeSelect);
-  });
-
-  // -----------------------------
-  // 7. Delete Gallery Images (persisted)
-  // -----------------------------
-  document.addEventListener("click", (e) => {
-    if (e.target.classList.contains("delete-gallery-image")) {
-      e.preventDefault();
-      const btn = e.target;
-      const url = btn.dataset.url;
-      const form = btn.closest("form");
-      const hidden = document.createElement("input");
-      hidden.type = "hidden";
-      hidden.name = "remove_gallery[]";
-      hidden.value = url;
-      form.appendChild(hidden);
-      btn.closest(".gallery-image-block").style.display = "none";
-    }
-  });
-
-  // -----------------------------
-  // 9. Add new variant dynamically (before save)
-  // -----------------------------
-  document.addEventListener("click", (e) => {
-    // ➕ Add Variant
-    if (e.target.classList.contains("add-variant-btn")) {
-      const container = document.getElementById("variant-fields");
-      const template = document.getElementById("variant-template");
-
-      if (template && container) {
-        const clone = template.firstElementChild.cloneNode(true);
-
-        // Unique timestamp for nested attributes
-        const timestamp = new Date().getTime();
-        clone.innerHTML = clone.innerHTML
-          .replace(/NEW_RECORD/g, timestamp)
-          .replace(/NEW_IMAGE/g, timestamp + "_img");
-
-        // Enable all disabled inputs/selects
-        clone.querySelectorAll("[disabled]").forEach((el) =>
-          el.removeAttribute("disabled")
-        );
-
-        container.appendChild(clone);
-
-        // 🔑 Auto-populate immediately for new selects
-        clone.querySelectorAll("select[name*='[name]']").forEach(typeSelect => {
-          updateValueOptions(typeSelect);
-        });
-      }
-    }
-
-    // ❌ Delete Variant
-    if (e.target.classList.contains("delete-variant")) {
-      e.preventDefault();
-      e.target.closest(".variant-block").remove();
-    }
-
-    // ➕ Add Variant Image
-    if (e.target.classList.contains("add-variant-image-btn")) {
-      const block = e.target.closest(".variant-block");
-      const container = block.querySelector(".color-image-actions");
-      const template = document.getElementById("variant-image-template");
-
-      if (template && container) {
-        const clone = template.firstElementChild.cloneNode(true);
-
-        const timestamp = new Date().getTime();
-        clone.innerHTML = clone.innerHTML
-          .replace(/NEW_RECORD/g, timestamp)
-          .replace(/NEW_IMAGE/g, timestamp + "_img");
-
-        // Enable all disabled inputs/selects
-        clone.querySelectorAll("[disabled]").forEach((el) =>
-          el.removeAttribute("disabled")
-        );
-
-        container.insertBefore(clone, e.target);
-      }
-    }
-
-    // ❌ Delete Variant Image
-    if (e.target.classList.contains("delete-variant-image")) {
-      e.preventDefault();
-      e.target.closest(".variant-image-block").remove();
-    }
-  });
+  // ❌ Delete Variant Image
+  if (e.target.classList.contains("delete-variant-image")) {
+    e.preventDefault();
+    e.target.closest(".variant-image-block").remove();
+  }
 });
+}); 

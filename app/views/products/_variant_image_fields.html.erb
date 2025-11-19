@@ -2,6 +2,10 @@
   <% if f.object.image_url.present? %>
     <%= image_tag f.object.image_url,
           class: "img-thumbnail mb-2 variant-image-preview" %>
+  <% else %>
+    <%= image_tag "placeholder.png",
+          class: "img-thumbnail mb-2 variant-image-preview",
+          alt: "No image yet" %>
   <% end %>
 
   <%= f.file_field :image,
