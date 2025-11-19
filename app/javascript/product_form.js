@@ -217,10 +217,11 @@ document.addEventListener("turbo:load", () => {
 
   bindDeleteButtons(document);
 
-    // -----------------------------
-  // 9. Add new variant dynamically (before save)
-  // -----------------------------
-document.addEventListener("click", e => {
+// -----------------------------
+// 9. Add new variant dynamically (before save)
+// -----------------------------
+document.addEventListener("click", (e) => {
+  // ➕ Add Variant
   if (e.target.classList.contains("add-variant-btn")) {
     const container = document.getElementById("variant-fields");
     const template = document.getElementById("variant-template");
@@ -235,37 +236,46 @@ document.addEventListener("click", e => {
         .replace(/NEW_IMAGE/g, timestamp + "_img");
 
       // Enable all disabled inputs/selects
-      clone.querySelectorAll("[disabled]").forEach(el => el.removeAttribute("disabled"));
+      clone.querySelectorAll("[disabled]").forEach((el) =>
+        el.removeAttribute("disabled")
+      );
 
       container.appendChild(clone);
     }
   }
 
+  // ❌ Delete Variant
   if (e.target.classList.contains("delete-variant")) {
     e.preventDefault();
     e.target.closest(".variant-block").remove();
   }
-});
 
+  // ➕ Add Variant Image
+  if (e.target.classList.contains("add-variant-image-btn")) {
+    const block = e.target.closest(".variant-block");
+    const container = block.querySelector(".color-image-actions");
+    const template = document.getElementById("variant-image-template");
 
-if (e.target.classList.contains("add-variant-image-btn")) {
-  const block = e.target.closest(".variant-block");
-  const container = block.querySelector(".color-image-actions");
-  const template = document.getElementById("variant-image-template");
+    if (template && container) {
+      const clone = template.firstElementChild.cloneNode(true);
 
-  if (template && container) {
-    const clone = template.firstElementChild.cloneNode(true);
+      const timestamp = new Date().getTime();
+      clone.innerHTML = clone.innerHTML
+        .replace(/NEW_RECORD/g, timestamp)
+        .replace(/NEW_IMAGE/g, timestamp + "_img");
 
-    const timestamp = new Date().getTime();
-    clone.innerHTML = clone.innerHTML
-      .replace(/NEW_RECORD/g, timestamp)
-      .replace(/NEW_IMAGE/g, timestamp + "_img");
+      // Enable all disabled inputs/selects
+      clone.querySelectorAll("[disabled]").forEach((el) =>
+        el.removeAttribute("disabled")
+      );
 
-    clone.querySelectorAll("[disabled]").forEach(el => el.removeAttribute("disabled"));
-
-    container.insertBefore(clone, e.target);
+      container.insertBefore(clone, e.target);
+    }
   }
-}
 
-
+  // ❌ Delete Variant Image
+  if (e.target.classList.contains("delete-variant-image")) {
+    e.preventDefault();
+    e.target.closest(".variant-image-block").remove();
+  }
 });
