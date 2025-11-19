@@ -1,17 +1,14 @@
 class VariantImage < ApplicationRecord
-  # === Associations ===
   belongs_to :variant
-
-  # === Virtual Attribute for File Upload ===
-  # This lets Rails accept a file field (:image) in the form
   attr_accessor :image
 
-  # === Validations ===
-  # Only require image_url if no file is being uploaded
   validates :image_url, presence: true, unless: -> { image.present? }
 
-  # === Supabase Image Field Accessor ===
-  def image_url
-    self[:image_url].presence
+  before_save :upload_to_supabase, if: -> { image.present? }
+
+  private
+
+  def upload_to_supabase
+    self.image_url = SupabaseService.upload(image)
   end
 end
