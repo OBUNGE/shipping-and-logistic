@@ -4,7 +4,8 @@ class VariantImage < ApplicationRecord
 
   validates :image_url, presence: true, unless: -> { image.present? }
 
-  before_save :upload_to_supabase, if: -> { image.present? }
+  before_create :upload_to_supabase, if: -> { image.present? }
+  before_update :upload_to_supabase, if: -> { image.present? }
 
   private
 
