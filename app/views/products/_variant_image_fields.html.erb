@@ -2,17 +2,20 @@
   <% if f.object.image_url.present? %>
     <%= image_tag f.object.image_url,
           class: "img-thumbnail mb-2 variant-image-preview" %>
-  <% else %>
-    <%= image_tag "placeholder.png",
-          class: "img-thumbnail mb-2 variant-image-preview",
-          alt: "No image yet" %>
   <% end %>
 
+  <!-- File upload -->
   <%= f.file_field :image,
         class: "form-control form-control-sm",
         accept: "image/*",
         onchange: "previewVariantImage(event)" %>
 
+  <!-- Hidden image_url field ensures persistence -->
+  <%= f.hidden_field :image_url,
+        value: f.object.image_url,
+        class: "image-url-field" %>
+
+  <!-- Destroy flag -->
   <%= f.hidden_field :_destroy, class: "destroy-flag" %>
 
   <% if f.object.persisted? %>

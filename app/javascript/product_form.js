@@ -136,7 +136,7 @@ document.addEventListener("turbo:load", () => {
     });
   }
 
-// -----------------------------
+/// -----------------------------
 // 5. Variant Image Preview
 // -----------------------------
 window.previewVariantImage = function(event) {

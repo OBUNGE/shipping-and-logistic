@@ -386,15 +386,9 @@ def attach_variant_images(product)
         else
           Rails.logger.error "❌ Upload failed for VariantImage ID=#{vi.id || 'new'}"
         end
-      elsif variant.name == "Color" && vi.image_url.blank?
-        # 🔑 Auto-copy from another Color variant
-        source = product.variants.detect { |v| v.name == "Color" && v.variant_images.any? }
-        if source
-          vi.update(image_url: source.variant_images.first.image_url)
-          Rails.logger.debug "🔄 Copied image_url from Variant #{source.id}: #{vi.image_url}"
-        end
       else
-        Rails.logger.debug "ℹ️ No new file uploaded for VariantImage ID=#{vi.id || 'new'}, keeping existing image_url=#{vi.image_url}"
+        # No new file uploaded → keep whatever image_url is already there
+        Rails.logger.debug "ℹ️ No new file uploaded, keeping existing image_url=#{vi.image_url}"
       end
     end
   end
