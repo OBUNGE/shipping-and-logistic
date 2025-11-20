@@ -240,7 +240,7 @@ function previewVariantImage(event) {
     }
     preview.src = URL.createObjectURL(file);
 
-    // 🔑 Also update hidden image_url field for persistence
+    // 🔑 Also update hidden image_url field for persistence (temporary blob until Supabase upload)
     const hiddenUrlField = event.target.parentNode.querySelector(".image-url-field");
     if (hiddenUrlField) {
       hiddenUrlField.value = preview.src;
@@ -285,16 +285,16 @@ document.addEventListener("click", (e) => {
         updateValueOptions(typeSelect);
       });
 
-      // 🔑 Copy existing Color preview + image_url into clone
-      const firstColorPreview = document.querySelector(".variant-image-preview");
-      if (firstColorPreview) {
+      // 🔑 Copy existing Color image_url (Supabase URL) into clone
+      const firstHiddenUrlField = document.querySelector(".image-url-field");
+      if (firstHiddenUrlField && firstHiddenUrlField.value) {
         const hiddenUrlField = clone.querySelector(".image-url-field");
         if (hiddenUrlField) {
-          hiddenUrlField.value = firstColorPreview.src;
+          hiddenUrlField.value = firstHiddenUrlField.value;
         }
         const preview = document.createElement("img");
         preview.className = "img-thumbnail mb-2 variant-image-preview";
-        preview.src = firstColorPreview.src;
+        preview.src = firstHiddenUrlField.value;
         const actions = clone.querySelector(".color-image-actions");
         if (actions) {
           actions.insertBefore(preview, actions.firstChild);
@@ -330,16 +330,16 @@ document.addEventListener("click", (e) => {
 
       container.insertBefore(clone, e.target);
 
-      // 🔑 Copy existing Color preview + image_url into new image block
-      const firstColorPreview = document.querySelector(".variant-image-preview");
-      if (firstColorPreview) {
+      // 🔑 Copy existing Color image_url (Supabase URL) into new image block
+      const firstHiddenUrlField = document.querySelector(".image-url-field");
+      if (firstHiddenUrlField && firstHiddenUrlField.value) {
         const hiddenUrlField = clone.querySelector(".image-url-field");
         if (hiddenUrlField) {
-          hiddenUrlField.value = firstColorPreview.src;
+          hiddenUrlField.value = firstHiddenUrlField.value;
         }
         const preview = document.createElement("img");
         preview.className = "img-thumbnail mb-2 variant-image-preview";
-        preview.src = firstColorPreview.src;
+        preview.src = firstHiddenUrlField.value;
         clone.insertBefore(preview, clone.firstChild);
       }
     }
@@ -351,5 +351,6 @@ document.addEventListener("click", (e) => {
     e.target.closest(".variant-image-block").remove();
   }
 });
+
 });
 
