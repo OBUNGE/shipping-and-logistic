@@ -136,22 +136,31 @@ document.addEventListener("turbo:load", () => {
     });
   }
 
-  // -----------------------------
-  // 5. Variant Image Preview
-  // -----------------------------
-  window.previewVariantImage = function(event) {
-    const file = event.target.files[0];
-    if (!file) return;
+// -----------------------------
+// 5. Variant Image Preview
+// -----------------------------
+window.previewVariantImage = function(event) {
+  const file = event.target.files[0];
+  if (!file) return;
 
-    const preview = document.createElement("img");
-    preview.src = URL.createObjectURL(file);
-    preview.className = "img-thumbnail mt-2";
+  let preview = event.target.parentNode.querySelector(".variant-image-preview");
+  if (!preview) {
+    preview = document.createElement("img");
+    preview.className = "img-thumbnail mb-2 variant-image-preview";
     preview.style.maxHeight = "150px";
+    event.target.insertAdjacentElement("beforebegin", preview);
+  }
+  preview.src = URL.createObjectURL(file);
 
-    event.target.insertAdjacentElement("afterend", preview);
-    preview.onload = () => URL.revokeObjectURL(preview.src);
-  };
-  
+  // 🔑 Update hidden image_url field (temporary blob until Supabase upload)
+  const hiddenUrlField = event.target.parentNode.querySelector(".image-url-field");
+  if (hiddenUrlField) {
+    hiddenUrlField.value = preview.src;
+  }
+
+  preview.onload = () => URL.revokeObjectURL(preview.src);
+};
+
 // -----------------------------
 // 6. Variant Value Auto-Populate + Toggle Image Upload
 // -----------------------------
@@ -229,26 +238,6 @@ document.addEventListener("click", (e) => {
 // -----------------------------
 // 8. Preview Variant Image (auto-bind for all file inputs)
 // -----------------------------
-function previewVariantImage(event) {
-  const file = event.target.files[0];
-  if (file) {
-    let preview = event.target.parentNode.querySelector(".variant-image-preview");
-    if (!preview) {
-      preview = document.createElement("img");
-      preview.className = "img-thumbnail mb-2 variant-image-preview";
-      event.target.insertAdjacentElement("beforebegin", preview);
-    }
-    preview.src = URL.createObjectURL(file);
-
-    // 🔑 Also update hidden image_url field for persistence (temporary blob until Supabase upload)
-    const hiddenUrlField = event.target.parentNode.querySelector(".image-url-field");
-    if (hiddenUrlField) {
-      hiddenUrlField.value = preview.src;
-    }
-  }
-}
-
-// 🔑 Event delegation: catch all file inputs dynamically
 document.addEventListener("change", (e) => {
   if (e.target.matches("input[type='file'][name*='[image]']")) {
     previewVariantImage(e);
@@ -285,9 +274,9 @@ document.addEventListener("click", (e) => {
         updateValueOptions(typeSelect);
       });
 
-      // 🔑 Copy existing Color image_url (Supabase URL) into clone
+      // 🔑 Copy existing Supabase image_url into clone
       const firstHiddenUrlField = document.querySelector(".image-url-field");
-      if (firstHiddenUrlField && firstHiddenUrlField.value) {
+      if (firstHiddenUrlField && firstHiddenUrlField.value && !firstHiddenUrlField.value.startsWith("blob:")) {
         const hiddenUrlField = clone.querySelector(".image-url-field");
         if (hiddenUrlField) {
           hiddenUrlField.value = firstHiddenUrlField.value;
@@ -330,9 +319,9 @@ document.addEventListener("click", (e) => {
 
       container.insertBefore(clone, e.target);
 
-      // 🔑 Copy existing Color image_url (Supabase URL) into new image block
+      // 🔑 Copy existing Supabase image_url into new image block
       const firstHiddenUrlField = document.querySelector(".image-url-field");
-      if (firstHiddenUrlField && firstHiddenUrlField.value) {
+      if (firstHiddenUrlField && firstHiddenUrlField.value && !firstHiddenUrlField.value.startsWith("blob:")) {
         const hiddenUrlField = clone.querySelector(".image-url-field");
         if (hiddenUrlField) {
           hiddenUrlField.value = firstHiddenUrlField.value;
