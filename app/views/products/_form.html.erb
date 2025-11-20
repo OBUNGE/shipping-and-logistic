@@ -2,11 +2,7 @@
               url: @product.persisted? ? product_path(@product) : products_path,
               local: true,
               html: { class: "p-3", multipart: true } do |form| %>
-  <div class="mt-3">
-    <%= form.submit(@product.persisted? ? "Update Product" : "Save Product",
-                    class: "btn btn-primary w-100 fw-semibold") %>
-  </div>
-<% end %>
+
 
   <% if @product.errors.any? %>
     <div class="alert alert-danger small">

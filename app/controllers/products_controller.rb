@@ -277,10 +277,10 @@ end
 def build_nested_fields(product)
   # Ensure at least one variant exists
   if product.variants.empty?
-    variant = product.variants.build(name: "Color") # default to Color
-    variant.variant_images.build # prebuild one image field
+    variant = product.variants.build(name: "Color")
+    variant.variant_images.build
   else
-    # For existing variants, ensure Color has at least one image
+    # Ensure Color variants always have at least one image
     product.variants.each do |variant|
       if variant.name == "Color" && variant.variant_images.empty?
         variant.variant_images.build
@@ -291,8 +291,12 @@ def build_nested_fields(product)
   # Ensure at least one inventory record
   product.inventories.build if product.inventories.empty?
 
-  # If you truly have a product_images association
-  product.product_images.build if product.respond_to?(:product_images) && product.product_images.empty?
+  # Ensure at least one product image record
+  if product.respond_to?(:product_images) && product.product_images.empty?
+    product.product_images.build
+  end
+
+  product
 end
 
 def product_params
