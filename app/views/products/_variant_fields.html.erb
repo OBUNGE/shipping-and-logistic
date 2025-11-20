@@ -1,7 +1,4 @@
-<div id="<%= dom_id(f.object) %>" 
-     class="border p-3 mb-2 bg-light rounded variant-block" 
-     data-saved-value="<%= f.object.value %>">
-
+<div id="<%= dom_id(f.object) %>" class="border p-3 mb-2 bg-light rounded variant-block" data-saved-value="<%= f.object.value %>">
   <div class="row g-2">
     <!-- Variant Type -->
     <div class="col-md-4">
@@ -54,11 +51,6 @@
 
   <!-- 🎨 Variant Images (only for Color) -->
   <div class="mt-2 color-image-actions <%= 'd-none' unless f.object.name == 'Color' %>">
-    <%# Ensure at least one nested image slot exists for new Color variants %>
-    <% if f.object.name == "Color" && f.object.variant_images.empty? %>
-      <%= f.object.variant_images.build %>
-    <% end %>
-
     <%= f.fields_for :variant_images do |image_fields| %>
       <%= render "variant_image_fields", f: image_fields %>
     <% end %>
@@ -84,13 +76,15 @@
   <div class="border p-2 mb-2 bg-light rounded variant-image-block">
     <input type="file"
            name="product[variants_attributes][NEW_RECORD][variant_images_attributes][NEW_IMAGE][image]"
-           class="form-control form-control-sm variant-image-input"
+           class="form-control form-control-sm"
            accept="image/*"
-           onchange="previewVariantImage(event)" />
+           onchange="previewVariantImage(event)"
+           disabled />
 
     <input type="hidden"
            name="product[variants_attributes][NEW_RECORD][variant_images_attributes][NEW_IMAGE][_destroy]"
-           class="destroy-flag" />
+           class="destroy-flag"
+           disabled />
 
     <button type="button" class="btn btn-sm btn-outline-danger delete-variant-image">Delete</button>
   </div>

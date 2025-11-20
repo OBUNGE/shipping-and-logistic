@@ -122,97 +122,76 @@ end
     @product = Product.new
     build_nested_fields(@product)
   end
-def create
-  @product = current_user.products.build(product_params)
 
-  # Upload main product image if present
-  if params[:product][:image].present?
-    @product.image_url = upload_to_supabase(params[:product][:image])
-  end
+  def create
+    @product = current_user.products.build(product_params)
 
-  # 🔑 Auto-copy image_url for cloned Color variants without uploads
-  @product.variants.each do |variant|
-    if variant.name == "Color" && variant.variant_images.empty?
-      # Find any existing Color variant with an image
-      source = @product.variants.detect { |v| v.name == "Color" && v.variant_images.any? }
-      if source
-        variant.variant_images.build(image_url: source.variant_images.first.image_url)
-      end
+    if params[:product][:image].present?
+      @product.image_url = upload_to_supabase(params[:product][:image])
     end
+
+    if @product.save
+      import_inventory_csv(@product) if params[:product][:inventory_csv].present?
+      @product.update(stock: @product.total_inventory)
+
+      attach_gallery_images(@product)
+      attach_variant_images(@product)
+
+      redirect_to @product, notice: "Product created successfully."
+    else
+      Rails.logger.debug "❌ Product save failed: #{@product.errors.full_messages}"
+      build_nested_fields(@product)
+      render :new, status: :unprocessable_entity
+    end
+  rescue => e
+    Rails.logger.error "🔥 Products#create crashed: #{e.message}"
+    Rails.logger.error e.backtrace.join("\n")
+    render plain: "Product creation error: #{e.message}", status: 500
   end
-
-  if @product.save
-    import_inventory_csv(@product) if params[:product][:inventory_csv].present?
-    @product.update(stock: @product.total_inventory)
-
-    attach_gallery_images(@product)
-    attach_variant_images(@product)
-
-    redirect_to @product, notice: "Product created successfully."
-  else
-    Rails.logger.debug "❌ Product save failed: #{@product.errors.full_messages}"
-    build_nested_fields(@product)
-    render :new, status: :unprocessable_entity
-  end
-rescue => e
-  Rails.logger.error "🔥 Products#create crashed: #{e.message}"
-  Rails.logger.error e.backtrace.join("\n")
-  render plain: "Product creation error: #{e.message}", status: 500
-end
-
 
   def edit
     @product = Product.includes(:inventories, :product_images, variants: :variant_images)
                       .find_by!(slug: params[:slug])
     build_nested_fields(@product)
   end
-def update
-  if params[:product][:image].present?
-    @product.image_url = upload_to_supabase(params[:product][:image])
-  end
 
-  if params[:product][:variants_attributes].present?
-    params[:product][:variants_attributes].each do |_, attrs|
-      if attrs["_destroy"] == "true"
-        variant = Variant.find_by(id: attrs["id"])
-        if variant&.order_items&.exists?
-          variant.update(active: false)
-          attrs.delete("_destroy")
-        end
-      end
-    end
-  end
-
-  if @product.update(product_params)
-    import_inventory_csv(@product) if params[:product][:inventory_csv].present?
-    @product.update(stock: @product.total_inventory)
-
-    # ✅ Handle gallery deletions
-    if params[:remove_gallery].present?
-      remaining = Array(@product.gallery_image_urls) - params[:remove_gallery]
-      @product.update(gallery_image_urls: remaining)
+  def update
+    if params[:product][:image].present?
+      @product.image_url = upload_to_supabase(params[:product][:image])
     end
 
-    attach_gallery_images(@product)
-    attach_variant_images(@product)
-
-    # 🔑 Auto-copy image_url for Color variants without uploads
-    @product.variants.each do |variant|
-      if variant.name == "Color" && variant.variant_images.empty?
-        source = @product.variants.detect { |v| v.name == "Color" && v.variant_images.any? }
-        if source
-          variant.variant_images.create(image_url: source.variant_images.first.image_url)
+    if params[:product][:variants_attributes].present?
+      params[:product][:variants_attributes].each do |_, attrs|
+        if attrs["_destroy"] == "true"
+          variant = Variant.find_by(id: attrs["id"])
+          if variant&.order_items&.exists?
+            variant.update(active: false)
+            attrs.delete("_destroy")
+          end
         end
       end
     end
 
-    redirect_to @product, notice: "Product updated successfully."
-  else
-    Rails.logger.debug "❌ Product update failed: #{@product.errors.full_messages}"
-    build_nested_fields(@product)
-    render :edit, status: :unprocessable_entity
+    if @product.update(product_params)
+      import_inventory_csv(@product) if params[:product][:inventory_csv].present?
+      @product.update(stock: @product.total_inventory)
+
+      # ✅ Handle gallery deletions
+      if params[:remove_gallery].present?
+        remaining = Array(@product.gallery_image_urls) - params[:remove_gallery]
+        @product.update(gallery_image_urls: remaining)
+      end
+
+      attach_gallery_images(@product)
+      attach_variant_images(@product)
+
+      redirect_to @product, notice: "Product updated successfully."
+    else
+      Rails.logger.debug "❌ Product update failed: #{@product.errors.full_messages}"
+      build_nested_fields(@product)
+      render :edit, status: :unprocessable_entity
+    end
   end
-end
 
   def destroy
     @product.destroy
