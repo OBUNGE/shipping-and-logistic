@@ -135,8 +135,7 @@ document.addEventListener("turbo:load", () => {
         });
     });
   }
-
-/// -----------------------------
+// -----------------------------
 // 5. Variant Image Preview
 // -----------------------------
 window.previewVariantImage = function(event) {
@@ -274,21 +273,7 @@ document.addEventListener("click", (e) => {
         updateValueOptions(typeSelect);
       });
 
-      // 🔑 Copy existing Supabase image_url into clone
-      const firstHiddenUrlField = document.querySelector(".image-url-field");
-      if (firstHiddenUrlField && firstHiddenUrlField.value && !firstHiddenUrlField.value.startsWith("blob:")) {
-        const hiddenUrlField = clone.querySelector(".image-url-field");
-        if (hiddenUrlField) {
-          hiddenUrlField.value = firstHiddenUrlField.value;
-        }
-        const preview = document.createElement("img");
-        preview.className = "img-thumbnail mb-2 variant-image-preview";
-        preview.src = firstHiddenUrlField.value;
-        const actions = clone.querySelector(".color-image-actions");
-        if (actions) {
-          actions.insertBefore(preview, actions.firstChild);
-        }
-      }
+      // 🚫 Removed auto-copy of image_url — clones start fresh
     }
   }
 
@@ -319,18 +304,7 @@ document.addEventListener("click", (e) => {
 
       container.insertBefore(clone, e.target);
 
-      // 🔑 Copy existing Supabase image_url into new image block
-      const firstHiddenUrlField = document.querySelector(".image-url-field");
-      if (firstHiddenUrlField && firstHiddenUrlField.value && !firstHiddenUrlField.value.startsWith("blob:")) {
-        const hiddenUrlField = clone.querySelector(".image-url-field");
-        if (hiddenUrlField) {
-          hiddenUrlField.value = firstHiddenUrlField.value;
-        }
-        const preview = document.createElement("img");
-        preview.className = "img-thumbnail mb-2 variant-image-preview";
-        preview.src = firstHiddenUrlField.value;
-        clone.insertBefore(preview, clone.firstChild);
-      }
+      // 🚫 Removed auto-copy of image_url — new image blocks start fresh
     }
   }
 
