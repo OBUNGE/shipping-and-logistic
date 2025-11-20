@@ -149,7 +149,6 @@
   <button type="button" class="btn btn-sm btn-outline-primary mt-2" onclick="addGalleryInput()">➕ Add More Images</button>
   <div id="gallery-preview" class="row mt-2 sortable-preview"></div>
 </div>
-
 <!-- Variants -->
 <div id="variant-fields">
   <%= form.fields_for :variants do |variant_fields| %>
@@ -214,6 +213,7 @@
       <!-- Hidden template for new variant image fields -->
       <div id="variant-image-template" style="display:none;">
         <div class="border p-2 mb-2 bg-light rounded variant-image-block">
+          <!-- File upload -->
           <input type="file"
                  name="product[variants_attributes][NEW_RECORD][variant_images_attributes][NEW_IMAGE][image]"
                  class="form-control form-control-sm"
@@ -221,6 +221,14 @@
                  onchange="previewVariantImage(event)"
                  disabled />
 
+          <!-- Hidden image_url field ensures persistence -->
+          <input type="hidden"
+                 name="product[variants_attributes][NEW_RECORD][variant_images_attributes][NEW_IMAGE][image_url]"
+                 value=""
+                 class="image-url-field"
+                 disabled />
+
+          <!-- Destroy flag -->
           <input type="hidden"
                  name="product[variants_attributes][NEW_RECORD][variant_images_attributes][NEW_IMAGE][_destroy]"
                  class="destroy-flag"
@@ -259,6 +267,7 @@
 </div>
 
 <div id="variants_count"><%= @product.variants.count %></div>
+
 
 
 <!-- 🏬 Inventory -->

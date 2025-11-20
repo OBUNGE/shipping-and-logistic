@@ -152,7 +152,7 @@ document.addEventListener("turbo:load", () => {
     preview.onload = () => URL.revokeObjectURL(preview.src);
   };
   
-  // -----------------------------
+ // -----------------------------
 // 6. Variant Value Auto-Populate + Toggle Image Upload
 // -----------------------------
 const typeOptions = {
@@ -239,6 +239,12 @@ function previewVariantImage(event) {
       event.target.insertAdjacentElement("beforebegin", preview);
     }
     preview.src = URL.createObjectURL(file);
+
+    // 🔑 Also update hidden image_url field for persistence
+    const hiddenUrlField = event.target.parentNode.querySelector(".image-url-field");
+    if (hiddenUrlField) {
+      hiddenUrlField.value = preview.src;
+    }
   }
 }
 
@@ -278,6 +284,22 @@ document.addEventListener("click", (e) => {
       clone.querySelectorAll("select[name*='[name]']").forEach(typeSelect => {
         updateValueOptions(typeSelect);
       });
+
+      // 🔑 Copy existing Color preview + image_url into clone
+      const firstColorPreview = document.querySelector(".variant-image-preview");
+      if (firstColorPreview) {
+        const hiddenUrlField = clone.querySelector(".image-url-field");
+        if (hiddenUrlField) {
+          hiddenUrlField.value = firstColorPreview.src;
+        }
+        const preview = document.createElement("img");
+        preview.className = "img-thumbnail mb-2 variant-image-preview";
+        preview.src = firstColorPreview.src;
+        const actions = clone.querySelector(".color-image-actions");
+        if (actions) {
+          actions.insertBefore(preview, actions.firstChild);
+        }
+      }
     }
   }
 
@@ -307,6 +329,19 @@ document.addEventListener("click", (e) => {
       );
 
       container.insertBefore(clone, e.target);
+
+      // 🔑 Copy existing Color preview + image_url into new image block
+      const firstColorPreview = document.querySelector(".variant-image-preview");
+      if (firstColorPreview) {
+        const hiddenUrlField = clone.querySelector(".image-url-field");
+        if (hiddenUrlField) {
+          hiddenUrlField.value = firstColorPreview.src;
+        }
+        const preview = document.createElement("img");
+        preview.className = "img-thumbnail mb-2 variant-image-preview";
+        preview.src = firstColorPreview.src;
+        clone.insertBefore(preview, clone.firstChild);
+      }
     }
   }
 
@@ -316,4 +351,5 @@ document.addEventListener("click", (e) => {
     e.target.closest(".variant-image-block").remove();
   }
 });
+
 }); 
