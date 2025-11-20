@@ -152,7 +152,7 @@ document.addEventListener("turbo:load", () => {
     preview.onload = () => URL.revokeObjectURL(preview.src);
   };
   
- // -----------------------------
+// -----------------------------
 // 6. Variant Value Auto-Populate + Toggle Image Upload
 // -----------------------------
 const typeOptions = {
@@ -351,5 +351,5 @@ document.addEventListener("click", (e) => {
     e.target.closest(".variant-image-block").remove();
   }
 });
+});
 
-}); 

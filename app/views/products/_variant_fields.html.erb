@@ -52,7 +52,25 @@
   <!-- 🎨 Variant Images (only for Color) -->
   <div class="mt-2 color-image-actions <%= 'd-none' unless f.object.name == 'Color' %>">
     <%= f.fields_for :variant_images do |image_fields| %>
-      <%= render "variant_image_fields", f: image_fields %>
+      <div class="border p-2 mb-2 bg-light rounded variant-image-block">
+        <!-- File upload -->
+        <%= image_fields.file_field :image,
+              class: "form-control form-control-sm",
+              accept: "image/*",
+              onchange: "previewVariantImage(event)" %>
+
+        <!-- Hidden image_url field ensures persistence -->
+        <%= image_fields.hidden_field :image_url, value: image_fields.object.image_url, class: "image-url-field" %>
+
+        <!-- Destroy flag -->
+        <%= image_fields.hidden_field :_destroy, class: "destroy-flag" %>
+
+        <% if image_fields.object.image_url.present? %>
+          <%= image_tag image_fields.object.image_url, class: "img-thumbnail mb-2 variant-image-preview" %>
+        <% end %>
+
+        <button type="button" class="btn btn-sm btn-outline-danger delete-variant-image">Delete</button>
+      </div>
     <% end %>
 
     <% if @product.persisted? && f.object.persisted? %>
@@ -79,6 +97,13 @@
            class="form-control form-control-sm"
            accept="image/*"
            onchange="previewVariantImage(event)"
+           disabled />
+
+    <!-- Hidden image_url field ensures persistence -->
+    <input type="hidden"
+           name="product[variants_attributes][NEW_RECORD][variant_images_attributes][NEW_IMAGE][image_url]"
+           value=""
+           class="image-url-field"
            disabled />
 
     <input type="hidden"
