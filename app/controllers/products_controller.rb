@@ -138,15 +138,7 @@ def create
     attach_gallery_images(@product)
     attach_variant_images(@product)
 
-    # 🔑 Auto-copy image_url for Color variants without uploads
-    @product.variants.each do |variant|
-      if variant.name == "Color" && variant.variant_images.empty?
-        source = @product.variants.detect { |v| v.name == "Color" && v.variant_images.any? }
-        if source
-          variant.variant_images.create(image_url: source.variant_images.first.image_url)
-        end
-      end
-    end
+    # 🚫 Remove auto-copy logic — clones behave like normal variants
 
     redirect_to @product, notice: "Product created successfully."
   else
@@ -167,7 +159,6 @@ def edit
 end
 
 def update
-  # Handle main product image upload
   if params[:product][:image].present?
     @product.image_url = upload_to_supabase(params[:product][:image])
   end
@@ -189,7 +180,6 @@ def update
     import_inventory_csv(@product) if params[:product][:inventory_csv].present?
     @product.update(stock: @product.total_inventory)
 
-    # ✅ Handle gallery deletions
     if params[:remove_gallery].present?
       remaining = Array(@product.gallery_image_urls) - params[:remove_gallery]
       @product.update(gallery_image_urls: remaining)
@@ -198,15 +188,7 @@ def update
     attach_gallery_images(@product)
     attach_variant_images(@product)
 
-    # 🔑 Auto-copy image_url for Color variants without uploads
-    @product.variants.each do |variant|
-      if variant.name == "Color" && variant.variant_images.empty?
-        source = @product.variants.detect { |v| v.name == "Color" && v.variant_images.any? }
-        if source
-          variant.variant_images.create(image_url: source.variant_images.first.image_url)
-        end
-      end
-    end
+    # 🚫 Remove auto-copy logic — clones behave like normal variants
 
     redirect_to @product, notice: "Product updated successfully."
   else
@@ -387,8 +369,7 @@ def attach_variant_images(product)
           Rails.logger.error "❌ Upload failed for VariantImage ID=#{vi.id || 'new'}"
         end
       else
-        # No new file uploaded → keep whatever image_url is already there
-        Rails.logger.debug "ℹ️ No new file uploaded, keeping existing image_url=#{vi.image_url}"
+        Rails.logger.debug "ℹ️ No new file uploaded for VariantImage ID=#{vi.id || 'new'}, keeping existing image_url=#{vi.image_url}"
       end
     end
   end
