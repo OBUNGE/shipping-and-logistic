@@ -309,11 +309,10 @@
 </div>
 
 <!-- ✅ Submit Button -->
-<div class="mt-3">
-  <%= form.submit(@product.persisted? ? "Update Product" : "Save Product",
-                  class: "btn btn-primary w-100 fw-semibold") %>
-</div>
-
+  <div class="mt-3">
+    <%= form.submit(@product.persisted? ? "Update Product" : "Save Product",
+                    class: "btn btn-primary w-100 fw-semibold") %>
+  </div>
 <% end %>
 
 
