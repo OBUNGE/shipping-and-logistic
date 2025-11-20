@@ -138,6 +138,7 @@ document.addEventListener("turbo:load", () => {
   
   
 // -----------------------------
+// -----------------------------
 // 5. Variant Image Preview
 // -----------------------------
 window.previewVariantImage = function(event) {
@@ -261,8 +262,7 @@ document.addEventListener("click", (e) => {
 
       const timestamp = Date.now();
       clone.innerHTML = clone.innerHTML
-        .replace(/NEW_RECORD/g, timestamp)
-        .replace(/NEW_IMAGE/g, timestamp + "_img");
+        .replace(/NEW_RECORD/g, timestamp);
 
       container.appendChild(clone);
 
@@ -292,10 +292,12 @@ document.addEventListener("click", (e) => {
     if (template && container) {
       const clone = template.firstElementChild.cloneNode(true);
 
-      const timestamp = Date.now();
+      // Use numeric index Rails expects
+      const index = container.querySelectorAll(".variant-image-block").length;
+
       clone.innerHTML = clone.innerHTML
-        .replace(/NEW_RECORD/g, block.dataset.key || timestamp)
-        .replace(/NEW_IMAGE/g, timestamp + "_img");
+        .replace(/NEW_RECORD/g, block.dataset.key || Date.now())
+        .replace(/NEW_IMAGE/g, index);
 
       container.insertBefore(clone, e.target);
     }
