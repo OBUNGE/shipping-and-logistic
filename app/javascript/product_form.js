@@ -134,8 +134,7 @@ document.addEventListener("turbo:load", () => {
           });
         });
     });
-  }
-// -----------------------------
+  }// -----------------------------
 // 5. Variant Image Preview
 // -----------------------------
 window.previewVariantImage = function(event) {
@@ -196,11 +195,7 @@ function updateValueOptions(typeSelect) {
   // Toggle image upload section
   const actions = block.querySelector(".color-image-actions");
   if (actions) {
-    if (selected === "Color") {
-      actions.classList.remove("d-none");
-    } else {
-      actions.classList.add("d-none");
-    }
+    actions.classList.toggle("d-none", selected !== "Color");
   }
 }
 
@@ -222,6 +217,8 @@ document.querySelectorAll("select[name*='[name]']").forEach(typeSelect => {
 document.addEventListener("click", (e) => {
   if (e.target.classList.contains("delete-gallery-image")) {
     e.preventDefault();
+    e.stopPropagation();
+
     const btn = e.target;
     const url = btn.dataset.url;
     const form = btn.closest("form");
@@ -230,6 +227,7 @@ document.addEventListener("click", (e) => {
     hidden.name = "remove_gallery[]";
     hidden.value = url;
     form.appendChild(hidden);
+
     btn.closest(".gallery-image-block").style.display = "none";
   }
 });
@@ -244,73 +242,77 @@ document.addEventListener("change", (e) => {
 });
 
 // -----------------------------
-// 9. Add new variant dynamically (before save)
+// 9. Add / Delete Variants & Images
 // -----------------------------
 document.addEventListener("click", (e) => {
   // ➕ Add Variant
   if (e.target.classList.contains("add-variant-btn")) {
+    e.preventDefault();
+    e.stopPropagation();
+
     const container = document.getElementById("variant-fields");
     const template = document.getElementById("variant-template");
 
     if (template && container) {
-      const clone = template.firstElementChild.cloneNode(true);
+      // Guard: only one fresh clone at a time
+      if (container.querySelector(".variant-block.new-clone")) return;
 
-      // Unique timestamp for nested attributes
-      const timestamp = new Date().getTime();
+      const clone = template.firstElementChild.cloneNode(true);
+      clone.classList.add("new-clone");
+
+      const timestamp = Date.now();
       clone.innerHTML = clone.innerHTML
         .replace(/NEW_RECORD/g, timestamp)
         .replace(/NEW_IMAGE/g, timestamp + "_img");
 
-      // Enable all disabled inputs/selects
-      clone.querySelectorAll("[disabled]").forEach((el) =>
-        el.removeAttribute("disabled")
-      );
+      clone.querySelectorAll("[disabled]").forEach(el => el.removeAttribute("disabled"));
 
       container.appendChild(clone);
 
-      // 🔑 Auto-populate immediately for new selects
       clone.querySelectorAll("select[name*='[name]']").forEach(typeSelect => {
         updateValueOptions(typeSelect);
       });
-
-      // 🚫 Removed auto-copy of image_url — clones start fresh
     }
   }
 
   // ❌ Delete Variant
   if (e.target.classList.contains("delete-variant")) {
     e.preventDefault();
+    e.stopPropagation();
     e.target.closest(".variant-block").remove();
   }
 
   // ➕ Add Variant Image
   if (e.target.classList.contains("add-variant-image-btn")) {
+    e.preventDefault();
+    e.stopPropagation();
+
     const block = e.target.closest(".variant-block");
     const container = block.querySelector(".color-image-actions");
     const template = document.getElementById("variant-image-template");
 
     if (template && container) {
-      const clone = template.firstElementChild.cloneNode(true);
+      // Guard: only one fresh image clone at a time
+      if (container.querySelector(".variant-image-block.new-clone")) return;
 
-      const timestamp = new Date().getTime();
+      const clone = template.firstElementChild.cloneNode(true);
+      clone.classList.add("new-clone");
+
+      const timestamp = Date.now();
       clone.innerHTML = clone.innerHTML
         .replace(/NEW_RECORD/g, block.dataset.key || timestamp)
         .replace(/NEW_IMAGE/g, timestamp + "_img");
 
-      // Enable all disabled inputs/selects
-      clone.querySelectorAll("[disabled]").forEach((el) =>
-        el.removeAttribute("disabled")
-      );
+      clone.querySelectorAll("[disabled]").forEach(el => el.removeAttribute("disabled"));
 
       container.insertBefore(clone, e.target);
-
-      // 🚫 Removed auto-copy of image_url — new image blocks start fresh
     }
   }
 
   // ❌ Delete Variant Image
   if (e.target.classList.contains("delete-variant-image")) {
     e.preventDefault();
+    e.stopPropagation();
     e.target.closest(".variant-image-block").remove();
   }
 });

@@ -170,8 +170,7 @@
       <div class="col-md-4">
         <label class="form-label small">Type</label>
         <select name="product[variants_attributes][NEW_RECORD][name]"
-                class="form-select form-select-sm variant-type"
-                disabled>
+                class="form-select form-select-sm variant-type">
           <option value="">Select type</option>
           <option value="Color">Color</option>
           <option value="Size">Size</option>
@@ -185,8 +184,7 @@
       <div class="col-md-4">
         <label class="form-label small">Option</label>
         <select name="product[variants_attributes][NEW_RECORD][value]"
-                class="form-select form-select-sm variant-value"
-                disabled>
+                class="form-select form-select-sm variant-value">
         </select>
       </div>
 
@@ -197,16 +195,14 @@
                step="0.01"
                name="product[variants_attributes][NEW_RECORD][price_modifier]"
                placeholder="e.g. 50.00"
-               class="form-control form-control-sm"
-               disabled />
+               class="form-control form-control-sm" />
       </div>
 
       <!-- Delete Variant -->
       <div class="col-md-1 d-flex align-items-end">
         <input type="hidden"
                name="product[variants_attributes][NEW_RECORD][_destroy]"
-               class="destroy-flag"
-               disabled />
+               class="destroy-flag" />
         <button type="button"
                 class="btn btn-sm btn-outline-danger delete-variant">
           Delete
@@ -224,21 +220,18 @@
                  name="product[variants_attributes][NEW_RECORD][variant_images_attributes][NEW_IMAGE][image]"
                  class="form-control form-control-sm"
                  accept="image/*"
-                 onchange="previewVariantImage(event)"
-                 disabled />
+                 onchange="previewVariantImage(event)" />
 
           <!-- Hidden image_url field ensures persistence -->
           <input type="hidden"
                  name="product[variants_attributes][NEW_RECORD][variant_images_attributes][NEW_IMAGE][image_url]"
                  value=""
-                 class="image-url-field"
-                 disabled />
+                 class="image-url-field" />
 
           <!-- Destroy flag -->
           <input type="hidden"
                  name="product[variants_attributes][NEW_RECORD][variant_images_attributes][NEW_IMAGE][_destroy]"
-                 class="destroy-flag"
-                 disabled />
+                 class="destroy-flag" />
 
           <button type="button"
                   class="btn btn-sm btn-outline-danger delete-variant-image">

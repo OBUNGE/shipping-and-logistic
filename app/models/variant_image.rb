@@ -15,11 +15,25 @@ class VariantImage < ApplicationRecord
   before_create :upload_to_supabase, if: -> { image.present? }
   before_update :upload_to_supabase, if: -> { image.present? }
 
-  private
+private
 
-  def upload_to_supabase
-    # SupabaseService.upload should return a permanent URL string.
-    # We assign that to image_url so it persists in the DB.
-    self.image_url = SupabaseService.upload(image)
+def upload_to_supabase
+  if image.nil?
+    Rails.logger.warn "[VariantImage] No file provided for upload (variant_id=#{variant_id})"
+    return
   end
+
+  Rails.logger.info "[VariantImage] Attempting Supabase upload: #{image.original_filename} (#{image.content_type})"
+
+  url = SupabaseService.upload(image)
+
+  if url.present?
+    self.image_url = url
+    Rails.logger.info "[VariantImage] ✅ Upload successful: #{url}"
+  else
+    Rails.logger.error "[VariantImage] ❌ Upload failed for #{image.original_filename}"
+    errors.add(:image_url, "could not be uploaded to Supabase")
+  end
+end
+
 end
