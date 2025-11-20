@@ -1,4 +1,7 @@
-<div id="<%= dom_id(f.object) %>" class="border p-3 mb-2 bg-light rounded variant-block" data-saved-value="<%= f.object.value %>">
+<div id="<%= dom_id(f.object) %>" 
+     class="border p-3 mb-2 bg-light rounded variant-block" 
+     data-saved-value="<%= f.object.value %>">
+
   <div class="row g-2">
     <!-- Variant Type -->
     <div class="col-md-4">
@@ -13,7 +16,6 @@
     <!-- Variant Value -->
     <div class="col-md-4">
       <%= f.label :value, "Option", class: "form-label small" %>
-      <!-- Options populated by JS, but saved value is stored in data-current -->
       <%= f.select :value,
             [],
             {},
@@ -36,14 +38,12 @@
       <%= f.hidden_field :_destroy, class: "destroy-flag" %>
 
       <% if f.object.persisted? %>
-        <!-- ✅ Turbo delete for persisted variant -->
         <%= button_to "Delete",
               remove_variant_product_path(@product, id: f.object.id),
               method: :delete,
               form: { data: { turbo_confirm: "Remove this variant?" } },
               class: "btn btn-sm btn-outline-danger" %>
       <% else %>
-        <!-- For new unsaved variants, JS delete sets _destroy -->
         <button type="button" class="btn btn-sm btn-outline-danger delete-variant">Delete</button>
       <% end %>
     </div>
@@ -59,14 +59,17 @@
               accept: "image/*",
               onchange: "previewVariantImage(event)" %>
 
-        <!-- Hidden image_url field ensures persistence -->
-        <%= image_fields.hidden_field :image_url, value: image_fields.object.image_url, class: "image-url-field" %>
+        <!-- Hidden image_url field -->
+        <%= image_fields.hidden_field :image_url, 
+              value: image_fields.object.image_url, 
+              class: "image-url-field" %>
 
         <!-- Destroy flag -->
         <%= image_fields.hidden_field :_destroy, class: "destroy-flag" %>
 
         <% if image_fields.object.image_url.present? %>
-          <%= image_tag image_fields.object.image_url, class: "img-thumbnail mb-2 variant-image-preview" %>
+          <%= image_tag image_fields.object.image_url, 
+                class: "img-thumbnail mb-2 variant-image-preview" %>
         <% end %>
 
         <button type="button" class="btn btn-sm btn-outline-danger delete-variant-image">Delete</button>
@@ -80,7 +83,6 @@
             data: { turbo_stream: true },
             class: "btn btn-sm btn-outline-secondary" %>
     <% else %>
-      <!-- For new unsaved variants, use JS cloning -->
       <button type="button"
               class="btn btn-sm btn-outline-secondary add-variant-image-btn">
         ➕ Add color image
@@ -89,27 +91,26 @@
   </div>
 </div>
 
-<!-- Hidden template for new variant images -->
+<!-- Hidden template for new variant images (ACTIVE inputs) -->
 <div id="variant-image-template" style="display:none;">
   <div class="border p-2 mb-2 bg-light rounded variant-image-block">
+    <!-- File upload -->
     <input type="file"
            name="product[variants_attributes][NEW_RECORD][variant_images_attributes][NEW_IMAGE][image]"
            class="form-control form-control-sm"
            accept="image/*"
-           onchange="previewVariantImage(event)"
-           disabled />
+           onchange="previewVariantImage(event)" />
 
-    <!-- Hidden image_url field ensures persistence -->
+    <!-- Hidden image_url field -->
     <input type="hidden"
            name="product[variants_attributes][NEW_RECORD][variant_images_attributes][NEW_IMAGE][image_url]"
            value=""
-           class="image-url-field"
-           disabled />
+           class="image-url-field" />
 
+    <!-- Destroy flag -->
     <input type="hidden"
            name="product[variants_attributes][NEW_RECORD][variant_images_attributes][NEW_IMAGE][_destroy]"
-           class="destroy-flag"
-           disabled />
+           class="destroy-flag" />
 
     <button type="button" class="btn btn-sm btn-outline-danger delete-variant-image">Delete</button>
   </div>

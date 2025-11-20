@@ -134,7 +134,10 @@ document.addEventListener("turbo:load", () => {
           });
         });
     });
-  }// -----------------------------
+  }
+  
+  
+// -----------------------------
 // 5. Variant Image Preview
 // -----------------------------
 window.previewVariantImage = function(event) {
@@ -254,21 +257,16 @@ document.addEventListener("click", (e) => {
     const template = document.getElementById("variant-template");
 
     if (template && container) {
-      // Guard: only one fresh clone at a time
-      if (container.querySelector(".variant-block.new-clone")) return;
-
       const clone = template.firstElementChild.cloneNode(true);
-      clone.classList.add("new-clone");
 
       const timestamp = Date.now();
       clone.innerHTML = clone.innerHTML
         .replace(/NEW_RECORD/g, timestamp)
         .replace(/NEW_IMAGE/g, timestamp + "_img");
 
-      clone.querySelectorAll("[disabled]").forEach(el => el.removeAttribute("disabled"));
-
       container.appendChild(clone);
 
+      // Auto-populate immediately for new selects
       clone.querySelectorAll("select[name*='[name]']").forEach(typeSelect => {
         updateValueOptions(typeSelect);
       });
@@ -292,18 +290,12 @@ document.addEventListener("click", (e) => {
     const template = document.getElementById("variant-image-template");
 
     if (template && container) {
-      // Guard: only one fresh image clone at a time
-      if (container.querySelector(".variant-image-block.new-clone")) return;
-
       const clone = template.firstElementChild.cloneNode(true);
-      clone.classList.add("new-clone");
 
       const timestamp = Date.now();
       clone.innerHTML = clone.innerHTML
         .replace(/NEW_RECORD/g, block.dataset.key || timestamp)
         .replace(/NEW_IMAGE/g, timestamp + "_img");
-
-      clone.querySelectorAll("[disabled]").forEach(el => el.removeAttribute("disabled"));
 
       container.insertBefore(clone, e.target);
     }
@@ -316,6 +308,7 @@ document.addEventListener("click", (e) => {
     e.target.closest(".variant-image-block").remove();
   }
 });
+
 
 });
 
