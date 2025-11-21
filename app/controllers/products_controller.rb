@@ -159,16 +159,24 @@ def edit
 end
 
 def update
+  Rails.logger.info "🟦 ProductsController#update START for product=#{@product.id}"
+
+  Rails.logger.info "🟦 Incoming product params: #{params[:product].inspect}"
+
   if params[:product][:image].present?
+    Rails.logger.info "🟦 Uploading new main image"
     @product.image_url = upload_to_supabase(params[:product][:image])
   end
 
   # Handle safe deletion of variants tied to orders
   if params[:product][:variants_attributes].present?
+    Rails.logger.info "🟦 Variants attributes received: #{params[:product][:variants_attributes].inspect}"
     params[:product][:variants_attributes].each do |_, attrs|
+      Rails.logger.info "🟦 Processing variant attrs: #{attrs.inspect}"
       if attrs["_destroy"] == "true"
         variant = Variant.find_by(id: attrs["id"])
         if variant&.order_items&.exists?
+          Rails.logger.warn "⚠️ Variant #{variant.id} tied to orders — marking inactive instead of destroying"
           variant.update(active: false)
           attrs.delete("_destroy")
         end
@@ -177,25 +185,37 @@ def update
   end
 
   if @product.update(product_params)
-    import_inventory_csv(@product) if params[:product][:inventory_csv].present?
+    Rails.logger.info "✅ Product updated successfully"
+    Rails.logger.info "🟦 Updated product attributes: #{@product.attributes.inspect}"
+
+    if params[:product][:inventory_csv].present?
+      Rails.logger.info "🟦 Importing inventory CSV"
+      import_inventory_csv(@product)
+    end
+
     @product.update(stock: @product.total_inventory)
+    Rails.logger.info "🟦 Stock recalculated: #{@product.stock}"
 
     if params[:remove_gallery].present?
+      Rails.logger.info "🟦 Removing gallery images: #{params[:remove_gallery].inspect}"
       remaining = Array(@product.gallery_image_urls) - params[:remove_gallery]
       @product.update(gallery_image_urls: remaining)
     end
 
+    Rails.logger.info "🟦 Attaching gallery images"
     attach_gallery_images(@product)
-    attach_variant_images(@product)
 
-    # 🚫 Remove auto-copy logic — clones behave like normal variants
+    Rails.logger.info "🟦 Attaching variant images"
+    attach_variant_images(@product)
 
     redirect_to @product, notice: "Product updated successfully."
   else
-    Rails.logger.debug "❌ Product update failed: #{@product.errors.full_messages}"
+    Rails.logger.error "❌ Product update failed: #{@product.errors.full_messages}"
     build_nested_fields(@product)
     render :edit, status: :unprocessable_entity
   end
+
+  Rails.logger.info "🟦 ProductsController#update END"
 end
 
   def destroy
