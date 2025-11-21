@@ -1,6 +1,6 @@
 <%= form_with model: @product,
               url: @product.persisted? ? product_path(@product) : products_path,
-              method: :patch
+              method: :patch,
               html: { class: "p-3", multipart: true } do |form| %>
 
   <% if @product.errors.any? %>
