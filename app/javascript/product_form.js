@@ -2,11 +2,11 @@
 console.log("product_form.js loaded");
 
 /*
-  Behaviour:
-  - Turbo streams render server additions (edit flow).
-  - For new product, client-side cloning of templates works.
-  - add-variant-image-btn works both client-side (new) and server-side (edit).
-  - No unsafe insertBefore usage.
+  FIXES INCLUDED:
+  - No more insertBefore errors
+  - No storing of blob: URLs
+  - Image previews work correctly with Supabase uploads
+  - Clean variant/image cloning for NEW and EDIT forms
 */
 
 document.addEventListener("turbo:load", initProductForm);
@@ -19,102 +19,96 @@ function initProductForm() {
   bindGallery();
 }
 
-/* 1. Price + shipping total */
-function bindPriceShipping(){
+/* -----------------------------
+   1. Price + Shipping
+--------------------------------*/
+function bindPriceShipping() {
   const priceField = document.getElementById("product_price");
   const shippingField = document.getElementById("product_shipping_cost");
   const totalCostSpan = document.getElementById("total-cost");
-  const updateTotal = () => {
-    const price = parseFloat(priceField?.value) || 0;
-    const shipping = parseFloat(shippingField?.value) || 0;
-    if (totalCostSpan) totalCostSpan.textContent = `KES ${(price + shipping).toFixed(2)}`;
+
+  const update = () => {
+    const p = parseFloat(priceField?.value) || 0;
+    const s = parseFloat(shippingField?.value) || 0;
+    if (totalCostSpan) totalCostSpan.textContent = `KES ${(p + s).toFixed(2)}`;
   };
-  priceField?.addEventListener("input", updateTotal);
-  shippingField?.addEventListener("input", updateTotal);
+
+  priceField?.addEventListener("input", update);
+  shippingField?.addEventListener("input", update);
 }
 
-/* 2. Category -> subcategory AJAX */
-function bindCategoryAjax(){
-  const categorySelect = document.getElementById("category-select");
-  const subcategorySelect = document.getElementById("subcategory-select");
-  if (!categorySelect || !subcategorySelect) return;
-  categorySelect.addEventListener("change", e => {
-    const categoryId = e.target.value;
-    fetch(`/categories/${categoryId}/subcategories.json`)
+/* -----------------------------
+   2. Category → Subcategory AJAX
+--------------------------------*/
+function bindCategoryAjax() {
+  const cat = document.getElementById("category-select");
+  const sub = document.getElementById("subcategory-select");
+  if (!cat || !sub) return;
+
+  cat.addEventListener("change", e => {
+    fetch(`/categories/${e.target.value}/subcategories.json`)
       .then(res => res.json())
-      .then(data => {
-        subcategorySelect.innerHTML = "<option value=''>Select a subcategory</option>";
-        data.forEach(sub => {
-          const option = document.createElement("option");
-          option.value = sub.id;
-          option.textContent = sub.name;
-          subcategorySelect.appendChild(option);
+      .then(list => {
+        sub.innerHTML = "<option value=''>Select a subcategory</option>";
+        list.forEach(item => {
+          const opt = document.createElement("option");
+          opt.value = item.id;
+          opt.textContent = item.name;
+          sub.appendChild(opt);
         });
-      }).catch(err => console.error("Subcategory fetch failed", err));
+      })
+      .catch(err => console.error("Subcategory fetch failed:", err));
   });
 }
 
-/* 3. Variant logic (value population, image toggles, add/delete) */
-function bindVariantBehaviour(){
-  // type -> options mapping
+/* -----------------------------
+   3. Variant Logic
+--------------------------------*/
+function bindVariantBehaviour() {
   const typeOptions = {
-    Color: ["Black","Blue","Red","Green","White"],
-    Size: ["XS","S","M","L","XL","XXL"],
-    Storage: ["64GB","128GB","256GB","512GB","1TB"],
-    Material: ["Cotton","Leather","Polyester","Plastic","Metal","Wood"],
-    Packaging: ["Box","Bag","Sachet","Envelope","Bottle","Jar"]
+    Color: ["Black", "Blue", "Red", "Green", "White"],
+    Size: ["XS", "S", "M", "L", "XL", "XXL"],
+    Storage: ["64GB", "128GB", "256GB", "512GB", "1TB"],
+    Material: ["Cotton", "Leather", "Polyester", "Plastic", "Metal", "Wood"],
+    Packaging: ["Box", "Bag", "Sachet", "Envelope", "Bottle", "Jar"]
   };
 
-  // Helper to populate value select and toggle color-image-actions
-  function updateValueOptions(typeSelect){
-    const selected = typeSelect.value;
+  function updateValueOptions(typeSelect) {
     const block = typeSelect.closest(".variant-block");
-    if (!block) return;
     const valueSelect = block.querySelector(".variant-value");
-    if (!valueSelect) return;
+    const selected = typeSelect.value;
 
     valueSelect.innerHTML = "";
-    const options = typeOptions[selected] || [];
-    options.forEach(opt => {
-      const option = document.createElement("option");
-      option.value = opt;
-      option.textContent = opt;
-      valueSelect.appendChild(option);
+    (typeOptions[selected] || []).forEach(v => {
+      const opt = document.createElement("option");
+      opt.value = opt.textContent = v;
+      valueSelect.appendChild(opt);
     });
 
-    // preload saved value
     const saved = valueSelect.dataset.current || block.dataset.savedValue;
-    if (saved) {
-      const match = Array.from(valueSelect.options).find(o => o.value === saved);
-      if (match) valueSelect.value = saved;
+    if (saved && [...valueSelect.options].some(o => o.value === saved)) {
+      valueSelect.value = saved;
     }
 
-    // show/hide color actions
     const actions = block.querySelector(".color-image-actions");
     if (actions) actions.classList.toggle("d-none", selected !== "Color");
   }
 
-  // run for existing selects on load
-  document.querySelectorAll(".variant-type").forEach(s => {
-    updateValueOptions(s);
-  });
+  document.querySelectorAll(".variant-type").forEach(updateValueOptions);
 
-  // delegated change handler
   document.addEventListener("change", e => {
-    // variant type select changed
     if (e.target.matches(".variant-type")) {
       updateValueOptions(e.target);
     }
 
-    // file inputs for preview (variant images)
     if (e.target.matches("input[type='file'].variant-image-input")) {
-      previewVariantImage({ target: e.target });
+      previewVariantImage(e);
     }
   });
 
-  // add / delete buttons (delegated click)
   document.addEventListener("click", e => {
-    // Add variant (client-side for new product)
+
+    /* ADD VARIANT */
     if (e.target.matches(".add-variant-btn")) {
       e.preventDefault();
       const container = document.getElementById("variant-fields");
@@ -122,34 +116,27 @@ function bindVariantBehaviour(){
       if (!container || !template) return;
 
       const wrapper = document.createElement("div");
-      wrapper.innerHTML = template.firstElementChild.outerHTML;
+      wrapper.innerHTML = template.firstElementChild.outerHTML.trim();
       const clone = wrapper.firstElementChild;
 
       const key = Date.now().toString();
-      // replace placeholders
       clone.innerHTML = clone.innerHTML.replace(/NEW_RECORD/g, key);
-      clone.id = `variant_${key}`;
       clone.dataset.key = key;
 
       container.appendChild(clone);
 
-      // initialize selects inside clone
-      clone.querySelectorAll(".variant-type").forEach(s => updateValueOptions(s));
+      clone.querySelectorAll(".variant-type").forEach(updateValueOptions);
       return;
     }
 
-    // Delete variant (client-side)
+    /* DELETE VARIANT */
     if (e.target.matches(".delete-variant")) {
       e.preventDefault();
       const block = e.target.closest(".variant-block");
-      if (!block) return;
-      const destroyInput = block.querySelector("input.destroy-flag[name*='[_destroy]']");
-      if (destroyInput && destroyInput.name.includes("[id]") === false) {
-        // newly created client-side variant: remove DOM
-        block.remove();
-      } else if (destroyInput) {
-        // persisted record: mark _destroy = 1 and hide
-        destroyInput.value = "1";
+      const destroy = block.querySelector("input[name*='[_destroy]']");
+
+      if (destroy && destroy.name.includes("[id]")) {
+        destroy.value = "1";
         block.style.display = "none";
       } else {
         block.remove();
@@ -157,57 +144,39 @@ function bindVariantBehaviour(){
       return;
     }
 
-    // Add variant image (client-side for new variants)
+    /* ADD VARIANT IMAGE */
     if (e.target.matches(".add-variant-image-btn")) {
       e.preventDefault();
-
       const block = e.target.closest(".variant-block");
-      if (!block) return;
-
-      const imagesWrapper = block.querySelector(".variant-images-wrapper");
+      const wrapper = block.querySelector(".variant-images-wrapper");
       const template = document.getElementById("variant-image-template");
+      if (!block || !wrapper || !template) return;
 
-      // If this is edit flow, we expect Turbo to add image (server-side). For new (or client-only) we clone.
-      const isEditFlow = block.querySelector("input[name*='[id]']") !== null && block.querySelector("input[name*='[id]']").value !== "";
+      const variantKey = block.dataset.key;
+      const index = wrapper.querySelectorAll(".variant-image-block").length;
 
-      // If product is persisted but this variant was persisted too, the controller `add_variant_image` will handle server-side Turbo.
-      // For client-only new variants, or when add button is client-side, we clone.
-      if (!isEditFlow) {
-        if (!imagesWrapper || !template) return;
-        const w = document.createElement("div");
-        w.innerHTML = template.firstElementChild.outerHTML.trim();
-        const newImageBlock = w.firstElementChild;
+      const newEl = template.firstElementChild.cloneNode(true);
 
-        // compute indexes: use variant key and image count
-        const variantKey = block.dataset.key || Date.now().toString();
-        const index = imagesWrapper.querySelectorAll(".variant-image-block").length;
+      newEl.querySelectorAll("[name]").forEach(el => {
+        el.name = el.name
+          .replace(/INDEX/g, variantKey)
+          .replace(/NEW_IMAGE/g, index);
+      });
 
-        newImageBlock.querySelectorAll("input, textarea, select").forEach(el => {
-          if (el.name) {
-            el.name = el.name.replace(/INDEX/g, variantKey).replace(/NEW_IMAGE/g, index);
-          }
-        });
-
-        imagesWrapper.appendChild(newImageBlock);
-      } else {
-        // For persisted variant in edit mode: do nothing here — the server endpoint will respond with turbo_stream and append server-side.
-      }
+      wrapper.appendChild(newEl);
       return;
     }
 
-    // Delete variant image (client-side)
+    /* DELETE VARIANT IMAGE */
     if (e.target.matches(".delete-variant-image")) {
       e.preventDefault();
       const imgBlock = e.target.closest(".variant-image-block");
-      if (!imgBlock) return;
+      const destroy = imgBlock.querySelector("input[name*='[_destroy]']");
 
-      const destroyInput = imgBlock.querySelector("input[name*='[_destroy]']");
-      if (destroyInput && destroyInput.type === "hidden") {
-        // mark for destroy and hide
-        destroyInput.value = "1";
+      if (destroy) {
+        destroy.value = "1";
         imgBlock.style.display = "none";
       } else {
-        // client-only newly added block
         imgBlock.remove();
       }
       return;
@@ -215,78 +184,63 @@ function bindVariantBehaviour(){
   });
 }
 
-/* 4. Variant image preview */
-window.previewVariantImage = function(event) {
+/* -----------------------------
+   4. Preview Variant Image
+--------------------------------*/
+window.previewVariantImage = function (event) {
   const input = event.target;
-  const file = input.files && input.files[0];
+  const file = input.files?.[0];
   if (!file) return;
 
-  let preview = input.closest(".variant-image-block").querySelector(".variant-image-preview");
+  const block = input.closest(".variant-image-block");
+  let preview = block.querySelector(".variant-image-preview");
+
   if (!preview) {
     preview = document.createElement("img");
     preview.className = "img-thumbnail mb-2 variant-image-preview";
     preview.style.maxHeight = "150px";
     input.insertAdjacentElement("beforebegin", preview);
   }
-  preview.src = URL.createObjectURL(file);
 
-  const hiddenUrl = input.closest(".variant-image-block").querySelector(".image-url-field");
-  if (hiddenUrl) hiddenUrl.value = preview.src;
+  const tempUrl = URL.createObjectURL(file);
+  preview.src = tempUrl;
 
-  preview.onload = () => URL.revokeObjectURL(preview.src);
+  // DO NOT store blob: or temp URLs in image_url
+  const hiddenUrl = block.querySelector(".image-url-field");
+  if (hiddenUrl) hiddenUrl.value = "";
+
+  preview.onload = () => URL.revokeObjectURL(tempUrl);
 };
 
-/* 5. Gallery preview helpers */
-function bindGallery(){
-  window.previewGalleryImages = function(event) {
+/* -----------------------------
+   5. Gallery Image Preview
+--------------------------------*/
+function bindGallery() {
+  window.previewGalleryImages = function (event) {
     const holder = document.getElementById("gallery-preview");
-    if (!holder) return;
     holder.innerHTML = "";
-    Array.from(event.target.files || []).forEach(file => {
+
+    [...event.target.files].forEach(file => {
       const reader = new FileReader();
       reader.onload = e => {
-        const wrapper = document.createElement("div");
-        wrapper.className = "col-md-3 mb-2 text-center preview-item";
-        wrapper.draggable = true;
+        const box = document.createElement("div");
+        box.className = "col-md-3 mb-2 text-center preview-item";
 
         const img = document.createElement("img");
         img.src = e.target.result;
         img.className = "img-thumbnail";
         img.style.maxHeight = "150px";
 
-        const removeBtn = document.createElement("button");
-        removeBtn.className = "btn btn-sm btn-outline-danger mt-2";
-        removeBtn.textContent = "Remove";
-        removeBtn.addEventListener("click", () => wrapper.remove());
+        const btn = document.createElement("button");
+        btn.className = "btn btn-sm btn-outline-danger mt-2";
+        btn.textContent = "Remove";
+        btn.onclick = () => box.remove();
 
-        wrapper.appendChild(img);
-        wrapper.appendChild(removeBtn);
-        holder.appendChild(wrapper);
+        box.appendChild(img);
+        box.appendChild(btn);
+        holder.appendChild(box);
       };
       reader.readAsDataURL(file);
     });
   };
-
-  window.addGalleryInput = function() {
-    const galleryInputs = document.getElementById("gallery-inputs");
-    if (!galleryInputs) return;
-    const input = document.createElement("input");
-    input.type = "file";
-    input.name = "gallery_images[]";
-    input.accept = "image/*";
-    input.className = "form-control form-control-sm mb-2";
-    input.onchange = window.previewGalleryImages;
-    galleryInputs.appendChild(input);
-  };
 }
-
-/* Utility: addFields used for inventory in your markup */
-window.addFields = function(containerId) {
-  const container = document.getElementById(containerId);
-  const template = document.getElementById(containerId.replace('-fields','-template')) || document.getElementById("inventory-template");
-  if (!container || !template) return;
-  const wrapper = document.createElement("div");
-  wrapper.innerHTML = template.innerHTML.trim();
-  container.appendChild(wrapper.firstElementChild);
-};
-
