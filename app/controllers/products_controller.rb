@@ -315,14 +315,14 @@ def product_params
     :category_id,
     :subcategory_id,
     :inventory_csv,
-    :image,                        # allow main product image
-    gallery_images: [],            # allow multiple gallery uploads
+    :image_url,                    # store Supabase URL here
+    gallery_images: [],            # raw uploads handled manually
     variants_attributes: [
       :id, :name, :value, :price_modifier, :_destroy,
-      variant_images_attributes: [:id, :image, :image_url, :_destroy]
+      variant_images_attributes: [:id, :image_url, :_destroy]
     ],
     inventories_attributes: [:id, :location, :quantity, :_destroy],
-    product_images_attributes: [:id, :image, :image_url, :_destroy]
+    product_images_attributes: [:id, :image_url, :_destroy]
   )
 end
 
