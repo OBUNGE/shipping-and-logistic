@@ -1,13 +1,10 @@
+<%# expects local: f (form builder) and product (optional) %>
 <div id="<%= dom_id(f.object) %>"
      class="border p-3 mb-2 bg-light rounded variant-block"
      data-saved-value="<%= f.object.value %>"
      data-key="<%= (f.object.id || Time.now.to_i) %>">
 
-  <!-- Hidden ID for update -->
-  <%= f.hidden_field :id %>
-
   <div class="row g-2">
-    <!-- Variant Type -->
     <div class="col-md-4">
       <%= f.label :name, "Type", class: "form-label small" %>
       <%= f.select :name,
@@ -17,69 +14,43 @@
             required: true %>
     </div>
 
-    <!-- Variant Value -->
     <div class="col-md-4">
       <%= f.label :value, "Option", class: "form-label small" %>
       <%= f.select :value,
-            case f.object.name
-            when "Color"     then ["Black","Blue","Red","Green","White"]
-            when "Size"      then ["XS","S","M","L","XL","XXL"]
-            when "Storage"   then ["64GB","128GB","256GB","512GB","1TB"]
-            when "Material"  then ["Cotton","Leather","Polyester","Plastic","Metal","Wood"]
-            when "Packaging" then ["Box","Bag","Sachet","Envelope","Bottle","Jar"]
-            else []
-            end,
-            { selected: f.object.value },
+            [], # JS will populate
+            {},
             class: "form-select form-select-sm variant-value",
             required: true,
             data: { current: f.object.value } %>
     </div>
 
-    <!-- Price Modifier -->
     <div class="col-md-3">
       <%= f.label :price_modifier, "Price Modifier", class: "form-label small" %>
-      <%= f.number_field :price_modifier,
-            step: 0.01,
-            placeholder: "e.g. 50.00",
-            class: "form-control form-control-sm" %>
+      <%= f.number_field :price_modifier, step: 0.01, placeholder: "e.g. 50.00", class: "form-control form-control-sm" %>
     </div>
 
-    <!-- Delete Variant -->
     <div class="col-md-1 d-flex align-items-end">
       <%= f.hidden_field :_destroy, class: "destroy-flag" %>
 
       <% if f.object.persisted? %>
-        <%= button_to "Delete",
-              remove_variant_product_path(@product, id: f.object.id),
-              method: :delete,
-              form: { data: { turbo_confirm: "Remove this variant?" } },
-              class: "btn btn-sm btn-outline-danger" %>
+        <%= button_to "Delete", remove_variant_product_path(@product, id: f.object.id), method: :delete, form: { data: { turbo_confirm: "Remove this variant?" } }, class: "btn btn-sm btn-outline-danger" %>
       <% else %>
         <button type="button" class="btn btn-sm btn-outline-danger delete-variant">Delete</button>
       <% end %>
     </div>
   </div>
 
-  <!-- 🎨 Variant Images (only for Color) -->
   <div class="mt-2 color-image-actions <%= 'd-none' unless f.object.name == 'Color' %>">
     <div class="variant-images-wrapper">
       <%= f.fields_for :variant_images do |image_fields| %>
-        <%= image_fields.hidden_field :id %>
-        <%= render "variant_image_fields", f: image_fields %>
+        <%= render "variant_image_fields", f: image_fields, product: @product %>
       <% end %>
     </div>
 
-    <% if @product.persisted? && f.object.persisted? %>
-      <%= button_to "➕ Add color image",
-            add_variant_image_product_path(@product, id: f.object.id),
-            method: :post,
-            data: { turbo_stream: true },
-            class: "btn btn-sm btn-outline-secondary" %>
+    <% if @product&.persisted? && f.object.persisted? %>
+      <%= button_to "➕ Add color image", add_variant_image_product_path(@product, id: f.object.id), method: :post, data: { turbo_stream: true }, class: "btn btn-sm btn-outline-secondary" %>
     <% else %>
-      <button type="button"
-              class="btn btn-sm btn-outline-secondary add-variant-image-btn">
-        ➕ Add color image
-      </button>
+      <button type="button" class="btn btn-sm btn-outline-secondary add-variant-image-btn">➕ Add color image</button>
     <% end %>
   </div>
 </div>
