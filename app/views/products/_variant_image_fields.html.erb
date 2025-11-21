@@ -1,28 +1,36 @@
 <div id="<%= dom_id(f.object) %>" class="border p-2 mb-2 bg-light rounded variant-image-block">
+  <!-- Hidden ID for update -->
   <%= f.hidden_field :id %>
 
+  <!-- Show image only if it's a real URL (not a blob:) -->
   <% if f.object.image_url.present? && !f.object.image_url.start_with?("blob:") %>
     <%= image_tag f.object.image_url,
-          class: "img-thumbnail mb-2 variant-image-preview",
-          style: "max-height: 150px;" %>
-  <% else %>
-    <img class="img-thumbnail mb-2 variant-image-preview" 
-         style="display:none; max-height: 150px;" />
+          class: "img-thumbnail mb-2 variant-image-preview" %>
   <% end %>
 
+  <!-- File upload -->
   <%= f.file_field :image,
         class: "form-control form-control-sm",
         accept: "image/*",
         onchange: "previewVariantImage(event)" %>
 
-  <%= f.hidden_field :image_url,
-        value: f.object.image_url,
-        class: "image-url-field" %>
-  
+  <!-- Hidden image_url field (skip blob: values) -->
+  <% unless f.object.image_url&.start_with?("blob:") %>
+    <%= f.hidden_field :image_url,
+          value: f.object.image_url,
+          class: "image-url-field" %>
+  <% end %>
+
+  <!-- Destroy flag -->
   <%= f.hidden_field :_destroy, class: "destroy-flag" %>
 
-  <%# 🚨 FIX 1: Use client-side button for ALL deletes %>
-  <button type="button" class="btn btn-sm btn-outline-danger delete-variant-image">
-    Delete
-  </button>
+  <% if f.object.persisted? %>
+    <%= button_to "Delete",
+          remove_variant_image_product_path(@product, id: f.object.id),
+          method: :delete,
+          form: { data: { turbo_confirm: "Remove this image?" } },
+          class: "btn btn-sm btn-outline-danger" %>
+  <% else %>
+    <button type="button" class="btn btn-sm btn-outline-danger delete-variant-image">Delete</button>
+  <% end %>
 </div>
