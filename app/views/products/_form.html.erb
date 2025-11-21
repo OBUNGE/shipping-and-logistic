@@ -2,9 +2,6 @@
               url: @product.persisted? ? product_path(@product) : products_path,
               html: { class: "p-3", multipart: true } do |form| %>
 
-
-
-
   <% if @product.errors.any? %>
     <div class="alert alert-danger small">
       <strong><%= pluralize(@product.errors.count, "error") %>:</strong>
@@ -20,144 +17,171 @@
   <div class="row g-2 mb-3">
     <div class="col-md-6">
       <%= form.label :title, class: "form-label small" %>
-      <%= form.text_field :title, class: "form-control form-control-sm", placeholder: "e.g. Organic Honey 500ml", required: true %>
+      <%= form.text_field :title,
+            class: "form-control form-control-sm",
+            placeholder: "e.g. Organic Honey 500ml",
+            required: true %>
     </div>
     <div class="col-md-6">
       <%= form.label :min_order, "Minimum Order", class: "form-label small" %>
-      <%= form.number_field :min_order, min: 1, class: "form-control form-control-sm", placeholder: "e.g. 5", required: true %>
+      <%= form.number_field :min_order,
+            min: 1,
+            class: "form-control form-control-sm",
+            placeholder: "e.g. 5",
+            required: true %>
     </div>
   </div>
 
   <div class="mb-3">
     <%= form.label :description, class: "form-label small" %>
-    <%= form.text_area :description, class: "form-control form-control-sm", rows: 3, placeholder: "Describe the product", required: true %>
-  </div>
-<!-- 🏷️ Category -->
-<div class="mb-3">
-  <%= form.label :category_id, "Category", class: "form-label small" %>
-  <%= form.collection_select :category_id, Category.where(parent_id: nil), :id, :name,
-        { prompt: "Select a category" },
-        { class: "form-select form-select-sm", id: "category-select", required: true } %>
-</div>
-
-<!-- 🏷️ Subcategory -->
-<div class="mb-3">
-  <%= form.label :subcategory_id, "Subcategory", class: "form-label small" %>
-
-  <%= form.select :subcategory_id,
-        @product.category.present? ? @product.category.subcategories.pluck(:name, :id) : [],
-        { prompt: "Select a subcategory" },
-        { class: "form-select form-select-sm", id: "subcategory-select" } %>
-</div>
-
-
-<!-- 💰 Pricing -->
-<div class="row g-2 mb-3">
-  <div class="col-md-6">
-    <%= form.label :price, "Base Price (KES)", class: "form-label small" %>
-    <%= form.number_field :price,
-          step: 1,
+    <%= form.text_area :description,
           class: "form-control form-control-sm",
-          id: "product_price",
-          placeholder: "e.g. 1200",
+          rows: 3,
+          placeholder: "Describe the product",
           required: true %>
-    <small class="text-muted">
-      Stored in KES — buyers will see <%= display_price(1200) %> (default KES, converts to USD if selected).
-    </small>
   </div>
 
-  <div class="col-md-6">
-    <%= form.label :shipping_cost, "Shipping Cost (KES)", class: "form-label small" %>
-    <%= form.number_field :shipping_cost,
-          step: 1,
-          class: "form-control form-control-sm",
-          id: "product_shipping_cost",
-          placeholder: "e.g. 300" %>
-    <small class="text-muted">
-      Stored in KES — buyers will see <%= display_price(300) %> (default KES, converts to USD if selected).
-    </small>
+  <!-- 🏷️ Category -->
+  <div class="mb-3">
+    <%= form.label :category_id, "Category", class: "form-label small" %>
+    <%= form.collection_select :category_id,
+          Category.where(parent_id: nil), :id, :name,
+          { prompt: "Select a category" },
+          { class: "form-select form-select-sm", id: "category-select", required: true } %>
   </div>
-</div>
 
-<p class="text-primary small mb-3">
-  💵 Total Cost: 
-  <span id="total-cost">
-    <%= display_price((@product.price || 0) + (@product.shipping_cost || 0)) %>
-  </span>
-</p>
+  <!-- 🏷️ Subcategory -->
+  <div class="mb-3">
+    <%= form.label :subcategory_id, "Subcategory", class: "form-label small" %>
+    <%= form.select :subcategory_id,
+          @product.category.present? ? @product.category.subcategories.pluck(:name, :id) : [],
+          { prompt: "Select a subcategory", selected: @product.subcategory_id },
+          { class: "form-select form-select-sm", id: "subcategory-select", data: { current: @product.subcategory_id } } %>
+  </div>
+
+  <!-- 💰 Pricing -->
+  <div class="row g-2 mb-3">
+    <div class="col-md-6">
+      <%= form.label :price, "Base Price (KES)", class: "form-label small" %>
+      <%= form.number_field :price,
+            step: 1,
+            class: "form-control form-control-sm",
+            id: "product_price",
+            placeholder: "e.g. 1200",
+            required: true %>
+      <small class="text-muted">
+        Stored in KES — buyers will see <%= display_price(1200) %> (default KES, converts to USD if selected).
+      </small>
+    </div>
+
+    <div class="col-md-6">
+      <%= form.label :shipping_cost, "Shipping Cost (KES)", class: "form-label small" %>
+      <%= form.number_field :shipping_cost,
+            step: 1,
+            class: "form-control form-control-sm",
+            id: "product_shipping_cost",
+            placeholder: "e.g. 300" %>
+      <small class="text-muted">
+        Stored in KES — buyers will see <%= display_price(300) %> (default KES, converts to USD if selected).
+      </small>
+    </div>
+  </div>
+
+  <p class="text-primary small mb-3">
+    💵 Total Cost:
+    <span id="total-cost">
+      <%= display_price((@product.price || 0) + (@product.shipping_cost || 0)) %>
+    </span>
+  </p>
 
   <!-- 📦 Stock -->
   <div class="row g-2 mb-3">
     <div class="col-md-6">
       <%= form.label :stock, class: "form-label small" %>
-      <%= form.number_field :stock, min: 0, class: "form-control form-control-sm", placeholder: "e.g. 200", required: true %>
+      <%= form.number_field :stock,
+            min: 0,
+            class: "form-control form-control-sm",
+            placeholder: "e.g. 200",
+            required: true %>
     </div>
     <div class="col-md-6">
       <%= form.label :estimated_delivery_range, "Estimated Delivery", class: "form-label small" %>
-      <%= form.text_field :estimated_delivery_range, class: "form-control form-control-sm", placeholder: "e.g. 2–5 days" %>
+      <%= form.text_field :estimated_delivery_range,
+            class: "form-control form-control-sm",
+            placeholder: "e.g. 2–5 days" %>
     </div>
   </div>
 
   <div class="mb-3">
     <%= form.label :return_policy, class: "form-label small" %>
-    <%= form.text_area :return_policy, class: "form-control form-control-sm", rows: 2, placeholder: "e.g. Returns accepted within 7 days" %>
+    <%= form.text_area :return_policy,
+          class: "form-control form-control-sm",
+          rows: 2,
+          placeholder: "e.g. Returns accepted within 7 days" %>
   </div>
-<!-- 🖼️ Main Product Image -->
-<div class="mb-3">
-  <%= form.label :image_url, "Main Product Image", class: "form-label small" %>
 
-  <% if @product.image_url.present? %>
-    <div class="mb-2">
-      <%= image_tag @product.image_url,
-                    class: "img-fluid rounded shadow-sm",
-                    style: "max-height: 250px;" %>
-    </div>
-  <% end %>
+  <!-- 🖼️ Main Product Image -->
+  <div class="mb-3">
+    <%= form.label :image_url, "Main Product Image", class: "form-label small" %>
 
-  <!-- Use file_field_tag instead of form.file_field -->
-  <%= file_field_tag "product[image]",
-        class: "form-control form-control-sm",
-        accept: "image/*",
-        onchange: "previewMainImage(event)" %>
+    <% if @product.image_url.present? %>
+      <div class="mb-2">
+        <%= image_tag @product.image_url,
+                      class: "img-fluid rounded shadow-sm",
+                      style: "max-height: 250px;" %>
+      </div>
+    <% end %>
 
-  <img id="main-image-preview"
-       class="img-fluid mt-2 rounded shadow-sm"
-       style="max-height: 250px;" />
-</div>
-
-<!-- 🖼️ Gallery Images -->
-<div class="mb-3">
-  <%= form.label :gallery_image_urls, "Gallery Images", class: "form-label small" %>
-
-  <% if @product.gallery_image_urls.present? %>
-    <div class="row g-2 mb-2">
-      <% @product.gallery_image_urls.each do |url| %>
-        <div id="gallery_image_<%= Digest::MD5.hexdigest(url) %>" class="col-4 text-center gallery-image-block">
-          <%= image_tag url, class: "img-fluid rounded shadow-sm mb-1" %>
-          <!-- ✅ Turbo delete -->
-          <%= button_to "Delete",
-                remove_gallery_product_path(@product, url: url),
-                method: :delete,
-                form: { data: { turbo_confirm: "Remove this image?" } },
-                class: "btn btn-sm btn-outline-danger" %>
-        </div>
-      <% end %>
-    </div>
-  <% end %>
-
-  <div id="gallery-inputs">
-    <%= file_field_tag "gallery_images[]", multiple: true,
-          class: "form-control form-control-sm mb-2",
+    <%= file_field_tag "product[image]",
+          class: "form-control form-control-sm",
           accept: "image/*",
-          onchange: "previewGalleryImages(event)" %>
+          onchange: "previewMainImage(event)" %>
+
+    <img id="main-image-preview"
+         class="img-fluid mt-2 rounded shadow-sm"
+         style="max-height: 250px;" />
   </div>
 
-  <button type="button" class="btn btn-sm btn-outline-primary mt-2" onclick="addGalleryInput()">➕ Add More Images</button>
-  <div id="gallery-preview" class="row mt-2 sortable-preview"></div>
-</div>
+  <!-- 🖼️ Gallery Images -->
+  <div class="mb-3">
+    <%= form.label :gallery_image_urls, "Gallery Images", class: "form-label small" %>
+
+    <% if @product.gallery_image_urls.present? %>
+      <div class="row g-2 mb-2">
+        <% @product.gallery_image_urls.each do |url| %>
+          <div id="gallery_image_<%= Digest::MD5.hexdigest(url) %>"
+               class="col-4 text-center gallery-image-block">
+            <%= image_tag url, class: "img-fluid rounded shadow-sm mb-1" %>
+            <%= button_to "Delete",
+                  remove_gallery_product_path(@product, url: url),
+                  method: :delete,
+                  form: { data: { turbo_confirm: "Remove this image?" } },
+                  class: "btn btn-sm btn-outline-danger" %>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+
+    <div id="gallery-inputs">
+      <%= file_field_tag "gallery_images[]",
+            multiple: true,
+            class: "form-control form-control-sm mb-2",
+            accept: "image/*",
+            onchange: "previewGalleryImages(event)" %>
+    </div>
+
+    <button type="button"
+            class="btn btn-sm btn-outline-primary mt-2"
+            onclick="addGalleryInput()">➕ Add More Images</button>
+    <div id="gallery-preview" class="row mt-2 sortable-preview"></div>
+  </div>
+
+<!-- 📐 Variants Section -->
 <!-- Variants -->
 <div id="variant-fields">
   <%= form.fields_for :variants do |variant_fields| %>
+    <!-- Hidden ID ensures Rails knows which variant to update -->
+    <%= variant_fields.hidden_field :id %>
     <%= render "variant_fields", f: variant_fields %>
   <% end %>
 </div>
@@ -245,6 +269,10 @@
 <div id="variant-image-template" style="display:none;">
   <div class="border p-2 mb-2 bg-light rounded variant-image-block">
 
+    <!-- Hidden ID for update (only used when editing existing images) -->
+    <input type="hidden"
+           name="product[variants_attributes][INDEX][variant_images_attributes][NEW_IMAGE][id]" />
+
     <!-- File upload: 'INDEX' will be replaced by JS with variantKey -->
     <input type="file"
            name="product[variants_attributes][INDEX][variant_images_attributes][NEW_IMAGE][image]"
@@ -277,8 +305,17 @@
   <div id="inventory-fields">
     <%= form.fields_for :inventories do |inv_fields| %>
       <div class="border p-2 mb-2 bg-light rounded">
-        <%= inv_fields.text_field :location, placeholder: "e.g. Nairobi Warehouse", class: "form-control form-control-sm mb-1" %>
-        <%= inv_fields.number_field :quantity, min: 0, class: "form-control form-control-sm mb-1" %>
+        <!-- Hidden ID for update -->
+        <%= inv_fields.hidden_field :id %>
+
+        <%= inv_fields.text_field :location,
+              placeholder: "e.g. Nairobi Warehouse",
+              class: "form-control form-control-sm mb-1" %>
+
+        <%= inv_fields.number_field :quantity,
+              min: 0,
+              class: "form-control form-control-sm mb-1" %>
+
         <div class="form-check">
           <%= inv_fields.check_box :_destroy, class: "form-check-input" %>
           <%= inv_fields.label :_destroy, "Remove", class: "form-check-label small" %>
@@ -287,42 +324,45 @@
     <% end %>
   </div>
 
-
   <!-- 🔧 Hidden Inventory Template -->
-<div id="inventory-template" style="display: none;">
-  <div class="border p-2 mb-2 bg-light rounded">
-    <input type="text"
-           name="product[inventories_attributes][NEW_RECORD][location]"
-           placeholder="e.g. Nairobi Warehouse"
-           class="form-control form-control-sm mb-1" />
+  <div id="inventory-template" style="display: none;">
+    <div class="border p-2 mb-2 bg-light rounded">
+      <input type="text"
+             name="product[inventories_attributes][NEW_RECORD][location]"
+             placeholder="e.g. Nairobi Warehouse"
+             class="form-control form-control-sm mb-1" />
 
-    <input type="number"
-           name="product[inventories_attributes][NEW_RECORD][quantity]"
-           min="0"
-           class="form-control form-control-sm mb-1" />
+      <input type="number"
+             name="product[inventories_attributes][NEW_RECORD][quantity]"
+             min="0"
+             class="form-control form-control-sm mb-1" />
 
-    <div class="form-check">
-      <input type="checkbox"
-             name="product[inventories_attributes][NEW_RECORD][_destroy]"
-             class="form-check-input" />
-      <label class="form-check-label small">Remove</label>
+      <div class="form-check">
+        <input type="checkbox"
+               name="product[inventories_attributes][NEW_RECORD][_destroy]"
+               class="form-check-input" />
+        <label class="form-check-label small">Remove</label>
+      </div>
     </div>
   </div>
-</div>
 
   <div class="mt-3">
     <%= form.label :inventory_csv, "Upload CSV", class: "form-label small fw-semibold" %>
-    <%= form.file_field :inventory_csv, class: "form-control form-control-sm", accept: ".csv" %>
+    <%= form.file_field :inventory_csv,
+          class: "form-control form-control-sm",
+          accept: ".csv" %>
   </div>
 
-  <button type="button" class="btn btn-sm btn-outline-primary mt-2" onclick="addFields('inventory-fields')">➕ Add Inventory</button>
+  <button type="button"
+          class="btn btn-sm btn-outline-primary mt-2"
+          onclick="addFields('inventory-fields')">➕ Add Inventory</button>
 </div>
 
 <!-- ✅ Submit Button -->
-  <div class="mt-3">
-    <%= form.submit(@product.persisted? ? "Update Product" : "Save Product",
-                    class: "btn btn-primary w-100 fw-semibold") %>
-  </div>
+<div class="mt-3">
+  <%= form.submit(@product.persisted? ? "Update Product" : "Save Product",
+                  class: "btn btn-primary w-100 fw-semibold") %>
+</div>
 <% end %>
 
 

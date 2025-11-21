@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_17_064346) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_21_100840) do
   create_schema "auth"
   create_schema "extensions"
   create_schema "graphql"
@@ -96,6 +96,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_17_064346) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.date "starts_at"
+    t.string "currency"
     t.index ["product_id"], name: "index_discounts_on_product_id"
   end
 

@@ -3,6 +3,9 @@
      data-saved-value="<%= f.object.value %>"
      data-key="<%= (f.object.id || Time.now.to_i) %>">
 
+  <!-- Hidden ID for update -->
+  <%= f.hidden_field :id %>
+
   <div class="row g-2">
     <!-- Variant Type -->
     <div class="col-md-4">
@@ -61,6 +64,7 @@
   <div class="mt-2 color-image-actions <%= 'd-none' unless f.object.name == 'Color' %>">
     <div class="variant-images-wrapper">
       <%= f.fields_for :variant_images do |image_fields| %>
+        <%= image_fields.hidden_field :id %>
         <%= render "variant_image_fields", f: image_fields %>
       <% end %>
     </div>

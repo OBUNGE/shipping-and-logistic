@@ -1,4 +1,7 @@
 <div id="<%= dom_id(f.object) %>" class="border p-2 mb-2 bg-light rounded variant-image-block">
+  <!-- Hidden ID for update -->
+  <%= f.hidden_field :id %>
+
   <% if f.object.image_url.present? %>
     <%= image_tag f.object.image_url,
           class: "img-thumbnail mb-2 variant-image-preview" %>
@@ -28,4 +31,3 @@
     <button type="button" class="btn btn-sm btn-outline-danger delete-variant-image">Delete</button>
   <% end %>
 </div>
-
