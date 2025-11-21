@@ -18,8 +18,15 @@
     <div class="col-md-4">
       <%= f.label :value, "Option", class: "form-label small" %>
       <%= f.select :value,
-            [], # JS will populate
-            {},
+            case f.object.name
+            when "Color"     then ["Black","Blue","Red","Green","White"]
+            when "Size"      then ["XS","S","M","L","XL","XXL"]
+            when "Storage"   then ["64GB","128GB","256GB","512GB","1TB"]
+            when "Material"  then ["Cotton","Leather","Polyester","Plastic","Metal","Wood"]
+            when "Packaging" then ["Box","Bag","Sachet","Envelope","Bottle","Jar"]
+            else []
+            end,
+            { selected: f.object.value },
             class: "form-select form-select-sm variant-value",
             required: true,
             data: { current: f.object.value } %>
