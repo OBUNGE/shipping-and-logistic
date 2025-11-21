@@ -176,6 +176,7 @@ function updateValueOptions(typeSelect) {
   const valueSelect = block.querySelector("select[name*='[value]']");
   if (!valueSelect) return;
 
+  // clear and repopulate
   valueSelect.innerHTML = "";
   const options = typeOptions[selected] || [];
   options.forEach(opt => {
@@ -185,8 +186,13 @@ function updateValueOptions(typeSelect) {
     valueSelect.appendChild(option);
   });
 
+  // ✅ auto-select saved value if present
   const savedValue = valueSelect.dataset.current || block.dataset.savedValue;
-  if (savedValue) valueSelect.value = savedValue;
+  if (savedValue) {
+    // only set if the option exists
+    const match = Array.from(valueSelect.options).find(o => o.value === savedValue);
+    if (match) valueSelect.value = savedValue;
+  }
 
   const actions = block.querySelector(".color-image-actions");
   if (actions) actions.classList.toggle("d-none", selected !== "Color");
@@ -286,7 +292,6 @@ document.addEventListener("click", (e) => {
     if (template && imagesWrapper && block) {
       // create fresh HTML
       const wrapper = document.createElement("div");
-      // use the template's innerHTML (not the element itself) to avoid cloning file inputs
       wrapper.innerHTML = template.firstElementChild.outerHTML.trim();
       const newImageBlock = wrapper.firstElementChild;
 
@@ -303,7 +308,7 @@ document.addEventListener("click", (e) => {
         }
       });
 
-      // ✅ FIXED: append safely into wrapper
+      // ✅ append safely into wrapper
       imagesWrapper.appendChild(newImageBlock);
     }
   }
