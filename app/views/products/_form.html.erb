@@ -178,40 +178,6 @@
 
   <div id="gallery-preview" class="row mt-2 sortable-preview"></div>
 </div>
-<!-- 🖼️ Gallery Images -->
-<div class="mb-3">
-  <%= form.label :gallery_image_urls, "Gallery Images", class: "form-label small" %>
-
-  <% if @product.gallery_image_urls.present? %>
-    <div class="row g-2 mb-2">
-      <% @product.gallery_image_urls.each do |url| %>
-        <div id="gallery_image_<%= Digest::MD5.hexdigest(url) %>"
-             class="col-4 text-center gallery-image-block">
-          <%= image_tag url, class: "img-fluid rounded shadow-sm mb-1" %>
-
-          <%= link_to "Delete",
-                remove_gallery_product_path(@product, url: url),
-                data: { turbo_method: :delete, turbo_confirm: "Remove this image?" },
-                class: "btn btn-sm btn-outline-danger" %>
-        </div>
-      <% end %>
-    </div>
-  <% end %>
-
-  <div id="gallery-inputs">
-    <%= file_field_tag "gallery_images[]",
-          multiple: true,
-          class: "form-control form-control-sm mb-2",
-          accept: "image/*",
-          onchange: "previewGalleryImages(event)" %>
-  </div>
-
-  <button type="button"
-          class="btn btn-sm btn-outline-primary mt-2"
-          onclick="addGalleryInput()">➕ Add More Images</button>
-
-  <div id="gallery-preview" class="row mt-2 sortable-preview"></div>
-</div>
 
 <!-- 📐 Variants Section -->
 <!-- Variants -->
