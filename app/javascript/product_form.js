@@ -135,16 +135,14 @@ document.addEventListener("turbo:load", () => {
         });
     });
   }
-  
-  
-// -----------------------------
-// -----------------------------
-// 5. Variant Image Preview
+  // -----------------------------
+// 5. Preview Variant Image
 // -----------------------------
 window.previewVariantImage = function(event) {
   const file = event.target.files[0];
   if (!file) return;
 
+  // find/create preview img
   let preview = event.target.parentNode.querySelector(".variant-image-preview");
   if (!preview) {
     preview = document.createElement("img");
@@ -154,11 +152,9 @@ window.previewVariantImage = function(event) {
   }
   preview.src = URL.createObjectURL(file);
 
-  // 🔑 Update hidden image_url field (temporary blob until Supabase upload)
+  // Update hidden image_url field (temporary blob until backend uploads)
   const hiddenUrlField = event.target.parentNode.querySelector(".image-url-field");
-  if (hiddenUrlField) {
-    hiddenUrlField.value = preview.src;
-  }
+  if (hiddenUrlField) hiddenUrlField.value = preview.src;
 
   preview.onload = () => URL.revokeObjectURL(preview.src);
 };
@@ -180,7 +176,6 @@ function updateValueOptions(typeSelect) {
   const valueSelect = block.querySelector("select[name*='[value]']");
   if (!valueSelect) return;
 
-  // Reset options
   valueSelect.innerHTML = "";
   const options = typeOptions[selected] || [];
   options.forEach(opt => {
@@ -190,39 +185,34 @@ function updateValueOptions(typeSelect) {
     valueSelect.appendChild(option);
   });
 
-  // 🔑 Select saved value if present (edit mode)
   const savedValue = valueSelect.dataset.current || block.dataset.savedValue;
-  if (savedValue) {
-    valueSelect.value = savedValue;
-  }
+  if (savedValue) valueSelect.value = savedValue;
 
-  // Toggle image upload section
   const actions = block.querySelector(".color-image-actions");
-  if (actions) {
-    actions.classList.toggle("d-none", selected !== "Color");
-  }
+  if (actions) actions.classList.toggle("d-none", selected !== "Color");
 }
 
-// 🔑 Event delegation: works for both initial and cloned variants
+// On change binding (for selects)
 document.addEventListener("change", (e) => {
   if (e.target.matches("select[name*='[name]']")) {
     updateValueOptions(e.target);
   }
 });
 
-// 🔑 Run once on page load for all existing variants (edit mode)
-document.querySelectorAll("select[name*='[name]']").forEach(typeSelect => {
-  updateValueOptions(typeSelect);
+// Run once on page load for existing selects
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll("select[name*='[name]']").forEach(typeSelect => {
+    updateValueOptions(typeSelect);
+  });
 });
 
 // -----------------------------
-// 7. Delete Gallery Images (persisted)
+// 7. Delete gallery images (persisted)
 // -----------------------------
 document.addEventListener("click", (e) => {
   if (e.target.classList.contains("delete-gallery-image")) {
     e.preventDefault();
     e.stopPropagation();
-
     const btn = e.target;
     const url = btn.dataset.url;
     const form = btn.closest("form");
@@ -231,13 +221,12 @@ document.addEventListener("click", (e) => {
     hidden.name = "remove_gallery[]";
     hidden.value = url;
     form.appendChild(hidden);
-
     btn.closest(".gallery-image-block").style.display = "none";
   }
 });
 
 // -----------------------------
-// 8. Preview Variant Image (auto-bind for all file inputs)
+// 8. Preview file inputs auto-bind (generic)
 // -----------------------------
 document.addEventListener("change", (e) => {
   if (e.target.matches("input[type='file'][name*='[image]']")) {
@@ -258,56 +247,82 @@ document.addEventListener("click", (e) => {
     const template = document.getElementById("variant-template");
 
     if (template && container) {
-      const clone = template.firstElementChild.cloneNode(true);
+      // clone template content, but create a fresh element (so file inputs are fresh)
+      const wrapper = document.createElement("div");
+      wrapper.innerHTML = template.firstElementChild.outerHTML;
+      const clone = wrapper.firstElementChild;
 
-      const timestamp = Date.now();
-      clone.innerHTML = clone.innerHTML
-        .replace(/NEW_RECORD/g, timestamp);
+      const timestamp = Date.now().toString();
+      // replace NEW_RECORD placeholders in inner HTML names and dataset
+      clone.innerHTML = clone.innerHTML.replace(/NEW_RECORD/g, timestamp);
+      clone.dataset.key = timestamp;
 
+      // append
       container.appendChild(clone);
 
-      // Auto-populate immediately for new selects
+      // run initializations (populate value select etc)
       clone.querySelectorAll("select[name*='[name]']").forEach(typeSelect => {
         updateValueOptions(typeSelect);
       });
     }
   }
 
-  // ❌ Delete Variant
+  // ❌ Delete Variant (client-only unsaved)
   if (e.target.classList.contains("delete-variant")) {
     e.preventDefault();
     e.stopPropagation();
     e.target.closest(".variant-block").remove();
   }
 
-  // ➕ Add Variant Image
+  // ➕ Add Variant Image (create fresh block from global template)
   if (e.target.classList.contains("add-variant-image-btn")) {
     e.preventDefault();
     e.stopPropagation();
 
     const block = e.target.closest(".variant-block");
-    const container = block.querySelector(".color-image-actions");
+    const imagesWrapper = block.querySelector(".variant-images-wrapper") || block.querySelector(".color-image-actions");
     const template = document.getElementById("variant-image-template");
 
-    if (template && container) {
-      const clone = template.firstElementChild.cloneNode(true);
+    if (template && imagesWrapper && block) {
+      // create fresh HTML
+      const wrapper = document.createElement("div");
+      // use the template's innerHTML (not the element itself) to avoid cloning file inputs
+      wrapper.innerHTML = template.firstElementChild.outerHTML.trim();
+      const newImageBlock = wrapper.firstElementChild;
 
-      // Use numeric index Rails expects
-      const index = container.querySelectorAll(".variant-image-block").length;
+      // variantKey: numeric or timestamp used in names
+      const variantKey = block.dataset.key || Date.now().toString();
 
-      clone.innerHTML = clone.innerHTML
-        .replace(/NEW_RECORD/g, block.dataset.key || Date.now())
-        .replace(/NEW_IMAGE/g, index);
+      // index for NEW_IMAGE (use length to keep simple)
+      const index = imagesWrapper.querySelectorAll(".variant-image-block").length;
 
-      container.insertBefore(clone, e.target);
+      // replace INDEX with variantKey and NEW_IMAGE with index inside names
+      newImageBlock.querySelectorAll("input").forEach(input => {
+        if (input.name) {
+          input.name = input.name.replace(/INDEX/g, variantKey).replace(/NEW_IMAGE/g, index);
+        }
+      });
+
+      // append just before the add button (or into wrapper)
+      imagesWrapper.insertBefore(newImageBlock, e.target);
     }
   }
 
-  // ❌ Delete Variant Image
+  // ❌ Delete Variant Image (client-only unsaved)
   if (e.target.classList.contains("delete-variant-image")) {
     e.preventDefault();
     e.stopPropagation();
-    e.target.closest(".variant-image-block").remove();
+
+    const imgBlock = e.target.closest(".variant-image-block");
+
+    // If block contains an actual hidden _destroy input for persisted records, set it and hide
+    const destroyInput = imgBlock.querySelector("input[name*='[_destroy]']");
+    if (destroyInput && (!imgBlock.querySelector("input[type='file']") || imgBlock.querySelector("input[type='file']").dataset.persisted === "true")) {
+      destroyInput.value = "1";
+      imgBlock.style.display = "none";
+    } else {
+      imgBlock.remove();
+    }
   }
 });
 
