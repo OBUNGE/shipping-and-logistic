@@ -46,10 +46,9 @@
       <%= f.hidden_field :_destroy, class: "destroy-flag" %>
 
       <% if f.object.persisted? %>
-        <%= button_to "Delete",
+        <%= link_to "Delete",
               remove_variant_product_path(@product, id: f.object.id),
-              method: :delete,
-              form: { data: { turbo_confirm: "Remove this variant?" } },
+              data: { turbo_method: :delete, turbo_confirm: "Remove this variant?" },
               class: "btn btn-sm btn-outline-danger" %>
       <% else %>
         <button type="button" class="btn btn-sm btn-outline-danger delete-variant">Delete</button>
@@ -66,10 +65,9 @@
     </div>
 
     <% if @product.persisted? && f.object.persisted? %>
-      <%= button_to "➕ Add color image",
+      <%= link_to "➕ Add color image",
             add_variant_image_product_path(@product, id: f.object.id),
-            method: :post,
-            data: { turbo_stream: true },
+            data: { turbo_method: :post, turbo_stream: true },
             class: "btn btn-sm btn-outline-secondary" %>
     <% else %>
       <button type="button"

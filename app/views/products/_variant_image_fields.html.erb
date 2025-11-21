@@ -25,10 +25,9 @@
   <%= f.hidden_field :_destroy, class: "destroy-flag" %>
 
   <% if f.object.persisted? %>
-    <%= button_to "Delete",
+    <%= link_to "Delete",
           remove_variant_image_product_path(@product, id: f.object.id),
-          method: :delete,
-          form: { data: { turbo_confirm: "Remove this image?" } },
+          data: { turbo_method: :delete, turbo_confirm: "Remove this image?" },
           class: "btn btn-sm btn-outline-danger" %>
   <% else %>
     <button type="button" class="btn btn-sm btn-outline-danger delete-variant-image">Delete</button>

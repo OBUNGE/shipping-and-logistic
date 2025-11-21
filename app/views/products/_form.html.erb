@@ -179,84 +179,12 @@
   <div id="gallery-preview" class="row mt-2 sortable-preview"></div>
 </div>
 
-<!-- 📐 Variants Section -->
-<!-- Variants -->
-<div id="variant-fields">
-  <%= form.fields_for :variants do |variant_fields| %>
-    <!-- Hidden ID ensures Rails knows which variant to update -->
-    <%= variant_fields.hidden_field :id %>
-    <%= render "variant_fields", f: variant_fields %>
-  <% end %>
-</div>
-
-<!-- Hidden template for NEW variant fields -->
-<div id="variant-template" style="display:none;">
-  <div class="border p-3 mb-2 bg-light rounded variant-block" data-key="NEW_RECORD">
-
-    <div class="row g-2">
-      <!-- Variant Type -->
-      <div class="col-md-4">
-        <label class="form-label small">Type</label>
-        <select name="product[variants_attributes][NEW_RECORD][name]"
-                class="form-select form-select-sm variant-type">
-          <option value="">Select type</option>
-          <option value="Color">Color</option>
-          <option value="Size">Size</option>
-          <option value="Storage">Storage</option>
-          <option value="Material">Material</option>
-          <option value="Packaging">Packaging</option>
-        </select>
-      </div>
-
-      <!-- Variant Value -->
-      <div class="col-md-4">
-        <label class="form-label small">Option</label>
-        <select name="product[variants_attributes][NEW_RECORD][value]"
-                class="form-select form-select-sm variant-value"></select>
-      </div>
-
-      <!-- Price Modifier -->
-      <div class="col-md-3">
-        <label class="form-label small">Price Modifier</label>
-        <input type="number"
-               step="0.01"
-               name="product[variants_attributes][NEW_RECORD][price_modifier]"
-               placeholder="e.g. 50.00"
-               class="form-control form-control-sm" />
-      </div>
-
-      <!-- Delete Variant -->
-      <div class="col-md-1 d-flex align-items-end">
-        <input type="hidden"
-               name="product[variants_attributes][NEW_RECORD][_destroy]"
-               class="destroy-flag" />
-        <button type="button"
-                class="btn btn-sm btn-outline-danger delete-variant">
-          Delete
-        </button>
-      </div>
-    </div>
-
-    <!-- Color images section (only appears for Color) -->
-    <div class="mt-2 color-image-actions d-none">
-      <button type="button"
-              class="btn btn-sm btn-outline-secondary add-variant-image-btn">
-        ➕ Add color image
-      </button>
-
-      <div class="variant-images-wrapper"></div>
-    </div>
-
-  </div>
-</div>
-
 <!-- ADD Variant Button -->
 <div class="mt-2">
   <% if @product.persisted? %>
-    <%= button_to "➕ Add Variant",
+    <%= link_to "➕ Add Variant",
           add_variant_product_path(@product),
-          method: :post,
-          data: { turbo_stream: true },
+          data: { turbo_method: :post, turbo_stream: true },
           class: "btn btn-sm btn-outline-primary" %>
   <% else %>
     <button type="button"
@@ -264,41 +192,6 @@
       ➕ Add Variant
     </button>
   <% end %>
-</div>
-
-<div id="variants_count"><%= @product.variants.count %></div>
-
-<!-- GLOBAL Variant Image Template (one copy only on the page) -->
-<div id="variant-image-template" style="display:none;">
-  <div class="border p-2 mb-2 bg-light rounded variant-image-block">
-
-    <!-- Hidden ID for update (only used when editing existing images) -->
-    <input type="hidden"
-           name="product[variants_attributes][INDEX][variant_images_attributes][NEW_IMAGE][id]" />
-
-    <!-- File upload: 'INDEX' will be replaced by JS with variantKey -->
-    <input type="file"
-           name="product[variants_attributes][INDEX][variant_images_attributes][NEW_IMAGE][image]"
-           class="form-control form-control-sm variant-image-input"
-           accept="image/*"
-           onchange="previewVariantImage(event)" />
-
-    <!-- Hidden image_url -->
-    <input type="hidden"
-           name="product[variants_attributes][INDEX][variant_images_attributes][NEW_IMAGE][image_url]"
-           class="image-url-field" />
-
-    <!-- Destroy flag -->
-    <input type="hidden"
-           name="product[variants_attributes][INDEX][variant_images_attributes][NEW_IMAGE][_destroy]"
-           class="destroy-flag" />
-
-    <button type="button"
-            class="btn btn-sm btn-outline-danger delete-variant-image">
-      Delete
-    </button>
-
-  </div>
 </div>
 
 
