@@ -375,11 +375,16 @@ end
     existing_urls = Array(product.gallery_image_urls)
     product.update(gallery_image_urls: existing_urls + new_urls)
   end
-
 def attach_variant_images(product)
   product.variants.each do |variant|
     variant.variant_images.each do |vi|
       Rails.logger.debug "👉 Processing VariantImage ID=#{vi.id || 'new'}, image=#{vi.image.inspect}, image_url(before)=#{vi.image_url}"
+
+      # 🚫 Guard against blob: URLs
+      if vi.image_url.present? && vi.image_url.start_with?("blob:")
+        Rails.logger.warn "⚠️ Ignoring blob: URL for VariantImage ID=#{vi.id || 'new'}"
+        vi.update(image_url: nil)
+      end
 
       if vi.image.is_a?(ActionDispatch::Http::UploadedFile)
         Rails.logger.debug "📤 Uploading file #{vi.image.original_filename} for VariantImage ID=#{vi.id || 'new'}"

@@ -2,7 +2,8 @@
   <!-- Hidden ID for update -->
   <%= f.hidden_field :id %>
 
-  <% if f.object.image_url.present? %>
+  <!-- Show image only if it's a real URL (not a blob:) -->
+  <% if f.object.image_url.present? && !f.object.image_url.start_with?("blob:") %>
     <%= image_tag f.object.image_url,
           class: "img-thumbnail mb-2 variant-image-preview" %>
   <% end %>
@@ -13,10 +14,12 @@
         accept: "image/*",
         onchange: "previewVariantImage(event)" %>
 
-  <!-- Hidden image_url field ensures persistence -->
-  <%= f.hidden_field :image_url,
-        value: f.object.image_url,
-        class: "image-url-field" %>
+  <!-- Hidden image_url field (skip blob: values) -->
+  <% unless f.object.image_url&.start_with?("blob:") %>
+    <%= f.hidden_field :image_url,
+          value: f.object.image_url,
+          class: "image-url-field" %>
+  <% end %>
 
   <!-- Destroy flag -->
   <%= f.hidden_field :_destroy, class: "destroy-flag" %>
