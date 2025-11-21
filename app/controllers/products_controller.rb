@@ -20,15 +20,16 @@ class ProductsController < ApplicationController
   end 
 
   
-  def add_variant_image
-  @variant = @product.variants.find(params[:id])
-  @variant_image = @variant.variant_images.build
+def add_variant_image
+  @variant_key = params[:variant_key] # this is NEW_RECORD timestamp
+  @image_index = params[:image_index] # auto-generated
 
   respond_to do |format|
     format.turbo_stream
     format.html { redirect_to edit_product_path(@product) }
   end
 end
+
 
 
   # DELETE /products/:slug/remove_gallery
