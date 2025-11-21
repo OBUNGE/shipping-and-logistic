@@ -1,44 +1,33 @@
-<%# local: f (image_fields form builder) %>
+<div id="<%= dom_id(f.object) %>" class="border p-2 mb-2 bg-light rounded variant-image-block">
+  <!-- Hidden ID for update -->
+  <%= f.hidden_field :id %>
 
-<div id="<%= dom_id(f.object) %>" 
-     class="border p-2 mb-2 bg-light rounded variant-image-block">
-
-  <%# ---------- IMAGE PREVIEW (ONLY REAL URLs, NOT blob:) ---------- %>
-  <% if f.object.image_url.present? && !f.object.image_url.start_with?("blob:") %>
+  <% if f.object.image_url.present? %>
     <%= image_tag f.object.image_url,
-          class: "img-thumbnail mb-2 variant-image-preview",
-          style: "max-height:150px;" %>
-  <% else %>
-    <img class="img-thumbnail mb-2 variant-image-preview"
-         style="max-height:150px; display:none;">
+          class: "img-thumbnail mb-2 variant-image-preview" %>
   <% end %>
 
-  <%# ---------- FILE INPUT ---------- %>
+  <!-- File upload -->
   <%= f.file_field :image,
         class: "form-control form-control-sm",
         accept: "image/*",
         onchange: "previewVariantImage(event)" %>
 
-  <%# ---------- IMAGE URL HIDDEN FIELD (DO NOT SAVE blob:) ---------- %>
+  <!-- Hidden image_url field ensures persistence -->
   <%= f.hidden_field :image_url,
-        value: (f.object.image_url.present? && !f.object.image_url.start_with?('blob:') ?
-                f.object.image_url : ''),
+        value: f.object.image_url,
         class: "image-url-field" %>
 
+  <!-- Destroy flag -->
   <%= f.hidden_field :_destroy, class: "destroy-flag" %>
 
-  <%# ---------- DELETE BUTTON ---------- %>
   <% if f.object.persisted? %>
     <%= button_to "Delete",
           remove_variant_image_product_path(@product, id: f.object.id),
           method: :delete,
           form: { data: { turbo_confirm: "Remove this image?" } },
-          class: "btn btn-sm btn-outline-danger mt-2" %>
+          class: "btn btn-sm btn-outline-danger" %>
   <% else %>
-    <button type="button"
-            class="btn btn-sm btn-outline-danger delete-variant-image mt-2">
-      Delete
-    </button>
+    <button type="button" class="btn btn-sm btn-outline-danger delete-variant-image">Delete</button>
   <% end %>
-
 </div>
