@@ -50,21 +50,20 @@
     </div>
   </div>
 
-<!-- 🎨 Variant Images (only for Color) -->
-<div class="mt-2 color-image-actions <%= 'd-none' unless f.object.name == 'Color' %>">
-  <div class="variant-images-wrapper">
-    <!-- Existing variant images -->
-    <%= f.fields_for :variant_images do |image_fields| %>
-      <%= render "variant_image_fields", f: image_fields %>
-    <% end %>
+  <!-- 🎨 Variant Images (only for Color) -->
+  <div class="mt-2 color-image-actions <%= 'd-none' unless f.object.name == 'Color' %>">
+    <div class="variant-images-wrapper">
+      <%= f.fields_for :variant_images do |image_fields| %>
+        <%= render "variant_image_fields", f: image_fields %>
+      <% end %>
+    </div>
 
-    <!-- Add color image button INSIDE wrapper -->
     <% if @product.persisted? && f.object.persisted? %>
       <%= button_to "➕ Add color image",
             add_variant_image_product_path(@product, id: f.object.id),
             method: :post,
             data: { turbo_stream: true },
-            class: "btn btn-sm btn-outline-secondary add-variant-image-btn" %>
+            class: "btn btn-sm btn-outline-secondary" %>
     <% else %>
       <button type="button"
               class="btn btn-sm btn-outline-secondary add-variant-image-btn">
@@ -73,4 +72,3 @@
     <% end %>
   </div>
 </div>
-

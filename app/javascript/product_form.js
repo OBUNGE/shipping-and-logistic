@@ -135,7 +135,7 @@ document.addEventListener("turbo:load", () => {
         });
     });
   }
-  // -----------------------------
+// -----------------------------
 // 5. Preview Variant Image
 // -----------------------------
 window.previewVariantImage = function(event) {
@@ -280,7 +280,7 @@ document.addEventListener("click", (e) => {
     e.stopPropagation();
 
     const block = e.target.closest(".variant-block");
-    const imagesWrapper = block.querySelector(".variant-images-wrapper") || block.querySelector(".color-image-actions");
+    const imagesWrapper = block.querySelector(".variant-images-wrapper");
     const template = document.getElementById("variant-image-template");
 
     if (template && imagesWrapper && block) {
@@ -303,8 +303,8 @@ document.addEventListener("click", (e) => {
         }
       });
 
-      // append just before the add button (or into wrapper)
-      imagesWrapper.insertBefore(newImageBlock, e.target);
+      // ✅ FIXED: append safely into wrapper
+      imagesWrapper.appendChild(newImageBlock);
     }
   }
 
