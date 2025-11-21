@@ -315,6 +315,8 @@ def product_params
     :category_id,
     :subcategory_id,
     :inventory_csv,
+    :image,                        # allow main product image
+    gallery_images: [],            # allow multiple gallery uploads
     variants_attributes: [
       :id, :name, :value, :price_modifier, :_destroy,
       variant_images_attributes: [:id, :image, :image_url, :_destroy]

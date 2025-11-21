@@ -168,11 +168,11 @@
   <% end %>
 
   <div id="gallery-inputs">
-    <%= file_field_tag "gallery_images[]",
-          multiple: true,
-          class: "form-control form-control-sm mb-2",
-          accept: "image/*",
-          onchange: "previewGalleryImages(event)" %>
+    <%= form.file_field :gallery_images,
+      multiple: true,
+      class: "form-control form-control-sm mb-2",
+      accept: "image/*",
+      onchange: "previewGalleryImages(event)" %>
   </div>
 
   <button type="button"
