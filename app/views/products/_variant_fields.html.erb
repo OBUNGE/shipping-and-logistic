@@ -58,7 +58,8 @@
 
   <!-- 🎨 Variant Images (only for Color) -->
   <div class="mt-2 color-image-actions <%= 'd-none' unless f.object.name == 'Color' %>">
-    <div class="variant-images-wrapper">
+    <div id="variant_<%= f.object.id || f.object.object_id %>_images"
+     class="variant-images-wrapper">
       <%= f.fields_for :variant_images do |image_fields| %>
         <%= render "variant_image_fields", f: image_fields %>
       <% end %>

@@ -1,5 +1,9 @@
 <%= turbo_stream.append "variant-fields" do %>
-  <%= render "variant_fields", f: form_builder_for(@variant) %>
+  <%= form_with model: @product do |form| %>
+    <%= form.fields_for :variants, @variant do |variant_fields| %>
+      <%= render "variant_fields", f: variant_fields %>
+    <% end %>
+  <% end %>
 <% end %>
 
 <%= turbo_stream.update "variants_count" do %>

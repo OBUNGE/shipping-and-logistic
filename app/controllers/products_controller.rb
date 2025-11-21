@@ -21,11 +21,11 @@ class ProductsController < ApplicationController
 
   
 def add_variant_image
-  @variant_key = params[:variant_key] # this is NEW_RECORD timestamp
-  @image_index = params[:image_index] # auto-generated
+  @variant = @product.variants.find(params[:id]) # find the variant
+  @variant_image = @variant.variant_images.build  # build a new image
 
   respond_to do |format|
-    format.turbo_stream
+    format.turbo_stream # renders app/views/products/add_variant_image.turbo_stream.erb
     format.html { redirect_to edit_product_path(@product) }
   end
 end

@@ -1,7 +1,11 @@
-<%= turbo_stream.append dom_id(@variant, :images) do %>
-  <%= render "variant_image_fields", f: form_builder_for(@variant_image) %>
-<% end %>
-
-<%= turbo_stream.update "variant_images_count" do %>
-  <%= @variant.variant_images.count %>
-<% end %>
+<turbo-stream action="append" target="variant_<%= @variant.id %>_images">
+  <template>
+    <%= form_with model: @product do |form| %>
+      <%= form.fields_for :variants, @variant do |variant_fields| %>
+        <%= variant_fields.fields_for :variant_images, @variant.variant_images.build do |image_fields| %>
+          <%= render "variant_image_fields", f: image_fields %>
+        <% end %>
+      <% end %>
+    <% end %>
+  </template>
+</turbo-stream>

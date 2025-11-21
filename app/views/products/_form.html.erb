@@ -181,6 +181,12 @@
 
   <div id="gallery-preview" class="row mt-2 sortable-preview"></div>
 </div>
+<!-- Variants Section -->
+<div id="variant-fields">
+  <%= form.fields_for :variants do |variant_fields| %>
+    <%= render "variant_fields", f: variant_fields %>
+  <% end %>
+</div>
 
 <!-- ADD Variant Button -->
 <div class="mt-2">
