@@ -1,33 +1,39 @@
-<h2>
+<h2 style="margin-bottom:20px; font-family:Arial, sans-serif; color:#333;">
   <% if order.buyer.present? %>
-    Hi <%= order.buyer.name.presence || [order.buyer.first_name, order.buyer.last_name].compact.join(" ").presence || order.buyer.email %>,
+    Hi <%= order.buyer.name.presence ||
+            [order.buyer.first_name, order.buyer.last_name].compact.join(" ").presence ||
+            order.buyer.email %>,
   <% else %>
-    Hi <%= order.name.presence || [order.first_name, order.last_name].compact.join(" ").presence || order.email %>,
+    Hi <%= order.name.presence ||
+            [order.first_name, order.last_name].compact.join(" ").presence ||
+            order.email %>,
   <% end %>
 </h2>
 
-<p>Thank you for your payment for Order ##<%= order.id %>.</p>
-<p>Your order will be delivered to you.</p>
+<p style="font-family:Arial, sans-serif; color:#555;">
+  Thank you for your payment for <strong>Order ##<%= order.id %></strong>.
+  Your order will be delivered to you soon.
+</p>
 
-<p>
+<p style="font-family:Arial, sans-serif; color:#555;">
   <strong>Amount Paid:</strong>
   <%= number_to_currency(order.total, unit: "KES ") %>
   <% usd_total = ExchangeRateService.convert(order.total, from: "KES", to: "USD") %>
-  <span class="text-muted small">≈ <%= number_to_currency(usd_total, unit: "USD ") %></span>
+  <span style="color:#888; font-size:0.9em;">≈ <%= number_to_currency(usd_total, unit: "USD ") %></span>
 </p>
 
 <% latest_payment = order.payments.last %>
-<p>
+<p style="font-family:Arial, sans-serif; color:#555;">
   <strong>Payment Method:</strong>
-  <%= latest_payment&.provider&.humanize || "N/A" %>
+  <%= latest_payment&.provider&.humanize || order.payment_method || "N/A" %>
 </p>
 
-<p>
+<p style="font-family:Arial, sans-serif; color:#555;">
   <strong>Order Date:</strong>
   <%= order.created_at.strftime("%B %d, %Y at %I:%M %p") %>
 </p>
 
-<p>
+<p style="font-family:Arial, sans-serif; color:#555;">
   <strong>Shipping Address:</strong><br>
   <%= order.name.presence || [order.first_name, order.last_name].compact.join(" ") %><br>
   <%= order.address %><br>
@@ -39,8 +45,8 @@
   <% end %>
 </p>
 
-<h4>Order Summary</h4>
-<table style="width:100%; border-collapse: collapse;" border="1" cellpadding="8">
+<h4 style="margin-top:30px; font-family:Arial, sans-serif; color:#333;">Order Summary</h4>
+<table style="width:100%; border-collapse: collapse; font-family:Arial, sans-serif; margin-top:10px;" border="1" cellpadding="8">
   <thead style="background-color:#f8f9fa;">
     <tr>
       <th align="left">Product</th>
@@ -74,21 +80,30 @@
 <% subtotal = order.order_items.sum(&:subtotal) %>
 <% shipping_total = order.order_items.sum { |oi| oi.shipping || 0 } %>
 
-<p>
+<p style="font-family:Arial, sans-serif; color:#555; margin-top:15px;">
   <strong>Subtotal:</strong>
   <%= number_to_currency(subtotal, unit: "KES ") %>
 </p>
-<p>
+<p style="font-family:Arial, sans-serif; color:#555;">
   <strong>Shipping:</strong>
   <%= number_to_currency(shipping_total, unit: "KES ") %>
 </p>
-<p>
+<p style="font-family:Arial, sans-serif; color:#555;">
   <strong>Total:</strong>
   <%= number_to_currency(order.total, unit: "KES ") %>
   <% usd_total = ExchangeRateService.convert(order.total, from: "KES", to: "USD") %>
-  <span class="text-muted small">≈ <%= number_to_currency(usd_total, unit: "USD ") %></span>
+  <span style="color:#888; font-size:0.9em;">≈ <%= number_to_currency(usd_total, unit: "USD ") %></span>
 </p>
 
-<p>If you have any questions about your order, feel free to reply to this email or contact our support team.</p>
-<p>Thank you for shopping with us!</p>
-<p>Best regards,<br>tajaone</p>
+<p style="font-family:Arial, sans-serif; color:#555; margin-top:20px;">
+  If you have any questions about your order, feel free to reply to this email or contact our support team.
+</p>
+
+<p style="font-family:Arial, sans-serif; color:#555;">
+  Thank you for shopping with us!
+</p>
+
+<p style="font-family:Arial, sans-serif; color:#333; font-weight:bold;">
+  Best regards,<br>
+  The Tajaone Team
+</p>

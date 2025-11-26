@@ -4,7 +4,11 @@ class OrderMailer < ApplicationMailer
 
   def payment_confirmation(order_id)
     order = Order.find(order_id)
-    recipient_email = order.buyer&.email || order.email
+
+    # Prefer order fields (captured at checkout), fallback to buyer association
+    recipient_email = order.email.presence || order.buyer&.email
+    recipient_name  = [order.first_name, order.last_name].compact.join(" ")
+    recipient_name  = recipient_name.presence || order.buyer&.name || "Customer"
 
     begin
       html_content = ApplicationController.renderer.render(
@@ -14,7 +18,7 @@ class OrderMailer < ApplicationMailer
 
       BrevoEmailService.new.send_email(
         to_email: recipient_email,
-        to_name: [order.first_name, order.last_name].compact.join(" "),
+        to_name: recipient_name,
         subject: "Payment Confirmation for Order ##{order.id}",
         html_content: html_content
       )
@@ -25,8 +29,10 @@ class OrderMailer < ApplicationMailer
 
   def seller_notification(order_id)
     order = Order.find(order_id)
+
+    # Prefer seller association, fallback to admin
     recipient_email = order.seller&.email || "admin@tajaone.app"
-    recipient_name  = order.seller&.name || "Seller"
+    recipient_name  = order.seller&.store_name || order.seller&.name || "Seller"
 
     begin
       html_content = ApplicationController.renderer.render(

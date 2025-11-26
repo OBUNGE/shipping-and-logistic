@@ -3,18 +3,31 @@ console.log("product_form.js loaded");
 // Use turbo:load so bindings re-apply after Turbo Stream updates
 document.addEventListener("turbo:load", () => {
   // -----------------------------
-  // Debug banner (Keep or remove as needed)
+  // Floating WhatsApp Chat Button
   // -----------------------------
   const banner = document.createElement("div");
-  banner.textContent = "felix omondi odhiambo";
+  banner.innerHTML = '<img src="/assets/whatsapp.png" alt="WhatsApp" style="width:24px;height:24px;vertical-align:middle;margin-right:8px;"> Chat on WhatsApp';
+
   banner.style.position = "fixed";
   banner.style.bottom = "10px";
   banner.style.right = "10px";
-  banner.style.background = "brown";
-  banner.style.color = "black";
-  banner.style.padding = "5px 10px";
+  banner.style.background = "#25D366"; // WhatsApp green
+  banner.style.color = "white";
+  banner.style.padding = "10px 15px";
+  banner.style.borderRadius = "25px";
+  banner.style.fontWeight = "bold";
+  banner.style.cursor = "pointer";
+  banner.style.boxShadow = "0 2px 6px rgba(0,0,0,0.2)";
   banner.style.zIndex = 9999;
+
+  // Make it clickable → opens WhatsApp chat
+  banner.onclick = () => {
+    window.open("https://wa.me/254726565342", "_blank");
+  };
+
   document.body.appendChild(banner);
+
+
 
   // -----------------------------
   // 1. Price + Shipping Total
