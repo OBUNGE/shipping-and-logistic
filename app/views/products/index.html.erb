@@ -83,7 +83,7 @@
 
                 <!-- 🎯 Discount badge top-right (smaller Jumia-style) -->
                 <% if product.discount.present? && product.discount.percentage.to_f > 0 %>
-                  <span class="discount-badge position-absolute top-0 end-0 m-2">
+                  <span class="discount-badge position-absolute top-0 end-0 m-1">
                     -<%= product.discount.percentage.to_i %>% OFF
                   </span>
                 <% end %>
