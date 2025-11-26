@@ -1,4 +1,21 @@
-<div class="container-fluid py-4 bg-light">
+<div class="container-fluid px-0">
+
+  <!-- 🦸 Hero Section -->
+  <section class="hero bg-dark text-white text-center py-5 mb-4">
+    <div class="container">
+      <h1 class="fw-bold display-5">
+        Cheap Leather Bags & Men’s Shoes in Nairobi
+      </h1>
+      <p class="lead mb-4">
+        Discover affordable leather products — handbags, men’s shoes, and accessories. 
+        Shop quality leather in Kenya with secure M-PESA payments.
+      </p>
+      <%= link_to "Shop Leather Bags", products_path(category: "bags"),
+          class: "btn btn-primary btn-lg shadow-sm me-2" %>
+      <%= link_to "Shop Men’s Shoes", products_path(category: "shoes"),
+          class: "btn btn-outline-light btn-lg shadow-sm" %>
+    </div>
+  </section>
 
   <!-- 🧭 Sticky Category Bar -->
   <div class="category-bar sticky-top bg-white py-2 px-3 mb-3 d-flex align-items-center gap-3 overflow-auto border-bottom shadow-sm"
@@ -12,13 +29,13 @@
     <% end %>
   </div>
 
-  <!-- 🔍 Search Bar (Smaller, Non-Oval) -->
+  <!-- 🔍 Search Bar -->
   <div class="sticky-top bg-white shadow-sm py-2 px-3 mb-4" style="top: 115px; z-index: 1050;">
-    <form action="<%= products_path %>" method="get" class="d-flex">
+    <form action="<%= products_path %>" method="get" class="d-flex" role="search">
       <input type="text" name="query" class="form-control me-2 input-clean shadow-sm"
-             placeholder="Search for products..." value="<%= params[:query] %>">
+             placeholder="Search leather bags, men’s shoes, accessories..." value="<%= params[:query] %>">
 
-      <button class="btn btn-primary px-4 btn-clean">
+      <button class="btn btn-primary px-4 btn-clean" aria-label="Search">
         <i class="bi bi-search"></i>
       </button>
     </form>
@@ -58,7 +75,9 @@
     <!-- 🛍️ Product Grid -->
     <main class="col-12 col-md-9 col-lg-10">
       <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2 class="fw-bold text-dark fs-5 mb-0">🛍️ All Products</h2>
+        <h2 class="fw-bold text-dark fs-5 mb-0">
+          🛍️ All Leather Products
+        </h2>
         <% if user_signed_in? && current_user.seller? %>
           <%= link_to "+ Add Product", new_product_path, class: "btn btn-primary btn-sm btn-clean shadow-sm" %>
         <% end %>
@@ -74,10 +93,10 @@
               <div class="ratio ratio-1x1 bg-light position-relative">
                 <%= link_to product_path(product) do %>
                   <% if product.image_url.present? %>
-                    <%= image_tag product.image_url, alt: product.title,
+                    <%= image_tag product.image_url, alt: "#{product.title} | Cheap Leather Product Nairobi",
                                   class: "card-img-top rounded-top object-fit-cover" %>
                   <% else %>
-                    <%= image_tag asset_path("placeholder.jpg"), alt: "No image available",
+                    <%= image_tag asset_path("placeholder.jpg"), alt: "Leather product placeholder",
                                   class: "card-img-top rounded-top object-fit-cover" %>
                   <% end %>
                 <% end %>
@@ -124,7 +143,7 @@
                   </p>
                 <% end %>
 
-                <!-- 📞 Call + Add to Cart (Clean Buttons) -->
+                <!-- 📞 Call + Add to Cart -->
                 <div class="mt-auto d-flex gap-2">
                   <a href="tel:+254726565342" class="btn btn-clean btn-call flex-fill">
                     📞 Call

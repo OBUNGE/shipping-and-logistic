@@ -1,19 +1,42 @@
-<!-- 📄 File: app/views/layouts/application.html.erb -->
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title><%= content_for(:title) || "Tajaone" %></title>
+    <title><%= content_for(:title) || "Cheap Leather Bags & Shoes in Nairobi | Tajaone  " %></title>
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
+
+    <!-- SEO Meta -->
+    <meta name="description" content="Shop premium yet cheap leather products in Nairobi. Tajaone offers leather bags, men’s shoes, and accessories with secure M-PESA payments.">
+    <meta name="keywords" content="cheap leather products Nairobi, leather bags Kenya, men’s leather shoes Nairobi, affordable leather handbags, leather accessories Kenya">
+    <meta name="author" content="Tajaone Leather Store">
+
+    <!-- Mobile capabilities -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
+
+    <!-- CSRF + CSP -->
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
     <%= yield :head %>
 
+    <!-- Favicons -->
     <link rel="icon" href="/icon.png" type="image/png">
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/icon.png">
+
+    <!-- Open Graph (Facebook/WhatsApp) -->
+    <meta property="og:title" content="Tajaone | Leather Bags & Shoes in Nairobi">
+    <meta property="og:description" content="Discover affordable leather bags, men’s shoes, and accessories in Nairobi. Pay securely with M-PESA.">
+    <meta property="og:image" content="<%= image_url('icon.png') %>">
+    <meta property="og:url" content="<%= request.original_url %>">
+    <meta property="og:type" content="website">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Tajaone | Leather Bags & Shoes in Nairobi">
+    <meta name="twitter:description" content="Shop cheap leather products in Nairobi — bags, men’s shoes, and more.">
+    <meta name="twitter:image" content="<%= image_url('icon.png') %>">
 
     <!-- Bootstrap + Rails assets -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -32,104 +55,79 @@
   </head>
 
   <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top shadow-sm">
-      <div class="container-fluid px-0">
-        <a class="navbar-brand px-3" href="<%= root_path %>">Tajaone</a>
+    <header>
+      <nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top shadow-sm" role="navigation">
+        <div class="container-fluid px-0">
+          <a class="navbar-brand px-3" href="<%= root_path %>" aria-label="Tajaone Home">Tajaone Leather</a>
 
-        <!-- Cart always visible -->
-        <div class="ms-auto me-3" id="cart-badge">
-          <%= render "layouts/cart_badge" %>
-        </div>
+          <!-- Cart always visible -->
+          <div class="ms-auto me-3" id="cart-badge">
+            <%= render "layouts/cart_badge" %>
+          </div>
 
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                  aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
 
-        <div class="collapse navbar-collapse px-3 text-start" id="navbarNav">
-          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-            <li class="nav-item">
-              <%= link_to "Products", products_path, class: "nav-link" %>
-            </li>
-          </ul>
+          <div class="collapse navbar-collapse px-3 text-start" id="navbarNav">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+              <li class="nav-item">
+                <%= link_to "Leather Bags", products_path(category: "bags"), class: "nav-link", aria: { label: "Browse Leather Bags" } %>
+              </li>
+              <li class="nav-item">
+                <%= link_to "Men’s Leather Shoes", products_path(category: "shoes"), class: "nav-link", aria: { label: "Browse Leather Shoes" } %>
+              </li>
+              <li class="nav-item">
+                <%= link_to "Accessories", products_path(category: "accessories"), class: "nav-link", aria: { label: "Browse Leather Accessories" } %>
+              </li>
+            </ul>
 
-          <ul class="navbar-nav align-items-center gap-2">
-            <!-- 🌍 Currency Selector -->
-            <li class="nav-item dropdown">
-              <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                Currency: <%= session[:currency] || "USD" %>
-              </button>
-              <ul class="dropdown-menu dropdown-menu-end">
-                <li>
-                  <%= button_to "KES", set_currency_path(currency: "KES"),
-                      method: :post,
-                      class: "dropdown-item btn btn-link p-0",
-                      form: { "data-turbo" => "false" } %>
-                </li>
-                <li>
-                  <%= button_to "USD", set_currency_path(currency: "USD"),
-                      method: :post,
-                      class: "dropdown-item btn btn-link p-0",
-                      form: { "data-turbo" => "false" } %>
-                </li>
-              </ul>
-            </li>
-
-            <% if user_signed_in? %>
-              <% unread_count = current_user.notifications.where(read: false).count %>
-
-              <!-- My Account Dropdown -->
+            <ul class="navbar-nav align-items-center gap-2">
+              <!-- 🌍 Currency Selector -->
               <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="#" id="accountDropdown" role="button"
-                   data-bs-toggle="dropdown" aria-expanded="false">
-                  My Account
-                </a>
-                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="accountDropdown">
-                  <li><%= link_to "Profile", account_path, class: "dropdown-item" %></li>
-                  <li><%= link_to "Notifications (#{unread_count})", notifications_path, class: "dropdown-item" %></li>
-
-                  <% if current_user.buyer? %>
-                    <li><%= link_to "Buyer Dashboard", buyer_dashboard_path, class: "dropdown-item" %></li>
-                  <% end %>
-
-                  <% if current_user.seller? %>
-                    <li><%= link_to "Seller Dashboard", seller_dashboard_path, class: "dropdown-item" %></li>
-                    <li><%= link_to "Storefront Settings", edit_seller_path(current_user.store_slug), class: "dropdown-item" %></li>
-                    <li><%= link_to "My Shipments", shipments_path, class: "dropdown-item" %></li>
-                  <% end %>
-
-                  <% if current_user.admin? %>
-                    <li><%= link_to "All Shipments", shipments_path, class: "dropdown-item" %></li>
-                    <li><%= link_to "Admin Panel", admin_root_path, class: "dropdown-item" %></li>
-                  <% end %>
-
-                  <% if current_user.buyer? || current_user.seller? %>
-                    <li><hr class="dropdown-divider"></li>
-                    <li>
-                      <%= button_to "Switch to #{current_user.active_role == 'buyer' ? 'Seller' : 'Buyer'} Mode",
-                                    toggle_role_path,
-                                    method: :post,
-                                    class: "dropdown-item btn btn-link p-0",
-                                    form: { "data-turbo" => "false" } %>
-                    </li>
-                  <% end %>
-
-                  <li><hr class="dropdown-divider"></li>
+                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                  Currency: <%= session[:currency] || "KES" %>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
                   <li>
-                    <%= link_to "Logout", destroy_user_session_path,
-                                data: { turbo_method: :delete },
-                                class: "dropdown-item" %>
+                    <%= button_to "KES", set_currency_path(currency: "KES"),
+                        method: :post,
+                        class: "dropdown-item btn btn-link p-0",
+                        form: { "data-turbo" => "false" } %>
+                  </li>
+                  <li>
+                    <%= button_to "USD", set_currency_path(currency: "USD"),
+                        method: :post,
+                        class: "dropdown-item btn btn-link p-0",
+                        form: { "data-turbo" => "false" } %>
                   </li>
                 </ul>
               </li>
-            <% else %>
-              <li class="nav-item"><%= link_to "Login", new_user_session_path, class: "nav-link" %></li>
-              <li class="nav-item"><%= link_to "Sign Up", new_user_registration_path, class: "nav-link" %></li>
-            <% end %>
-          </ul>
+
+              <% if user_signed_in? %>
+                <li class="nav-item dropdown">
+                  <a class="nav-link dropdown-toggle" href="#" id="accountDropdown" role="button"
+                     data-bs-toggle="dropdown" aria-expanded="false">
+                    My Account
+                  </a>
+                  <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="accountDropdown">
+                    <li><%= link_to "Profile", account_path, class: "dropdown-item" %></li>
+                    <li><%= link_to "Orders", orders_path, class: "dropdown-item" %></li>
+                    <li><%= link_to "Logout", destroy_user_session_path,
+                                    data: { turbo_method: :delete },
+                                    class: "dropdown-item" %></li>
+                  </ul>
+                </li>
+              <% else %>
+                <li class="nav-item"><%= link_to "Login", new_user_session_path, class: "nav-link" %></li>
+                <li class="nav-item"><%= link_to "Sign Up", new_user_registration_path, class: "nav-link" %></li>
+              <% end %>
+            </ul>
+          </div>
         </div>
-      </div>
-    </nav>
+      </nav>
+    </header>
 
     <!-- 🔔 Flash Messages -->
     <div id="flash-messages" class="px-3 pt-2">
@@ -142,8 +140,14 @@
     </div>
 
     <!-- 🔄 Page Content -->
-    <div class="container-fluid px-0">
+    <main class="container-fluid px-0" role="main">
       <%= yield %>
-    </div>
+    </main>
+
+    <footer class="bg-light text-center py-3 mt-5 border-top">
+      <p class="mb-0 small text-muted">
+        &copy; <%= Time.current.year %> Tajaone Leather — Cheap Leather Bags & Shoes in Nairobi. All rights reserved.
+      </p>
+    </footer>
   </body>
 </html>
