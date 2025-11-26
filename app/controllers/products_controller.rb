@@ -19,17 +19,21 @@ class ProductsController < ApplicationController
     end
   end 
 
-  
 def add_variant_image
-  @variant = @product.variants.find(params[:id]) # find the variant
-  @variant_image = @variant.variant_images.build  # build a new image
+  # Load product by slug
+  @product = Product.find_by!(slug: params[:slug])
+
+  # Find the variant within this product
+  @variant = @product.variants.find(params[:id])
+
+  # Build a new variant image
+  @variant_image = @variant.variant_images.build
 
   respond_to do |format|
     format.turbo_stream # renders app/views/products/add_variant_image.turbo_stream.erb
     format.html { redirect_to edit_product_path(@product) }
   end
 end
-
 
 
   # DELETE /products/:slug/remove_gallery
@@ -127,7 +131,7 @@ end
 def create
   @product = current_user.products.build(product_params)
 
-  # Handle main product image upload
+  # Upload main image to Supabase (if provided)
   if params[:product][:image].present?
     @product.image_url = upload_to_supabase(params[:product][:image])
   end
@@ -139,14 +143,13 @@ def create
     attach_gallery_images(@product)
     attach_variant_images(@product)
 
-    # 🚫 Remove auto-copy logic — clones behave like normal variants
-
-    redirect_to @product, notice: "Product created successfully."
+    redirect_to product_path(@product), notice: "Product created successfully."
   else
     Rails.logger.debug "❌ Product save failed: #{@product.errors.full_messages}"
     build_nested_fields(@product)
     render :new, status: :unprocessable_entity
   end
+
 rescue => e
   Rails.logger.error "🔥 Products#create crashed: #{e.message}"
   Rails.logger.error e.backtrace.join("\n")
@@ -158,26 +161,24 @@ def edit
                     .find_by!(slug: params[:slug])
   build_nested_fields(@product)
 end
-
 def update
   Rails.logger.info "🟦 ProductsController#update START for product=#{@product.id}"
-
   Rails.logger.info "🟦 Incoming product params: #{params[:product].inspect}"
 
+  # Upload new main image if provided
   if params[:product][:image].present?
     Rails.logger.info "🟦 Uploading new main image"
     @product.image_url = upload_to_supabase(params[:product][:image])
   end
 
-  # Handle safe deletion of variants tied to orders
+  # Prevent deletion of variants linked to orders
   if params[:product][:variants_attributes].present?
-    Rails.logger.info "🟦 Variants attributes received: #{params[:product][:variants_attributes].inspect}"
     params[:product][:variants_attributes].each do |_, attrs|
-      Rails.logger.info "🟦 Processing variant attrs: #{attrs.inspect}"
       if attrs["_destroy"] == "true"
         variant = Variant.find_by(id: attrs["id"])
+
         if variant&.order_items&.exists?
-          Rails.logger.warn "⚠️ Variant #{variant.id} tied to orders — marking inactive instead of destroying"
+          Rails.logger.warn "⚠️ Variant #{variant.id} tied to orders — marking inactive instead"
           variant.update(active: false)
           attrs.delete("_destroy")
         end
@@ -187,29 +188,32 @@ def update
 
   if @product.update(product_params)
     Rails.logger.info "✅ Product updated successfully"
-    Rails.logger.info "🟦 Updated product attributes: #{@product.attributes.inspect}"
 
+    # Import new inventory CSV if present
     if params[:product][:inventory_csv].present?
       Rails.logger.info "🟦 Importing inventory CSV"
       import_inventory_csv(@product)
     end
 
-    @product.update(stock: @product.total_inventory)
-    Rails.logger.info "🟦 Stock recalculated: #{@product.stock}"
+    # Hybrid stock logic: prefer manual stock, fallback to inventories
+    if @product.stock.present?
+      Rails.logger.info "🟦 Using manual stock: #{@product.stock}"
+    else
+      Rails.logger.info "🟦 Falling back to inventories"
+      @product.update_column(:stock, @product.total_inventory)
+    end
 
+    # Remove gallery images if requested
     if params[:remove_gallery].present?
-      Rails.logger.info "🟦 Removing gallery images: #{params[:remove_gallery].inspect}"
       remaining = Array(@product.gallery_image_urls) - params[:remove_gallery]
       @product.update(gallery_image_urls: remaining)
     end
 
-    Rails.logger.info "🟦 Attaching gallery images"
+    # Attach new gallery + variant images
     attach_gallery_images(@product)
-
-    Rails.logger.info "🟦 Attaching variant images"
     attach_variant_images(@product)
 
-    redirect_to @product, notice: "Product updated successfully."
+    redirect_to product_path(@product), notice: "Product updated successfully."
   else
     Rails.logger.error "❌ Product update failed: #{@product.errors.full_messages}"
     build_nested_fields(@product)
@@ -218,6 +222,7 @@ def update
 
   Rails.logger.info "🟦 ProductsController#update END"
 end
+
 
   def destroy
     @product.destroy
@@ -307,6 +312,7 @@ def product_params
     :title,
     :description,
     :price,
+    :weight,
     :shipping_cost,
     :min_order,
     :stock,
@@ -315,14 +321,24 @@ def product_params
     :category_id,
     :subcategory_id,
     :inventory_csv,
-    :image_url,                     # Supabase URL for main product image
-    :gallery_image_urls,            # Supabase URLs for gallery images (JSON/text column)
+    :image_url,             # Single main image (Supabase URL)
+
+    gallery_image_urls: [], # MUST be array if multiple gallery URLs
+
     variants_attributes: [
       :id, :name, :value, :price_modifier, :_destroy,
-      variant_images_attributes: [:id, :image_url, :_destroy]
+      variant_images_attributes: [
+        :id, :image, :image_url, :_destroy   # 🔑 add :image here
+      ]
     ],
-    inventories_attributes: [:id, :location, :quantity, :_destroy],
-    product_images_attributes: [:id, :image_url, :_destroy]
+
+    inventories_attributes: [
+      :id, :location, :quantity, :_destroy
+    ],
+
+    product_images_attributes: [
+      :id, :image_url, :_destroy
+    ]
   )
 end
 

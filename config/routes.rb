@@ -22,10 +22,12 @@ Rails.application.routes.draw do
   # === Products and nested resources (slug-based) ===
   resources :products, param: :slug do
     resources :orders, only: [:new, :create]
+
     resources :reviews, only: [:create, :edit, :update, :destroy, :show] do
-      resources :votes,   only: [:create]
+      post :vote, on: :member   # ✅ Helpful voting route
       resources :reports, only: [:new, :create]
     end
+
     resources :variants,    only: [:new, :create, :edit, :update, :destroy]
     resources :inventories, only: [:new, :create, :edit, :update, :destroy]
 
@@ -41,8 +43,7 @@ Rails.application.routes.draw do
       delete :remove_variant       # expects params[:id] for variant
       delete :remove_variant_image # expects params[:id] for variant image
       delete :remove_gallery       # expects params[:url] or :image_id
-      post   :add_variant_image       # adds a new variant image via Turbo Stream
-      post   :add_variant_image 
+      post   :add_variant_image    # adds a new variant image via Turbo Stream
     end
 
     # Legacy gallery image route (if still needed)
@@ -64,7 +65,7 @@ Rails.application.routes.draw do
     resources :payments, only: [:create] do
       collection do
         match :paystack_callback, via: [:get, :post]
-        get   :paypal_callback,   via: [:get, :post]
+        match :paypal_callback,   via: [:get, :post]
       end
     end
 

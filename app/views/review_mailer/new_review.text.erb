@@ -1,0 +1,9 @@
+<h1>New Review Submitted</h1>
+<p>
+  <strong><%= @review.user.name %></strong> left a review for
+  <strong><%= @review.product.title %></strong>.
+</p>
+<p>
+  Rating: <%= @review.rating %>/5<br>
+  Comment: <%= @review.comment %>
+</p>

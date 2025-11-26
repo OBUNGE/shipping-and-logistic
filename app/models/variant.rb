@@ -5,8 +5,6 @@ class Variant < ApplicationRecord
   has_many :order_items
 
   # === Nested Image Support ===
-  # Allow nested variant_images to be created/updated.
-  # We only reject if BOTH image and image_url are blank.
   accepts_nested_attributes_for :variant_images,
                                 allow_destroy: true,
                                 reject_if: ->(attrs) { attrs['image'].blank? && attrs['image_url'].blank? }
@@ -21,6 +19,11 @@ class Variant < ApplicationRecord
   # === Pricing Logic ===
   def adjusted_price
     product.price + (price_modifier || 0)
+  end
+
+  def final_price
+    base = product.discount&.active? ? product.discounted_price : product.price
+    base + (price_modifier || 0)
   end
 
   # === Image Helpers ===

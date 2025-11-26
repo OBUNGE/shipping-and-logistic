@@ -53,10 +53,10 @@
             <thead class="table-primary text-dark">
               <tr>
                 <th>Product</th>
-                <th>Variant</th>
+                <th>Variants</th>
                 <th>Qty</th>
                 <th>Unit Price</th>
-                <th>Shipping</th>
+                <th>Shipping/quantity</th>
                 <th>Subtotal</th>
               </tr>
             </thead>
@@ -65,7 +65,13 @@
                 <tr>
                   <td><%= item.product.title %></td>
                   <td>
-                    <% if item.variant.present? %>
+                    <% if item.respond_to?(:variants) && item.variants.any? %>
+                      <% item.variants.each do |v| %>
+                        <span class="badge bg-info text-dark me-1">
+                          <%= "#{v.name}: #{v.value}" %>
+                        </span>
+                      <% end %>
+                    <% elsif item.variant.present? %>
                       <span class="badge bg-info text-dark">
                         <%= "#{item.variant.name}: #{item.variant.value}" %>
                       </span>
@@ -86,8 +92,8 @@
         <!-- Totals -->
         <div class="border-top pt-3 mb-4">
           <div class="d-flex justify-content-end flex-column align-items-end">
-            <p class="mb-1 fw-semibold">Subtotal: <%= number_to_currency(@order.order_items.sum(&:subtotal), unit: "#{currency} ") %></p>
-            <p class="mb-1 fw-semibold">Shipping: <%= number_to_currency(@order.order_items.sum { |i| i.shipping || 0 }, unit: "#{currency} ") %></p>
+            <p class="mb-1 fw-semibold">Subtotal: <%= number_to_currency(@order.subtotal, unit: "#{currency} ") %></p>
+            <p class="mb-1 fw-semibold">Shipping: <%= number_to_currency(@order.shipping_total, unit: "#{currency} ") %></p>
             <h4 class="fw-bold text-success">Total: <%= number_to_currency(@order.total, unit: "#{currency} ") %></h4>
 
             <% if currency == "KES" %>

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_21_100840) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_26_055608) do
   create_schema "auth"
   create_schema "extensions"
   create_schema "graphql"
@@ -137,6 +137,15 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_21_100840) do
     t.index ["user_id"], name: "index_notifications_on_user_id"
   end
 
+  create_table "order_item_variants", force: :cascade do |t|
+    t.bigint "order_item_id", null: false
+    t.bigint "variant_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["order_item_id"], name: "index_order_item_variants_on_order_item_id"
+    t.index ["variant_id"], name: "index_order_item_variants_on_variant_id"
+  end
+
   create_table "order_items", force: :cascade do |t|
     t.bigint "order_id", null: false
     t.bigint "product_id", null: false
@@ -176,6 +185,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_21_100840) do
     t.string "email"
     t.string "contact_number"
     t.string "payment_method"
+    t.decimal "subtotal", precision: 12, scale: 2, default: "0.0", null: false
+    t.decimal "shipping_total", precision: 12, scale: 2, default: "0.0", null: false
   end
 
   create_table "payments", force: :cascade do |t|
@@ -205,6 +216,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_21_100840) do
     t.string "caption"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "image_url"
     t.index ["product_id"], name: "index_product_images_on_product_id"
   end
 
@@ -228,6 +240,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_21_100840) do
     t.string "image_url"
     t.string "slug"
     t.jsonb "gallery_image_urls", default: []
+    t.decimal "weight", precision: 8, scale: 2, default: "0.0", null: false
     t.index ["category_id"], name: "index_products_on_category_id"
     t.index ["seller_id"], name: "index_products_on_seller_id"
     t.index ["slug"], name: "index_products_on_slug", unique: true
@@ -316,6 +329,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_21_100840) do
     t.string "store_logo_url"
     t.string "first_name"
     t.string "last_name"
+    t.string "city"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
     t.index ["store_slug"], name: "index_users_on_store_slug", unique: true
@@ -353,6 +367,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_21_100840) do
   add_foreign_key "discounts", "products"
   add_foreign_key "inventories", "products"
   add_foreign_key "notifications", "users"
+  add_foreign_key "order_item_variants", "order_items"
+  add_foreign_key "order_item_variants", "variants"
   add_foreign_key "order_items", "orders"
   add_foreign_key "order_items", "products"
   add_foreign_key "order_items", "variants"

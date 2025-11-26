@@ -61,6 +61,26 @@
           { class: "form-select form-select-sm", id: "subcategory-select", data: { current: @product.subcategory_id } } %>
   </div>
 
+  <!-- ⚖️ Shipping attributes -->
+  <div class="row g-2 mb-3">
+    <div class="col-md-4">
+      <%= form.label :weight, "Weight (kg)", class: "form-label small" %>
+      <%= form.number_field :weight,
+            step: 0.01,
+            min: 0,
+            class: "form-control form-control-sm",
+            placeholder: "e.g. 0.30 (phone), 20.00 (fridge)" %>
+      <small class="text-muted">Used for weight-based shipping calculations.</small>
+    </div>
+
+    <div class="col-md-8">
+      <%= form.label :estimated_delivery_range, "Estimated delivery", class: "form-label small" %>
+      <%= form.text_field :estimated_delivery_range,
+            class: "form-control form-control-sm",
+            placeholder: "e.g. 2–5 business days" %>
+    </div>
+  </div>
+
   <!-- 💰 Pricing -->
   <div class="row g-2 mb-3">
     <div class="col-md-6">
@@ -77,14 +97,14 @@
     </div>
 
     <div class="col-md-6">
-      <%= form.label :shipping_cost, "Shipping Cost (KES)", class: "form-label small" %>
+      <%= form.label :shipping_cost, "Legacy Shipping Cost (optional)", class: "form-label small" %>
       <%= form.number_field :shipping_cost,
             step: 1,
             class: "form-control form-control-sm",
             id: "product_shipping_cost",
             placeholder: "e.g. 300" %>
       <small class="text-muted">
-        Stored in KES — buyers will see <%= display_price(300) %> (default KES, converts to USD if selected).
+        Optional per‑item fee. If weight is set, calculator will prefer weight‑based shipping.
       </small>
     </div>
   </div>
@@ -98,22 +118,25 @@
 
   <!-- 📦 Stock -->
   <div class="row g-2 mb-3">
+    <!-- Manual Stock -->
     <div class="col-md-6">
-      <%= form.label :stock, class: "form-label small" %>
+      <%= form.label :stock, "Manual Stock (priority)", class: "form-label small" %>
       <%= form.number_field :stock,
             min: 0,
             class: "form-control form-control-sm",
-            placeholder: "e.g. 200",
-            required: true %>
+            placeholder: "e.g. 200" %>
+      <small class="text-muted">If set, this overrides inventories</small>
     </div>
+
+    <!-- Calculated Stock -->
     <div class="col-md-6">
-      <%= form.label :estimated_delivery_range, "Estimated Delivery", class: "form-label small" %>
-      <%= form.text_field :estimated_delivery_range,
-            class: "form-control form-control-sm",
-            placeholder: "e.g. 2–5 days" %>
+      <label class="form-label small">Calculated Stock (from inventories)</label>
+      <p class="form-control-plaintext"><%= @product.total_inventory %></p>
+      <small class="text-muted">Used only if manual stock is blank</small>
     </div>
   </div>
 
+  <!-- 📦 Return Policy -->
   <div class="mb-3">
     <%= form.label :return_policy, class: "form-label small" %>
     <%= form.text_area :return_policy,
@@ -121,6 +144,8 @@
           rows: 2,
           placeholder: "e.g. Returns accepted within 7 days" %>
   </div>
+
+
 
 <!-- 🖼️ Main Product Image -->
 <div class="mb-3">
@@ -181,28 +206,20 @@
 
   <div id="gallery-preview" class="row mt-2 sortable-preview"></div>
 </div>
-<!-- Variants Section -->
-<div id="variant-fields">
-  <%= form.fields_for :variants do |variant_fields| %>
-    <%= render "variant_fields", f: variant_fields %>
-  <% end %>
-</div>
+ <!-- Variants Section -->
+  <div id="variant-fields">
+    <%= form.fields_for :variants do |variant_fields| %>
+      <%= render "variant_fields", f: variant_fields %>
+    <% end %>
+  </div>
 
-<!-- ADD Variant Button -->
-<div class="mt-2">
-  <% if @product.persisted? %>
-    <%= link_to "➕ Add Variant",
-          add_variant_product_path(@product),
-          data: { turbo_method: :post, turbo_stream: true },
-          class: "btn btn-sm btn-outline-primary" %>
-  <% else %>
-    <button type="button"
-            class="btn btn-sm btn-outline-primary add-variant-btn">
-      ➕ Add Variant
-    </button>
-  <% end %>
-</div>
+  <!-- Add Variant Button (JS only for new products) -->
+  <button type="button" class="btn btn-sm btn-outline-primary add-variant-btn mt-2">
+    ➕ Add Variant
+  </button>
 
+  <!-- Hidden Templates Partial -->
+  <%= render "variant_templates" %>
 
 <!-- 🏬 Inventory -->
 <div class="mb-4">

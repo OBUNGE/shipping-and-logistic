@@ -1,0 +1,11 @@
+<%= turbo_stream.prepend "reviews" do %>
+  <%= render partial: "reviews/review", locals: { review: @review } %>
+<% end %>
+
+<%= turbo_stream.replace "review_form" do %>
+  <%= render partial: "reviews/form", locals: { product: @product, review: Review.new } %>
+<% end %>
+
+<%= turbo_stream.replace "flash" do %>
+  <div class="alert alert-success">Review submitted successfully.</div>
+<% end %>

@@ -38,8 +38,8 @@ Rails.application.configure do
   config.consider_all_requests_local = false
 
   # ✅ SSL (important for Render + Supabase signed URLs)
-  config.force_ssl = true
-  config.assume_ssl = true
+  config.force_ssl = false
+  config.assume_ssl = false
 
   # ✅ Logging configuration
   config.log_tags = [:request_id]
@@ -81,3 +81,8 @@ end
 # ✅ Ensure URL helpers (like *_url) generate full URLs
 Rails.application.routes.default_url_options[:host] = "tajaone.app"
 Rails.application.routes.default_url_options[:protocol] = "https"
+
+
+# config/environments/development.rb
+Rails.application.routes.default_url_options[:host] = "localhost:3000"
+Rails.application.routes.default_url_options[:protocol] = "http"

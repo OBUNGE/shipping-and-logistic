@@ -9,111 +9,165 @@ class OrdersController < ApplicationController
 
   def show; end
 
-  def new
-    if params[:product_id].present?
-      @product = Product.find(params[:product_id])
-      @order   = user_signed_in? ? current_user.orders_as_buyer.new : Order.new(currency: "KES")
-    else
-      if session[:cart].blank?
-        redirect_to cart_path, alert: "Your cart is empty." and return
-      end
+def new
+  if params[:product_id].present?
+    # --- Single product checkout ---
+    @product = Product.find(params[:product_id])
+    @order   = user_signed_in? ? current_user.orders_as_buyer.new : Order.new(currency: "KES")
 
-      order_currency = "KES"
+    # Calculate shipping for single product using service
+    destination = current_user&.city.presence || "Nairobi"
+    calculator  = ShippingCalculator.new(strategy: :weight_based, destination: destination)
+    @shipping_total = calculator.calculate([{ product: @product, variants: [], quantity: 1 }])
 
-      @cart_items = session[:cart].map do |item|
-        product  = Product.find(item["product_id"])
-        variant  = item["variant_id"].present? ? Variant.find_by(id: item["variant_id"]) : nil
-        quantity = item["quantity"].to_i
-
-        base_price = product.price + (variant&.price_modifier || 0)
-
-        unit_price = ExchangeRateService.convert(base_price, from: product.currency, to: order_currency)
-        subtotal   = unit_price * quantity
-        shipping   = ExchangeRateService.convert((product.shipping_cost || 0) * quantity, from: product.currency, to: order_currency)
-
-        {
-          product:    product,
-          variant:    variant,
-          quantity:   quantity,
-          unit_price: unit_price,
-          subtotal:   subtotal,
-          shipping:   shipping
-        }
-      end
-
-      @order = user_signed_in? ? current_user.orders_as_buyer.new(currency: order_currency) : Order.new(currency: order_currency)
+  else
+    # --- Cart checkout ---
+    if session[:cart].blank?
+      redirect_to cart_path, alert: "Your cart is empty." and return
     end
+
+    order_currency = "KES"
+
+    @cart_items = session[:cart].map do |item|
+      product     = Product.find(item["product_id"])
+      variant_ids = Array(item["variant_ids"]).map(&:to_i)
+      variants    = Variant.where(id: variant_ids)
+      quantity    = item["quantity"].to_i.nonzero? || 1
+
+      # Centralized price (discount + modifiers), then convert currency
+      effective   = product.discount&.active? ? product.discounted_price : product.price
+      effective  += variants.sum { |v| v.price_modifier.to_f }
+
+      unit_price  = ExchangeRateService.convert(effective, from: product.currency, to: order_currency)
+      subtotal    = unit_price * quantity
+
+      {
+        product:    product,
+        variants:   variants,
+        quantity:   quantity,
+        unit_price: unit_price,
+        subtotal:   subtotal
+        # 🚫 no per-item shipping here
+      }
+    end
+
+    # ✅ Centralized shipping calculation
+    destination = current_user&.city.presence || "Nairobi"
+    calculator  = ShippingCalculator.new(strategy: :weight_based, destination: destination)
+    @shipping_total = calculator.calculate(@cart_items)
+
+    @order = user_signed_in? ? current_user.orders_as_buyer.new(currency: order_currency) : Order.new(currency: order_currency)
   end
+end
 
-  def create
-    @order       = user_signed_in? ? current_user.orders_as_buyer.build(order_params) : Order.new(order_params)
-    @order.currency ||= "KES"
 
-    provider     = order_params[:provider] || "mpesa"
-    phone_number = order_params[:phone_number].presence || current_user&.phone
-    email        = order_params[:email].presence || current_user&.email
+def create
+  @order = user_signed_in? ? current_user.orders_as_buyer.build(order_params) : Order.new(order_params)
+  @order.currency ||= "KES"
 
-    Rails.logger.info("🛒 Starting order creation: provider=#{provider}, currency=#{@order.currency}, email=#{email}")
+  provider     = order_params[:provider] || "mpesa"
+  phone_number = order_params[:phone_number].presence || current_user&.phone
+  email        = order_params[:email].presence || current_user&.email
 
-    if params[:product_id].present?
-      product  = Product.find(params[:product_id])
-      variant  = params[:variant_id].present? ? Variant.find_by(id: params[:variant_id]) : nil
-      quantity = params[:quantity].to_i.nonzero? || 1
+  Rails.logger.info("🛒 Starting order creation: provider=#{provider}, currency=#{@order.currency}, email=#{email}")
 
-      if quantity > product.stock
-        redirect_to product_path(product), alert: "Sorry, only #{product.stock} units available." and return
-      end
+  if params[:product_id].present?
+    # --- Single product checkout ---
+    product     = Product.find(params[:product_id])
+    variant_ids = Array(params[:order][:variant_ids] || params[:order][:variant_id]).map(&:to_i)
+    variants    = Variant.where(id: variant_ids)
+    quantity    = params[:order][:quantity].to_i.nonzero? || 1
 
-      ActiveRecord::Base.transaction do
-        build_order_items(@order, product, variant, quantity)
-        @order.seller = product.seller
-        @order.status = :pending
-        @order.save!
-        decrement_stock!(@order)
-      end
+    if quantity > product.stock
+      redirect_to product_path(product), alert: "Sorry, only #{product.stock} units available." and return
+    end
 
-      notify_seller(@order)
-      handle_payment(@order, provider, phone_number, email)
+    ActiveRecord::Base.transaction do
+      build_order_item!(@order, product, variants, quantity)
+      @order.seller = product.seller
+      @order.status = :pending
 
-    else
-      grouped_items = (session[:cart] || []).group_by { |item| Product.find(item["product_id"]).seller.id }
-      orders = []
+      # ✅ Calculate totals
+      subtotal = @order.order_items.sum(&:subtotal)
+      calculator = ShippingCalculator.new(
+        strategy:    :weight_based,
+        destination: order_params[:city],
+        country:     order_params[:country],
+        county:      order_params[:county]
+      )
+      @order.shipping_total = calculator.calculate([{ product: product, variants: variants, quantity: quantity }])
+      @order.subtotal = subtotal
+      @order.total    = subtotal + @order.shipping_total
 
-      ActiveRecord::Base.transaction do
-        grouped_items.each do |seller_id, items|
-          order = user_signed_in? ? current_user.orders_as_buyer.build(order_params.merge(seller_id: seller_id, status: :pending)) :
-                                    Order.new(order_params.merge(seller_id: seller_id, status: :pending))
+      @order.save!
+      decrement_stock!(@order)
+    end
 
-          order.currency ||= "KES"
+    notify_seller(@order)
+    handle_payment(@order, provider, phone_number, email)
 
-          items.each do |item|
-            product       = Product.find(item["product_id"])
-            variant       = item["variant_id"].present? ? Variant.find_by(id: item["variant_id"]) : nil
-            requested_qty = item["quantity"].to_i
+  else
+    # --- Cart checkout ---
+    if session[:cart].blank?
+      redirect_to cart_path, alert: "Your cart is empty." and return
+    end
 
-            if requested_qty > product.stock
-              redirect_to cart_path, alert: "Sorry, only #{product.stock} units of #{product.title} are available." and return
-            end
+    grouped_items = session[:cart].group_by { |item| Product.find(item["product_id"]).seller.id }
+    orders = []
 
-            build_order_items(order, product, variant, requested_qty)
+    ActiveRecord::Base.transaction do
+      grouped_items.each do |seller_id, items|
+        order = user_signed_in? ? current_user.orders_as_buyer.build(order_params.merge(seller_id: seller_id, status: :pending)) :
+                                  Order.new(order_params.merge(seller_id: seller_id, status: :pending))
+
+        order.currency ||= "KES"
+
+        items.each do |item|
+          product       = Product.find(item["product_id"])
+          variant_ids   = Array(item["variant_ids"] || item["variant_id"]).map(&:to_i)
+          variants      = Variant.where(id: variant_ids)
+          requested_qty = item["quantity"].to_i.nonzero? || 1
+
+          if requested_qty > product.stock
+            redirect_to cart_path, alert: "Sorry, only #{product.stock} units of #{product.title} are available." and return
           end
 
-          order.total = order.order_items.sum { |oi| oi.subtotal + (oi.shipping || 0) }
-          order.save!
-          decrement_stock!(order)
-          notify_seller(order)
-          orders << order
+          build_order_item!(order, product, variants, requested_qty)
         end
-      end
 
-      session[:cart] = []
-      handle_payment(orders.first, provider, phone_number, email)
+        # ✅ Calculate totals
+        subtotal = order.order_items.sum(&:subtotal)
+        calculator = ShippingCalculator.new(
+          strategy:    :weight_based,
+          destination: order_params[:city],
+          country:     order_params[:country],
+          county:      order_params[:county]
+        )
+        order.shipping_total = calculator.calculate(items.map do |i|
+          {
+            product:  Product.find(i["product_id"]),
+            variants: Variant.where(id: Array(i["variant_ids"] || i["variant_id"]).map(&:to_i)),
+            quantity: i["quantity"].to_i
+          }
+        end)
+        order.subtotal = subtotal
+        order.total    = subtotal + order.shipping_total
+
+        order.save!
+        decrement_stock!(order)
+        notify_seller(order)
+        orders << order
+      end
     end
-  rescue ActiveRecord::RecordInvalid => e
-    Rails.logger.error("⚠️ Order Creation Failed: #{e.record.errors.full_messages.join(', ')}")
-    redirect_to new_order_path(product_id: params[:product_id]),
-                alert: "Failed to create order: #{e.record.errors.full_messages.join(', ')}"
+
+    session[:cart] = []
+    handle_payment(orders.first, provider, phone_number, email)
   end
+rescue ActiveRecord::RecordInvalid => e
+  Rails.logger.error("⚠️ Order Creation Failed: #{e.record.errors.full_messages.join(', ')}")
+  redirect_to new_order_path(product_id: params[:product_id]),
+              alert: "Failed to create order: #{e.record.errors.full_messages.join(', ')}"
+end
 
   def receipt
     order = Order.find(params[:id])
@@ -186,30 +240,46 @@ class OrdersController < ApplicationController
     end
   end
 
-  def build_order_items(order, product, variant, quantity)
-    base_price = product.price + (variant&.price_modifier || 0)
+def build_order_item!(order, product, variants, quantity)
+  quantity = quantity.to_i.nonzero? || 1
+  variants = Array(variants).compact
 
-    unit_price = ExchangeRateService.convert(base_price, from: product.currency, to: order.currency)
-    subtotal   = unit_price * quantity
-    shipping   = ExchangeRateService.convert((product.shipping_cost || 0) * quantity, from: product.currency, to: order.currency)
+  effective = product.effective_price(variants.presence || nil) || product.price
+  unit_price_converted = ExchangeRateService.convert(effective, from: product.currency, to: order.currency)
+  subtotal = unit_price_converted.to_f * quantity
 
-    order.order_items.build(
-      product:    product,
-      variant:    variant,
-      quantity:   quantity,
-      unit_price: unit_price,
-      subtotal:   subtotal,
-      shipping:   shipping
-    )
+  calculator = ShippingCalculator.new(
+    strategy:    :weight_based,
+    destination: order.city,
+    country:     order.country,
+    county:      order.county
+  )
+  item_shipping_total = calculator.calculate([{ product: product, variants: variants, quantity: quantity }])
+  per_item_shipping = item_shipping_total.to_f / quantity
 
-    order.total = order.order_items.sum { |oi| oi.subtotal + (oi.shipping || 0) }
-  end
+  order_item = order.order_items.build(
+    product:    product,
+    quantity:   quantity,
+    unit_price: unit_price_converted.to_f,
+    subtotal:   subtotal,
+    shipping:   per_item_shipping
+  )
+
+  variants.each { |v| order_item.order_item_variants.build(variant: v) }
+
+  Rails.logger.info("OrderItem valid?: #{order_item.valid?}")
+  Rails.logger.info("OrderItem errors: #{order_item.errors.full_messages}") unless order_item.valid?
+
+  order_item
+end
+
 
   def order_params
     params.require(:order).permit(
       :currency, :provider, :phone_number, :email, :contact_number,
       :first_name, :last_name, :alternate_contact,
-      :city, :county, :country, :region, :address, :delivery_notes
+      :city, :county, :country, :region, :address, :delivery_notes,
+      :variant_id, :quantity
     )
   end
 
@@ -251,4 +321,3 @@ class OrdersController < ApplicationController
     end
   end
 end
-

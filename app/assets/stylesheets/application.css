@@ -18,36 +18,17 @@
 .sticky-top.search-bar { z-index: 950 !important; }
 
 
-
 .star-rating .star {
-  cursor: pointer;
+  font-size: 1.5rem;
   color: #ccc;
-  transition: color 0.2s;
-}
-
-.star-rating input[type="radio"]:checked ~ .star {
-  color: gold;
-}
-.star {
   cursor: pointer;
-  transition: color 0.2s ease;
 }
 
-
-.star-rating .star:hover,
-.star-rating .star:hover ~ .star {
-  color: gold;
+.star-rating input[type="radio"]:checked ~ label i,
+.star-rating label:hover i {
+  color: #f5c518; /* gold */
 }
-.star-rating .star.selected {
-  color: gold;
-}
-.star {
-  cursor: pointer;
-  transition: color 0.2s ease;
-}
-.star:hover {
-  color: gold;
-}/* ===========================
+/* ===========================
    Product Gallery & Thumbnails
    =========================== */
 
@@ -130,6 +111,26 @@
   }
 }
 
+.thumbnail-scroll {
+  white-space: nowrap;
+  scrollbar-width: thin; /* Firefox */
+}
+
+.thumbnail-scroll::-webkit-scrollbar {
+  height: 8px;
+}
+
+.thumbnail-scroll::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 4px;
+}
+
+.active-thumb {
+  border: 2px solid #0d6efd; /* Bootstrap primary color */
+  box-shadow: 0 0 6px rgba(13, 110, 253, 0.6);
+}
+
+
 /* add new product style stRT HERE */
 
 /* Gallery preview styling */
@@ -197,6 +198,16 @@ form h2 {
 
 .product-info div {
   margin-bottom: 0.25rem;
+}
+
+.discount-badge {
+  background-color: #f8f0f1; /* Bootstrap danger red */
+  color: #fff;
+  font-size: 0.7rem;         /* smaller text */
+  font-weight: 600;
+  padding: 0.2rem 0.5rem;    /* tighter padding */
+  border-radius: 0.25rem;    /* subtle rounded corners */
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2); /* subtle shadow for readability */
 }
 
 
@@ -373,3 +384,42 @@ form h2 {
     background-color: #146c43;
     border-color: #146c43;
   }
+  
+
+  /* Variant option wrapper */
+.variant-option {
+  cursor: pointer;
+  display: inline-block;
+}
+
+/* Circular thumbnails for color/image variants */
+.variant-thumb {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%; /* circular */
+  object-fit: cover;
+  border: 2px solid #ddd;
+  transition: border-color 0.2s;
+}
+
+/* Highlight selected thumbnail */
+.variant-option input:checked + .variant-thumb {
+  border-color: #007bff;
+}
+
+/* Pills for text variants (like Size) */
+.variant-pill {
+  display: inline-block;
+  padding: 6px 12px;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  background: #f8f9fa;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+/* Highlight selected pill */
+.variant-option input:checked + .variant-pill {
+  background: #007bff;
+  color: #fff;
+  border-color: #007bff;
+}

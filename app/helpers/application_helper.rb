@@ -1,17 +1,12 @@
 # 📄 File: app/helpers/application_helper.rb
 module ApplicationHelper
   # ⭐ Render star ratings (full, half, empty)
-  def render_stars(rating)
-    full_stars  = rating.floor
-    half_star   = (rating - full_stars >= 0.5) ? 1 : 0
-    empty_stars = 5 - full_stars - half_star
+  def render_stars(rating, max_stars = 5)
+    rating = rating.to_i
+    full_star  = content_tag(:i, "", class: "bi bi-star-fill text-warning")
+    empty_star = content_tag(:i, "", class: "bi bi-star text-muted")
 
-    stars_html = ""
-    full_stars.times  { stars_html += '<i class="bi bi-star-fill text-warning"></i>' }
-    half_star.times   { stars_html += '<i class="bi bi-star-half text-warning"></i>' }
-    empty_stars.times { stars_html += '<i class="bi bi-star text-muted"></i>' }
-
-    stars_html.html_safe
+    (full_star * rating).html_safe + (empty_star * (max_stars - rating)).html_safe
   end
 
   # 🌍 Cache user's country to avoid repeated GeoIP lookups

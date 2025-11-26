@@ -1,0 +1,5 @@
+<%= turbo_stream.replace dom_id(@review, :helpful_count) do %>
+  <span id="<%= dom_id(@review, :helpful_count) %>" class="small text-muted">
+    <%= @review.helpful_count %> people found this helpful
+  </span>
+<% end %>

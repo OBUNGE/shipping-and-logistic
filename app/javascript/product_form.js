@@ -139,227 +139,341 @@ document.addEventListener("turbo:load", () => {
     });
   }
 
-  // -----------------------------
-  // 5. Preview Variant Image
-  // -----------------------------
-  window.previewVariantImage = function(event) {
-    const file = event.target.files[0];
-    if (!file) return;
+// -----------------------------
+// 5. added live subtotal
+// -----------------------------
+  
 
-    // find/create preview img
-    let preview = event.target.closest(".variant-image-block").querySelector(".variant-image-preview");
-    if (!preview) {
-      preview = document.createElement("img");
-      preview.className = "img-thumbnail mb-2 variant-image-preview";
-      preview.style.maxHeight = "150px";
-      event.target.insertAdjacentElement("beforebegin", preview);
-    }
-    preview.src = URL.createObjectURL(file);
+document.addEventListener("DOMContentLoaded", () => {
+  const subtotalEl = document.getElementById("subtotal");
 
-    // Update hidden image_url field (temporary blob until backend uploads)
-    const hiddenUrlField = event.target.closest(".variant-image-block").querySelector("input[name*='[image_url]']");
-    if (hiddenUrlField) hiddenUrlField.value = preview.src;
+  function updateSubtotal() {
+    let totalKES = 0;
+    document.querySelectorAll(".variant-qty").forEach(input => {
+      const qty = parseInt(input.value || "0", 10);
+      const price = parseFloat(input.dataset.price || "0");
+      const variantSubtotalEl = document.getElementById(`subtotal_${input.id}`);
+      const subtotalKES = qty * price;
 
-    preview.onload = () => URL.revokeObjectURL(preview.src);
-  };
+      // update per-variant subtotal
+      if (variantSubtotalEl) {
+        variantSubtotalEl.textContent = qty > 0 ? `= ${subtotalKES.toFixed(2)} KES` : "";
+      }
 
-  // -----------------------------
-  // 6. Variant Value Auto-Populate + Toggle Image Upload
-  // -----------------------------
-  const typeOptions = {
-    Color: ["Black","Blue","Red","Green","White"],
-    Size: ["XS","S","M","L","XL","XXL"],
-    Storage: ["64GB","128GB","256GB","512GB","1TB"],
-    Material: ["Cotton","Leather","Polyester","Plastic","Metal","Wood"],
-    Packaging: ["Box","Bag","Sachet","Envelope","Bottle","Jar"]
-  };
-
-  function updateValueOptions(typeSelect) {
-    const selected = typeSelect.value;
-    const block = typeSelect.closest(".variant-block");
-    const valueSelect = block.querySelector("select[name*='[value]']");
-    if (!valueSelect) return;
-
-    // clear and repopulate
-    valueSelect.innerHTML = "";
-    const options = typeOptions[selected] || [];
-    
-    // Add prompt option
-    const promptOption = document.createElement("option");
-    promptOption.value = "";
-    promptOption.textContent = "Select option";
-    valueSelect.appendChild(promptOption);
-
-    options.forEach(opt => {
-      const option = document.createElement("option");
-      option.value = opt;
-      option.textContent = opt;
-      valueSelect.appendChild(option);
+      totalKES += subtotalKES;
     });
 
-    // ✅ auto-select saved value if present
-    const savedValue = valueSelect.dataset.current || block.dataset.savedValue;
-    if (savedValue) {
-      // only set if the option exists
-      const match = Array.from(valueSelect.options).find(o => o.value === savedValue);
-      if (match) valueSelect.value = savedValue;
+    if (subtotalEl) {
+      const usdRate = 0.0075; // Example: 1 KES ≈ 0.0075 USD
+      const totalUSD = totalKES * usdRate;
+      subtotalEl.textContent = `Subtotal: ${totalKES.toFixed(2)} KES ≈ ${totalUSD.toFixed(2)} USD`;
     }
-
-    const actions = block.querySelector(".color-image-actions");
-    if (actions) actions.classList.toggle("d-none", selected !== "Color");
   }
 
-  // On change binding (for selects)
-  document.addEventListener("change", (e) => {
-    if (e.target.matches("select[name*='[name]']")) {
-      updateValueOptions(e.target);
+  // Bind plus/minus buttons
+  document.addEventListener("click", (e) => {
+    if (e.target.classList.contains("qty-plus") || e.target.classList.contains("qty-minus")) {
+      const targetId = e.target.dataset.target;
+      const input = document.getElementById(targetId);
+      if (!input) return;
+
+      let value = parseInt(input.value || "0", 10);
+      const min = parseInt(input.min || "0", 10);
+
+      if (e.target.classList.contains("qty-plus")) {
+        value += 1;
+      } else {
+        value = Math.max(min, value - 1);
+      }
+
+      input.value = value;
+      updateSubtotal();
     }
   });
 
-  // Run once on page load for existing selects
-  document.addEventListener("DOMContentLoaded", () => {
-    document.querySelectorAll("select[name*='[name]']").forEach(typeSelect => {
-      updateValueOptions(typeSelect);
+  // Bind manual typing
+  document.addEventListener("input", (e) => {
+    if (e.target.classList.contains("variant-qty")) {
+      updateSubtotal();
+    }
+  });
+
+  // Initialize subtotal on page load
+  updateSubtotal();
+});
+
+
+
+
+
+// -----------------------------
+// 5. variant add to cart button
+// -----------------------------
+
+document.addEventListener("click", (e) => {
+  if (e.target.classList.contains("qty-plus") || e.target.classList.contains("qty-minus")) {
+    const targetId = e.target.dataset.target;
+    const input = document.getElementById(targetId);
+    if (!input) return;
+
+    let value = parseInt(input.value || "0", 10);
+    const min = parseInt(input.min || "0", 10);
+
+    if (e.target.classList.contains("qty-plus")) {
+      value += 1;
+    } else if (e.target.classList.contains("qty-minus")) {
+      value = Math.max(min, value - 1);
+    }
+
+    input.value = value;
+  }
+});
+
+
+// -----------------------------
+// 5. product image page
+// -----------------------------
+document.addEventListener("DOMContentLoaded", () => {
+  const carousel = document.getElementById("productCarousel");
+  if (!carousel) return;
+
+  const thumbnails = document.querySelectorAll("[data-bs-target='#productCarousel'][data-bs-slide-to]");
+
+  // Sync active thumbnail
+  carousel.addEventListener("slid.bs.carousel", (e) => {
+    const activeIndex = e.to;
+    thumbnails.forEach((thumb, idx) => {
+      if (idx === activeIndex) {
+        thumb.classList.add("active-thumb");
+      } else {
+        thumb.classList.remove("active-thumb");
+      }
     });
   });
 
-  // -----------------------------
-  // 7. Delete gallery images (persisted)
-  // -----------------------------
-  document.addEventListener("click", (e) => {
-    if (e.target.classList.contains("delete-gallery-image")) {
-      e.preventDefault();
-      e.stopPropagation();
-      const btn = e.target;
-      const url = btn.dataset.url;
-      const form = btn.closest("form");
-      
-      // Check if hidden input already exists to prevent duplicates
-      if (!form.querySelector(`input[name='remove_gallery[]'][value='${url}']`)) {
-        const hidden = document.createElement("input");
-        hidden.type = "hidden";
-        hidden.name = "remove_gallery[]";
-        hidden.value = url;
-        form.appendChild(hidden);
-      }
-      
-      btn.closest(".gallery-image-block").style.display = "none";
-    }
-  });
+  // Scroll arrows
+  const scrollContainer = document.querySelector(".thumbnail-scroll");
+  const leftBtn = document.querySelector(".thumb-scroll-btn.left");
+  const rightBtn = document.querySelector(".thumb-scroll-btn.right");
 
-  // -----------------------------
-  // 8. Preview file inputs auto-bind (generic)
-  // -----------------------------
-  document.addEventListener("change", (e) => {
-    if (e.target.matches("input[type='file'][name*='[image]']")) {
-      previewVariantImage(e);
-    }
-  });
+  if (scrollContainer && leftBtn && rightBtn) {
+    leftBtn.addEventListener("click", () => {
+      scrollContainer.scrollBy({ left: -150, behavior: "smooth" });
+    });
+    rightBtn.addEventListener("click", () => {
+      scrollContainer.scrollBy({ left: 150, behavior: "smooth" });
+    });
+  }
+});
+
+
+
+
+
+// -----------------------------
+// 5. Preview Variant Image
+// -----------------------------
+window.previewVariantImage = function(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  // find the variant image block wrapper
+  const block = event.target.closest(".variant-image-block");
+  if (!block) return; // safety guard
+
+  // find or create preview img
+  let preview = block.querySelector(".variant-image-preview");
+  if (!preview) {
+    preview = document.createElement("img");
+    preview.className = "img-thumbnail mb-2 variant-image-preview";
+    preview.style.maxHeight = "150px";
+    event.target.insertAdjacentElement("beforebegin", preview);
+  }
+
+  // show preview using blob URL
+  const blobUrl = URL.createObjectURL(file);
+  preview.src = blobUrl;
+  preview.style.display = "block"; // 🔑 ensure it's visible
+
+  // clean up blob URL after load
+  preview.onload = () => URL.revokeObjectURL(blobUrl);
+};
+
+// -----------------------------
+// 6. Variant Value Auto-Populate + Toggle Image Upload
+// -----------------------------
+const typeOptions = {
+  Color: ["Black","Blue","Red","Green","White"],
+  Size: ["XS","S","M","L","XL","XXL"],
+  Storage: ["64GB","128GB","256GB","512GB","1TB"],
+  Material: ["Cotton","Leather","Polyester","Plastic","Metal","Wood"],
+  Packaging: ["Box","Bag","Sachet","Envelope","Bottle","Jar"]
+};
+
+function updateValueOptions(typeSelect) {
+  const selected = typeSelect.value;
+  const block = typeSelect.closest(".variant-block");
+  const valueSelect = block.querySelector("select[name*='[value]']");
+  if (!valueSelect) return;
+
+  // clear and repopulate
+  valueSelect.innerHTML = "";
+  const options = typeOptions[selected] || [];
   
-  // -----------------------------
-  // 9. Add / Delete Variants & Images
-  // -----------------------------
-  document.addEventListener("click", (e) => {
-    // ➕ Add Variant (client-side only for new products)
-    if (e.target.classList.contains("add-variant-btn")) {
-      e.preventDefault();
-      e.stopPropagation();
+  // Add prompt option
+  const promptOption = document.createElement("option");
+  promptOption.value = "";
+  promptOption.textContent = "Select option";
+  valueSelect.appendChild(promptOption);
 
-      const container = document.getElementById("variant-fields");
-      const template = document.getElementById("variant-template");
-
-      // Check if template exists AND it's a <template> tag or a known wrapper
-      const templateContent = template && template.content ? template.content : template;
-
-      if (templateContent && container) {
-        // clone template content
-        const clone = templateContent.querySelector(".variant-block").cloneNode(true);
-
-        const timestamp = Date.now().toString();
-        // replace NEW_RECORD placeholders in inner HTML names and dataset
-        clone.innerHTML = clone.innerHTML.replace(/NEW_RECORD/g, timestamp);
-        clone.dataset.key = timestamp;
-
-        // append
-        container.appendChild(clone);
-
-        // run initializations (populate value select etc)
-        clone.querySelectorAll("select[name*='[name]']").forEach(typeSelect => {
-          updateValueOptions(typeSelect);
-        });
-      }
-    }
-
-    // ❌ Delete Variant (Mark for destruction or remove unsaved)
-    if (e.target.classList.contains("delete-variant")) {
-      e.preventDefault();
-      e.stopPropagation();
-      const block = e.target.closest(".variant-block");
-      const destroyInput = block.querySelector(".destroy-flag");
-      const idInput = block.querySelector("input[name*='[id]']"); // Check if it's a persisted record
-
-      if (idInput && idInput.value && destroyInput) {
-        // If it has a Rails ID (persisted), mark it and hide.
-        destroyInput.value = "1";
-        block.style.display = "none";
-      } else {
-        // If it's a new record added client-side, just remove it.
-        block.remove();
-      }
-    }
-
-    // ➕ Add Variant Image (create fresh block from global template)
-    if (e.target.classList.contains("add-variant-image-btn")) {
-      e.preventDefault();
-      e.stopPropagation();
-
-      const block = e.target.closest(".variant-block");
-      const imagesWrapper = block.querySelector(".variant-images-wrapper");
-      const template = document.getElementById("variant-image-template");
-      const templateContent = template && template.content ? template.content : template;
-
-
-      if (templateContent && imagesWrapper && block) {
-        // create fresh HTML
-        const newImageBlock = templateContent.querySelector(".variant-image-block").cloneNode(true);
-
-        // variantKey: numeric or timestamp used in names
-        const variantKey = block.dataset.key || Date.now().toString();
-
-        // index for NEW_IMAGE (use length to keep simple)
-        const index = imagesWrapper.querySelectorAll(".variant-image-block").length;
-
-        // replace INDEX with variantKey and NEW_IMAGE with index inside names
-        newImageBlock.querySelectorAll("input, button").forEach(element => {
-          if (element.name) {
-            element.name = element.name.replace(/INDEX/g, variantKey).replace(/NEW_IMAGE/g, index);
-          }
-        });
-
-        // ✅ append safely into wrapper
-        imagesWrapper.appendChild(newImageBlock);
-      }
-    }
-
-    // ❌ Delete Variant Image (Mark for destruction or remove unsaved)
-    if (e.target.classList.contains("delete-variant-image")) {
-      e.preventDefault();
-      e.stopPropagation();
-
-      const imgBlock = e.target.closest(".variant-image-block");
-      const destroyInput = imgBlock.querySelector("input[name*='[_destroy]']");
-      const idInput = imgBlock.querySelector("input[name*='[id]']"); // Check if it's a persisted record
-
-      if (idInput && idInput.value && destroyInput) {
-        // If it has a Rails ID (persisted), mark it and hide.
-        destroyInput.value = "1";
-        imgBlock.style.display = "none";
-      } else {
-        // If it's a new file input for a new record, just remove the element.
-        imgBlock.remove();
-      }
-    }
+  options.forEach(opt => {
+    const option = document.createElement("option");
+    option.value = opt;
+    option.textContent = opt;
+    valueSelect.appendChild(option);
   });
+
+  // ✅ auto-select saved value if present
+  const savedValue = valueSelect.dataset.current || block.dataset.savedValue;
+  if (savedValue) {
+    const match = Array.from(valueSelect.options).find(o => o.value === savedValue);
+    if (match) valueSelect.value = savedValue;
+  }
+
+  const actions = block.querySelector(".color-image-actions");
+  if (actions) actions.classList.toggle("d-none", selected !== "Color");
+}
+
+// On change binding (for selects)
+document.addEventListener("change", (e) => {
+  if (e.target.matches("select[name*='[name]']")) {
+    updateValueOptions(e.target);
+  }
+});
+
+// Run once on page load for existing selects
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll("select[name*='[name]']").forEach(typeSelect => {
+    updateValueOptions(typeSelect);
+  });
+});
+
+// -----------------------------
+// 7. Delete gallery images (persisted)
+// -----------------------------
+document.addEventListener("click", (e) => {
+  if (e.target.classList.contains("delete-gallery-image")) {
+    e.preventDefault();
+    e.stopPropagation();
+    const btn = e.target;
+    const url = btn.dataset.url;
+    const form = btn.closest("form");
+    
+    if (!form.querySelector(`input[name='remove_gallery[]'][value='${url}']`)) {
+      const hidden = document.createElement("input");
+      hidden.type = "hidden";
+      hidden.name = "remove_gallery[]";
+      hidden.value = url;
+      form.appendChild(hidden);
+    }
+    
+    btn.closest(".gallery-image-block").style.display = "none";
+  }
+});
+
+// -----------------------------
+// 8. Preview file inputs auto-bind (generic)
+// -----------------------------
+document.addEventListener("change", (e) => {
+  if (e.target.matches("input[type='file'][name*='[image]']")) {
+    previewVariantImage(e);
+  }
+});
+
+// -----------------------------
+// 9. Add / Delete Variants & Images
+// -----------------------------
+document.addEventListener("click", (e) => {
+  // ➕ Add Variant
+  if (e.target.classList.contains("add-variant-btn")) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const container = document.getElementById("variant-fields");
+    const template = document.getElementById("variant-template");
+    const templateContent = template && template.content ? template.content : template;
+
+    if (templateContent && container) {
+      const clone = templateContent.querySelector(".variant-block").cloneNode(true);
+      const timestamp = Date.now().toString();
+      clone.innerHTML = clone.innerHTML.replace(/NEW_RECORD/g, timestamp);
+      clone.dataset.key = timestamp;
+      container.appendChild(clone);
+
+      clone.querySelectorAll("select[name*='[name]']").forEach(typeSelect => {
+        updateValueOptions(typeSelect);
+      });
+    }
+  }
+
+  // ❌ Delete Variant
+  if (e.target.classList.contains("delete-variant")) {
+    e.preventDefault();
+    e.stopPropagation();
+    const block = e.target.closest(".variant-block");
+    const destroyInput = block.querySelector(".destroy-flag");
+    const idInput = block.querySelector("input[name*='[id]']");
+
+    if (idInput && idInput.value && destroyInput) {
+      destroyInput.value = "1";
+      block.style.display = "none";
+    } else {
+      block.remove();
+    }
+  }
+
+  // ➕ Add Variant Image
+  if (e.target.classList.contains("add-variant-image-btn")) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const block = e.target.closest(".variant-block");
+    const imagesWrapper = block.querySelector(".variant-images-wrapper");
+    const template = document.getElementById("variant-image-template");
+    const templateContent = template && template.content ? template.content : template;
+
+    if (templateContent && imagesWrapper && block) {
+      const newImageBlock = templateContent.querySelector(".variant-image-block").cloneNode(true);
+      const variantKey = block.dataset.key || Date.now().toString();
+      const index = imagesWrapper.querySelectorAll(".variant-image-block").length;
+
+      newImageBlock.querySelectorAll("input, button").forEach(element => {
+        if (element.name) {
+          element.name = element.name.replace(/INDEX/g, variantKey).replace(/NEW_IMAGE/g, index);
+        }
+      });
+
+      imagesWrapper.appendChild(newImageBlock);
+    }
+  }
+
+  // ❌ Delete Variant Image
+  if (e.target.classList.contains("delete-variant-image")) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const imgBlock = e.target.closest(".variant-image-block");
+    const destroyInput = imgBlock.querySelector("input[name*='[_destroy]']");
+    const idInput = imgBlock.querySelector("input[name*='[id]']");
+
+    if (idInput && idInput.value && destroyInput) {
+      destroyInput.value = "1";
+      imgBlock.style.display = "none";
+    } else {
+      imgBlock.remove();
+    }
+  }
+});
 
 
 });

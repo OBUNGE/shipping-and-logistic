@@ -1,46 +1,55 @@
 class CartsController < ApplicationController
-  def show
-    @cart_items = (session[:cart] || []).map do |item|
-      begin
-        product = Product.find(item["product_id"])
-      rescue ActiveRecord::RecordNotFound
-        next
-      end
+def show
+  @cart_items = (session[:cart] || []).map do |item|
+    begin
+      product = Product.find(item["product_id"])
+    rescue ActiveRecord::RecordNotFound
+      next
+    end
 
-      variant_id = item["variant_id"].presence
-      variant = variant_id ? Variant.find_by(id: variant_id) : nil
-      quantity = item["quantity"].to_i.nonzero? || 1
-      final_price = product.price + (variant&.price_modifier || 0)
+    variant_ids = Array(item["variant_ids"]).map(&:to_i)
+    variants    = Variant.where(id: variant_ids)
+    quantity    = item["quantity"].to_i.nonzero? || 1
 
-      {
-        product: product,
-        variant: variant,
-        quantity: quantity,
-        unit_price: final_price,
-        subtotal: final_price * quantity,
-        shipping: (product.shipping_cost || 0) * quantity
-      }
-    end.compact
-  end
+    unit_price = product.discount&.active? ? product.discounted_price : product.price
+    unit_price += variants.sum { |v| v.price_modifier.to_f }
+
+    {
+      product:  product,
+      variants: variants,
+      quantity: quantity,
+      unit_price: unit_price,
+      subtotal:  unit_price * quantity
+    }
+  end.compact
+
+  # ✅ Fix: fallback to Nairobi if user.city not defined
+  destination = current_user&.city.presence || "Nairobi"
+  calculator  = ShippingCalculator.new(strategy: :weight_based, destination: destination)
+
+  @shipping_total = calculator.calculate(@cart_items)
+  @subtotal       = @cart_items.sum { |i| i[:subtotal] }
+  @grand_total    = @subtotal + @shipping_total
+end
 
   def add
     session[:cart] ||= []
     product_id = params[:product_id].to_i
+    quantity   = params[:quantity].to_i.nonzero? || 1
 
+    # ✅ Collect variant IDs from either unified hash or separate keys
+    variant_ids = []
     if params[:variants].present?
-      # Multiple variants case (hash of {variant_id => qty})
-      params[:variants].each do |variant_id, qty|
-        quantity = qty.to_i.nonzero? || 1
-        next if quantity <= 0
-
-        add_or_update_cart_item(product_id, variant_id.to_i, quantity)
-      end
+      # Preferred case: { "Color" => "236", "Storage" => "241" }
+      variant_ids = params[:variants].values.map(&:to_i)
     else
-      # Simple product (no variants or single variant)
-      variant_id = params[:variant_id].to_i if params[:variant_id].present?
-      quantity   = params[:quantity].to_i.nonzero? || 1
-      add_or_update_cart_item(product_id, variant_id, quantity)
+      # Fallback case: separate keys like color_variant_id, storage_variant_id
+      variant_ids << params[:color_variant_id].to_i if params[:color_variant_id].present?
+      variant_ids << params[:storage_variant_id].to_i if params[:storage_variant_id].present?
+      # Add more here if you introduce other variant groups (e.g. warranty_variant_id)
     end
+
+    add_or_update_cart_item(product_id, variant_ids, quantity)
 
     Rails.logger.info "🛒 Cart After Add: #{session[:cart].inspect}"
 
@@ -51,11 +60,11 @@ class CartsController < ApplicationController
   end
 
   def remove
-    product_id = params[:product_id].to_i
-    variant_id = params[:variant_id].to_i if params[:variant_id].present?
+    product_id  = params[:product_id].to_i
+    variant_ids = params[:variant_ids].present? ? Array(params[:variant_ids]).map(&:to_i) : []
 
     session[:cart]&.reject! do |i|
-      i["product_id"] == product_id && i["variant_id"].to_i == variant_id.to_i
+      i["product_id"] == product_id && Array(i["variant_ids"]).map(&:to_i) == variant_ids
     end
 
     Rails.logger.info "🛒 Cart After Remove: #{session[:cart].inspect}"
@@ -70,11 +79,11 @@ class CartsController < ApplicationController
 
   def update
     product_id   = params[:product_id].to_i
-    variant_id   = params[:variant_id].to_i if params[:variant_id].present?
+    variant_ids  = params[:variant_ids].present? ? Array(params[:variant_ids]).map(&:to_i) : []
     new_quantity = params[:quantity].to_i.nonzero? || 1
 
     session[:cart]&.each do |item|
-      if item["product_id"] == product_id && item["variant_id"].to_i == variant_id.to_i
+      if item["product_id"] == product_id && Array(item["variant_ids"]).map(&:to_i) == variant_ids
         item["quantity"] = new_quantity
         break
       end
@@ -86,21 +95,20 @@ class CartsController < ApplicationController
 
   private
 
-  def add_or_update_cart_item(product_id, variant_id, quantity)
+  def add_or_update_cart_item(product_id, variant_ids, quantity)
     return if quantity <= 0
-    variant_id ||= 0
 
     existing = session[:cart].find do |i|
-      i["product_id"] == product_id && i["variant_id"].to_i == variant_id
+      i["product_id"] == product_id && Array(i["variant_ids"]).map(&:to_i) == variant_ids
     end
 
     if existing
       existing["quantity"] += quantity
     else
       session[:cart] << {
-        "product_id" => product_id,
-        "variant_id" => variant_id,
-        "quantity"   => quantity
+        "product_id"  => product_id,
+        "variant_ids" => variant_ids,
+        "quantity"    => quantity
       }
     end
   end

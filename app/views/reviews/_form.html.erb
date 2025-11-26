@@ -1,0 +1,24 @@
+<div id="review_form">
+  <%= form_with(model: [product, review], local: false) do |f| %>
+    <div class="mb-2">
+      <%= f.label :rating, "Rating", class: "form-label small fw-semibold" %>
+
+      <!-- ⭐ Star Rating Input -->
+      <div class="star-rating d-flex gap-1">
+        <% 1.upto(5) do |i| %>
+          <%= f.radio_button :rating, i, id: "rating_#{i}", class: "d-none" %>
+          <label for="rating_<%= i %>" class="star">
+            <i class="bi bi-star"></i>
+          </label>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="mb-2">
+      <%= f.label :comment, "Comment", class: "form-label small fw-semibold" %>
+      <%= f.text_area :comment, rows: 3, class: "form-control" %>
+    </div>
+
+    <%= f.submit "Submit Review", class: "btn btn-primary fw-semibold" %>
+  <% end %>
+</div>

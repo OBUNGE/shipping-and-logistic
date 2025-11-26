@@ -65,4 +65,7 @@ config.action_mailer.default_url_options = {
 
   # Uncomment to enable RuboCop autocorrect on generators
   # config.generators.apply_rubocop_autocorrect_after_generate!
+  Rails.application.routes.default_url_options[:host] = "localhost:3000"
+Rails.application.routes.default_url_options[:protocol] = "http"
+
 end
