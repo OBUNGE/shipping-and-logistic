@@ -12,13 +12,14 @@
     <% end %>
   </div>
 
-  <!-- 🔍 Search Bar -->
+  <!-- 🔍 Search Bar (Smaller, Non-Oval) -->
   <div class="sticky-top bg-white shadow-sm py-2 px-3 mb-4" style="top: 115px; z-index: 1050;">
     <form action="<%= products_path %>" method="get" class="d-flex">
-      <input type="text" name="query" class="form-control form-control-lg me-2 rounded-pill shadow-sm"
-             placeholder="Search for products, sellers or categories..." value="<%= params[:query] %>">
-      <button class="btn btn-lg btn-primary rounded-pill px-4">
-        <i class="bi bi-search"></i> Search
+      <input type="text" name="query" class="form-control me-2 input-clean shadow-sm"
+             placeholder="Search for products..." value="<%= params[:query] %>">
+
+      <button class="btn btn-primary px-4 btn-clean">
+        <i class="bi bi-search"></i>
       </button>
     </form>
   </div>
@@ -59,7 +60,7 @@
       <div class="d-flex justify-content-between align-items-center mb-3">
         <h2 class="fw-bold text-dark fs-5 mb-0">🛍️ All Products</h2>
         <% if user_signed_in? && current_user.seller? %>
-          <%= link_to "+ Add Product", new_product_path, class: "btn btn-primary btn-sm rounded-pill px-3 shadow-sm" %>
+          <%= link_to "+ Add Product", new_product_path, class: "btn btn-primary btn-sm btn-clean shadow-sm" %>
         <% end %>
       </div>
 
@@ -69,7 +70,7 @@
           <div class="col-6 col-md-4 col-lg-3">
             <div class="card h-100 border-0 shadow-sm rounded-4 hover-zoom position-relative">
 
-              <!-- 🖼️ Image clickable -->
+              <!-- 🖼️ Image -->
               <div class="ratio ratio-1x1 bg-light position-relative">
                 <%= link_to product_path(product) do %>
                   <% if product.image_url.present? %>
@@ -81,7 +82,6 @@
                   <% end %>
                 <% end %>
 
-                <!-- 🎯 Discount badge top-right (smaller Jumia-style) -->
                 <% if product.discount.present? && product.discount.percentage.to_f > 0 %>
                   <span class="discount-badge position-absolute top-0 end-0 m-1">
                     -<%= product.discount.percentage.to_i %>% OFF
@@ -96,7 +96,6 @@
                       class: "text-dark text-decoration-none hover-link" %>
                 </h6>
 
-                <!-- 💸 Price -->
                 <% if product.discount.present? && product.discount.percentage.to_f > 0 %>
                   <% discounted_price = product.price * (1 - product.discount.percentage / 100.0) %>
                   <p class="small mb-1">
@@ -125,20 +124,21 @@
                   </p>
                 <% end %>
 
-                <!-- 📞 Call + Add to Cart -->
+                <!-- 📞 Call + Add to Cart (Clean Buttons) -->
                 <div class="mt-auto d-flex gap-2">
-                  <a href="tel:+254714063624" class="btn btn-sm btn-outline-primary flex-fill rounded-pill">
+                  <a href="tel:+254726565342" class="btn btn-clean btn-call flex-fill">
                     📞 Call
                   </a>
+
                   <% if product.stock.to_i > 0 %>
-                    <%= button_to "Add to Cart", add_cart_path,
+                    <%= button_to "Add", add_cart_path,
                         method: :post,
                         params: { product_id: product.id },
                         remote: true,
                         form: { data: { turbo_stream: true } },
-                        class: "btn btn-sm btn-success flex-fill rounded-pill" %>
+                        class: "btn btn-clean btn-cart flex-fill" %>
                   <% else %>
-                    <button class="btn btn-sm btn-secondary flex-fill rounded-pill" disabled>Out of Stock</button>
+                    <button class="btn btn-clean btn-secondary flex-fill" disabled>Out</button>
                   <% end %>
                 </div>
               </div>

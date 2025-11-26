@@ -1,24 +1,17 @@
 <!-- 📄 File: app/views/sellers/show.html.erb -->
-<style>
-  @media (min-width: 992px) {
-    .col-lg-5th {
-      flex: 0 0 20%;
-      max-width: 20%;
-    }
-  }
-</style>
 
-<div class="storefront-header text-center mb-4">
+
+<header class="storefront-header text-center mb-4">
   <% if @seller.store_banner_url.present? %>
     <%= image_tag @seller.store_banner_url,
         class: "img-fluid rounded mb-3",
         style: "object-fit: cover; width: 100%; height: 250px;",
-        alt: "#{@seller.store_name || @seller.name} banner" %>
+        alt: "#{@seller.store_name || @seller.name} online store banner" %>
   <% else %>
     <%= image_tag asset_path("store-banner-placeholder.png"),
         class: "img-fluid rounded mb-3",
         style: "object-fit: cover; width: 100%; height: 250px;",
-        alt: "Default store banner" %>
+        alt: "Default store banner placeholder" %>
   <% end %>
 
   <div class="d-flex align-items-center justify-content-center gap-3">
@@ -26,21 +19,20 @@
       <%= image_tag @seller.store_logo_url,
           class: "rounded-circle border",
           style: "width: 80px; height: 80px; object-fit: cover;",
-          alt: "#{@seller.store_name || @seller.name} logo" %>
+          alt: "#{@seller.store_name || @seller.name} store logo" %>
     <% else %>
       <%= image_tag asset_path("store-logo-placeholder.png"),
           class: "rounded-circle border",
           style: "width: 80px; height: 80px; object-fit: cover;",
-          alt: "Default store logo" %>
+          alt: "Default store logo placeholder" %>
     <% end %>
     <h1 class="fw-bold"><%= @seller.store_name.presence || @seller.name %></h1>
   </div>
 
   <p class="text-muted"><%= @seller.store_description %></p>
-</div>
+</header>
 
-<!-- Filters and Sorting -->
-<div class="mb-4 text-center">
+<section class="mb-4 text-center" aria-label="Filters and Sorting">
   <%= form_with url: seller_path(@seller.store_slug), method: :get, local: true, id: "filter-form" do %>
     <%= select_tag :category,
           options_for_select(@categories, params[:category]),
@@ -58,41 +50,38 @@
           options_for_select([["Newest", ""], ["Price: Low to High", "price_asc"], ["Price: High to Low", "price_desc"]], params[:sort]),
           class: "form-select w-auto d-inline-block me-2" %>
 
-    <%= submit_tag "Apply", class: "btn btn-outline-secondary me-2" %>
+    <%= submit_tag "Apply Filters", class: "btn btn-outline-secondary me-2" %>
     <%= link_to "Clear Filters", seller_path(@seller.store_slug), class: "btn btn-outline-danger" %>
   <% end %>
-</div>
+</section>
 
-<!-- No Products Message -->
 <% if @no_products_found %>
   <div class="alert alert-warning text-center">
     No products found for the selected filters.
   </div>
 <% end %>
 
-<!-- Product Grid -->
-<div class="row">
+<section class="row" aria-label="Product Listings">
   <% @products.each do |product| %>
-    <div class="col-6 col-sm-4 col-md-3 col-lg-5th mb-3">
+    <article class="col-6 col-sm-4 col-md-3 col-lg-5th mb-3">
       <div class="card h-100 shadow-sm">
         <% if product.image_url.present? %>
           <%= image_tag product.image_url,
               class: "card-img-top",
               style: "object-fit: cover; width: 100%; height: 300px;",
-              alt: product.title %>
+              alt: "#{product.title} product image" %>
         <% else %>
           <%= image_tag asset_path("placeholder.png"),
               class: "card-img-top",
               style: "object-fit: cover; width: 100%; height: 300px;",
-              alt: "No image available" %>
+              alt: "No image available for #{product.title}" %>
         <% end %>
 
         <div class="card-body">
-          <h5 class="card-title">
+          <h2 class="card-title h5">
             <%= link_to product.title, product_path(product), class: "text-decoration-none link-hover" %>
-          </h5>
+          </h2>
 
-          <!-- ✅ Currency-aware price with discount -->
           <% if product.discount.present? && product.discount.percentage.to_f > 0 %>
             <% discounted_price = product.price * (1 - product.discount.percentage / 100.0) %>
             <p class="card-text fw-semibold mb-1">
@@ -115,27 +104,28 @@
               <span class="badge bg-secondary me-1"><%= product.category.name %></span>
             <% end %>
             <% if product.category&.parent.present? %>
-              <span class="badge bg-info"><%= product.category.name %></span>
+              <span class="badge bg-info"><%= product.category.parent.name %></span>
             <% end %>
           </div>
         </div>
       </div>
-    </div>
+    </article>
   <% end %>
-</div>
+</section>
 
-<!-- Pagination -->
-<div class="mt-4 d-flex justify-content-center">
+<div class="mt-4 d-flex justify-content-center" aria-label="Pagination">
   <%= paginate @products %>
 </div>
 
-<!-- Dynamic Subcategory Script -->
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
+<!-- ✅ Fixed Dynamic Script -->
+<script type="module">
+  document.addEventListener("DOMContentLoaded", () => {
     const categorySelect = document.getElementById("category-select");
     const subcategorySelect = document.getElementById("subcategory-select");
+    const filterForm = document.getElementById("filter-form");
 
-    categorySelect.addEventListener("change", function () {
+    // Dynamic subcategory loading
+    categorySelect.addEventListener("change", () => {
       const selectedCategory = categorySelect.value;
       const slug = "<%= @seller.store_slug %>";
 
@@ -151,9 +141,9 @@
           });
         });
     });
-  });
-  
 
+    // ✅ Async file upload handler
+    filterForm.addEventListener("submit", async (e) => {
       e.preventDefault();
 
       const bannerUploaded = await uploadFile("store_banner", "store_banner_url", "store-banners");
@@ -161,6 +151,116 @@
         return;
       }
 
-      this.submit();
+      filterForm.submit();
     });
+  });
 </script>
+
+<!-- 📄 File: app/views/sellers/show.html.erb -->
+
+<style>
+  /* -------------- GLOBAL RESPONSIVE FIXES ------------------ */
+  .storefront-header {
+    padding: 10px 15px;
+  }
+
+  .storefront-header img {
+    border-radius: 8px;
+  }
+
+  /* Responsive Grid Fix */
+  @media (min-width: 992px) {
+    .col-lg-5th {
+      flex: 0 0 20%;
+      max-width: 20%;
+    }
+  }
+
+  /* Card Styling */
+  .product-card {
+    border-radius: 10px;
+    overflow: hidden;
+    transition: transform 0.2s ease;
+  }
+
+  .product-card:hover {
+    transform: translateY(-4px);
+  }
+
+  /* Uniform Image Height */
+  .product-image {
+    height: 220px;
+    object-fit: cover;
+  }
+
+  @media (min-width: 576px) {
+    .product-image {
+      height: 250px;
+    }
+  }
+
+  @media (min-width: 992px) {
+    .product-image {
+      height: 300px;
+    }
+  }
+
+  /* Title Styling */
+  .product-title {
+    font-size: 16px;
+    font-weight: 600;
+    height: 45px;
+    overflow: hidden;
+  }
+
+  /* Price Styling */
+  .price-line {
+    font-size: 17px;
+    font-weight: bold;
+  }
+
+  /* Filter Bar */
+  .filter-bar {
+    padding: 10px;
+    background: #fff;
+    border-radius: 8px;
+  }
+
+  /* Store Logo */
+  .store-logo {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 2px solid #ddd;
+  }
+
+  .store-banner {
+    width: 100%;
+    height: 250px;
+    border-radius: 8px;
+    object-fit: cover;
+  }
+
+  /* Mobile spacing */
+  @media (max-width: 576px) {
+    .product-title {
+      font-size: 14px;
+      height: 40px;
+    }
+
+    .price-line {
+      font-size: 15px;
+    }
+
+    .filter-bar select {
+      width: 100% !important;
+      margin-bottom: 10px !important;
+    }
+
+    .filter-bar button {
+      width: 100%;
+      margin-bottom: 10px;
+    }
+  }
+</style>

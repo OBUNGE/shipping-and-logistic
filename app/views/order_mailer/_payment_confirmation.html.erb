@@ -1,8 +1,8 @@
 <h2>
   <% if order.buyer.present? %>
-    Hi <%= order.buyer.full_name.presence || order.buyer.email %>,
+    Hi <%= order.buyer.name.presence || [order.buyer.first_name, order.buyer.last_name].compact.join(" ").presence || order.buyer.email %>,
   <% else %>
-    Hi <%= [order.first_name, order.last_name].compact.join(" ") %>,
+    Hi <%= order.name.presence || [order.first_name, order.last_name].compact.join(" ").presence || order.email %>,
   <% end %>
 </h2>
 
@@ -29,7 +29,7 @@
 
 <p>
   <strong>Shipping Address:</strong><br>
-  <%= [order.first_name, order.last_name].compact.join(" ") %><br>
+  <%= order.name.presence || [order.first_name, order.last_name].compact.join(" ") %><br>
   <%= order.address %><br>
   <%= order.city %>, <%= order.county.presence || order.region.presence || "" %><br>
   <%= order.country %><br>
@@ -40,24 +40,32 @@
 </p>
 
 <h4>Order Summary</h4>
-<table>
-  <thead>
+<table style="width:100%; border-collapse: collapse;" border="1" cellpadding="8">
+  <thead style="background-color:#f8f9fa;">
     <tr>
-      <th>Product</th>
-      <th>Variant</th>
-      <th>Quantity</th>
-      <th>Unit Price</th>
-      <th>Subtotal</th>
+      <th align="left">Product</th>
+      <th align="left">Variants</th>
+      <th align="center">Quantity</th>
+      <th align="right">Unit Price</th>
+      <th align="right">Subtotal</th>
     </tr>
   </thead>
   <tbody>
     <% order.order_items.each do |item| %>
       <tr>
         <td><%= item.product.title %></td>
-        <td><%= item.variant.present? ? "#{item.variant.name}: #{item.variant.value}" : "—" %></td>
-        <td><%= item.quantity %></td>
-        <td><%= number_to_currency(item.unit_price, unit: "KES ") %></td>
-        <td><%= number_to_currency(item.subtotal, unit: "KES ") %></td>
+        <td>
+          <% if item.respond_to?(:variants) && item.variants.present? %>
+            <%= item.variants.map { |v| "#{v.name}: #{v.value}" }.join(", ") %>
+          <% elsif item.variant.present? %>
+            <%= "#{item.variant.name}: #{item.variant.value}" %>
+          <% else %>
+            —
+          <% end %>
+        </td>
+        <td align="center"><%= item.quantity %></td>
+        <td align="right"><%= number_to_currency(item.unit_price, unit: "KES ") %></td>
+        <td align="right"><%= number_to_currency(item.subtotal, unit: "KES ") %></td>
       </tr>
     <% end %>
   </tbody>

@@ -18,7 +18,7 @@ Rails.application.configure do
   }
 
   # ❌ Disable SMTP (we’re using Brevo API instead)
-  config.action_mailer.delivery_method = :test
+  config.action_mailer.delivery_method = :brevo_api
 
   # ✅ Secret key fallback
   config.secret_key_base = ENV["SECRET_KEY_BASE"] || Rails.application.credentials.secret_key_base

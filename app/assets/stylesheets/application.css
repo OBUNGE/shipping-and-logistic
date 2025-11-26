@@ -200,14 +200,54 @@ form h2 {
   margin-bottom: 0.25rem;
 }
 
-.discount-badge {
-  background-color: #f8f0f1; /* Bootstrap danger red */
-  color: #fff;
-  font-size: 0.7rem;         /* smaller text */
+
+
+/* --- Modern Jumia/AliExpress Style --- */
+.input-clean {
+  border-radius: 6px !important;
+  height: 42px !important; /* Smaller than form-control-lg */
+  font-size: 14px !important;
+}
+
+.btn-clean {
+  border-radius: 6px !important; /* remove oval shape */
   font-weight: 600;
-  padding: 0.2rem 0.5rem;    /* tighter padding */
-  border-radius: 0.25rem;    /* subtle rounded corners */
-  box-shadow: 0 1px 3px rgba(0,0,0,0.2); /* subtle shadow for readability */
+  font-size: 13px !important;
+  padding: 6px 10px !important;
+}
+
+/* Call + Add to Cart */
+.btn-call {
+  background-color: #0d6efd;
+  color: white;
+  border: none;
+}
+
+.btn-cart {
+  background-color: #28a745;
+  color: white;
+  border: none;
+}
+
+/* Discount badge */
+.discount-badge {
+ 
+  color: #fff;
+  padding: 3px 6px;
+  font-size: 11px;
+  border-radius: 4px;
+}
+
+/* Mobile responsive button sizing */
+@media (max-width: 480px) {
+  .btn-clean {
+    font-size: 12px !important;
+    padding: 5px 8px !important;
+  }
+  .input-clean {
+    height: 38px !important;
+    font-size: 13px !important;
+  }
 }
 
 
@@ -385,6 +425,15 @@ form h2 {
     border-color: #146c43;
   }
   
+
+
+
+
+  
+
+/* ===========================
+   Product Variant Styles
+   =========================== */
 
   /* Variant option wrapper */
 .variant-option {

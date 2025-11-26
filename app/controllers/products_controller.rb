@@ -101,27 +101,30 @@ end
     render plain: "Product listing error: #{e.message}", status: 500
   end
 
-  def show
-    @reviews = @product.reviews.order(created_at: :desc).page(params[:page]).per(5)
-    @selected_color = params[:color]
+def show
+  @product = Product.find_by!(slug: params[:slug]) # ensure @product is set
+  @review  = @product.reviews.build                # ensures @review is not nil
 
-    @variant_images =
-      if @selected_color.present?
-        @product.variants.where(name: "Color", value: @selected_color)
-                .flat_map { |variant| Array(variant.image_urls) }
-                .select(&:present?)
-      else
-        @product.variants.flat_map { |variant| Array(variant.image_urls) }.select(&:present?)
-      end
+  @reviews = @product.reviews.order(created_at: :desc).page(params[:page]).per(5)
+  @selected_color = params[:color]
 
-    respond_to do |format|
-      format.html
-      format.json do
-        image_url = @variant_images.find(&:present?) || view_context.asset_path("placeholder.png")
-        render json: { image_url: image_url }
-      end
+  @variant_images =
+    if @selected_color.present?
+      @product.variants.where(name: "Color", value: @selected_color)
+              .flat_map { |variant| Array(variant.image_urls) }
+              .select(&:present?)
+    else
+      @product.variants.flat_map { |variant| Array(variant.image_urls) }.select(&:present?)
+    end
+
+  respond_to do |format|
+    format.html
+    format.json do
+      image_url = @variant_images.find(&:present?) || view_context.asset_path("placeholder.png")
+      render json: { image_url: image_url }
     end
   end
+end
 
 def new
   @product = Product.new

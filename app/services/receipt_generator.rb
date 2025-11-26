@@ -22,8 +22,8 @@ class ReceiptGenerator
         logo_io = URI.open(@logo_url)
         pdf.image logo_io, width: 100, position: :center
         pdf.move_down 10
-      rescue
-        # skip if logo fails
+      rescue => e
+        Rails.logger.warn("Logo load failed: #{e.message}")
       end
 
       # === QR Code ===
@@ -33,8 +33,8 @@ class ReceiptGenerator
           png = qr.as_png(size: 120)
           pdf.image StringIO.new(png.to_s), position: :center
           pdf.move_down 10
-        rescue
-          # skip if QR fails
+        rescue => e
+          Rails.logger.warn("QR code generation failed: #{e.message}")
         end
       end
 
@@ -55,7 +55,7 @@ class ReceiptGenerator
       pdf.text "Buyer Information", style: :bold, size: 12, color: "0070C0"
       pdf.stroke_horizontal_rule
       pdf.move_down 5
-      pdf.text "Name: #{@buyer.name}"
+      pdf.text "Name: #{@buyer.name.presence || [@buyer.first_name, @buyer.last_name].compact.join(' ').presence || @buyer.email}"
       pdf.text "Email: #{@buyer.email}"
       pdf.text "Delivery Address: #{@order.shipment&.address || '—'}"
       pdf.text "Recipient: #{@order.shipment&.first_name} #{@order.shipment&.last_name}"
@@ -102,12 +102,26 @@ class ReceiptGenerator
         end
 
         price_display = discounted ? "#{format_price(price)} → #{format_price(discounted)}" : format_price(price)
-        data << [item.product.title, item.quantity.to_s, price_display]
+
+        # ✅ Combine variants
+        variant_info =
+          if item.respond_to?(:variants) && item.variants.present?
+            item.variants.map { |v| "#{v.name}: #{v.value}" }.join(", ")
+          elsif item.variant.present?
+            "#{item.variant.name}: #{item.variant.value}"
+          else
+            "—"
+          end
+
+        product_display = variant_info == "—" ? item.product.title : "#{item.product.title} (#{variant_info})"
+
+        data << [product_display, item.quantity.to_s, price_display]
       end
 
       pdf.table(data, header: true, width: 480) do
         row(0).font_style = :bold
         row(0).background_color = 'EEEEEE'
+        columns(1..2).align = :right
         cells.padding = 6
         cells.border_color = 'DDDDDD'
       end
