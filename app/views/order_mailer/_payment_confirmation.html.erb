@@ -4,9 +4,7 @@
             [order.buyer.first_name, order.buyer.last_name].compact.join(" ").presence ||
             order.buyer.email %>,
   <% else %>
-    Hi <%= order.name.presence ||
-            [order.first_name, order.last_name].compact.join(" ").presence ||
-            order.email %>,
+    Hi <%= [order.first_name, order.last_name].compact.join(" ").presence || order.email %>,
   <% end %>
 </h2>
 
@@ -35,7 +33,7 @@
 
 <p style="font-family:Arial, sans-serif; color:#555;">
   <strong>Shipping Address:</strong><br>
-  <%= order.name.presence || [order.first_name, order.last_name].compact.join(" ") %><br>
+  <%= [order.first_name, order.last_name].compact.join(" ") %><br>
   <%= order.address %><br>
   <%= order.city %>, <%= order.county.presence || order.region.presence || "" %><br>
   <%= order.country %><br>
