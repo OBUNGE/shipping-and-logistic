@@ -1,0 +1,32 @@
+<% if shipping_preview.present? %>
+  <div class="alert alert-info shadow-sm">
+    <p class="mb-1">
+      <strong>Subtotal:</strong>
+      <%= number_to_currency(shipping_preview[:subtotal], unit: "KES ") %>
+    </p>
+
+    <p class="mb-1">
+      <strong>Shipping:</strong>
+      <% if shipping_preview[:free_shipping] %>
+        Free Shipping 🎉
+      <% else %>
+        <%= number_to_currency(shipping_preview[:shipping_cost], unit: "KES ") %>
+      <% end %>
+    </p>
+
+    <p class="mb-1">
+      <strong>Total:</strong>
+      <%= number_to_currency(shipping_preview[:total], unit: "KES ") %>
+    </p>
+
+    <p class="mb-0 text-muted">
+      Estimated Delivery: <%= shipping_preview[:estimated_delivery] %>
+    </p>
+  </div>
+<% else %>
+  <div class="alert alert-secondary shadow-sm">
+    <p class="mb-0 text-muted">
+      🚚 Shipping will be calculated after you enter your delivery details.
+    </p>
+  </div>
+<% end %>

@@ -1,21 +1,28 @@
 <div class="container-fluid px-0">
 
-  <!-- 🦸 Hero Section -->
-  <section class="hero bg-dark text-white text-center py-5 mb-4">
-    <div class="container">
-      <h1 class="fw-bold display-5">
-        Cheap Leather Bags & Men’s Shoes in Nairobi
-      </h1>
-      <p class="lead mb-4">
-        Discover affordable leather products — handbags, men’s shoes, and accessories. 
-        Shop quality leather in Kenya with secure M-PESA payments.
-      </p>
-      <%= link_to "Shop Leather Bags", products_path(category: "bags"),
+<!-- 🦸 Hero Section -->
+<section class="hero bg-dark text-white text-center py-5 mb-4">
+  <div class="container">
+    <h1 class="fw-bold display-5">
+      Cheap Leather Bags & Men’s Shoes in Nairobi
+    </h1>
+    <p class="lead mb-4">
+      Discover affordable leather products — handbags, men’s shoes, and accessories. 
+      Shop quality leather in Kenya with secure M-PESA payments.
+    </p>
+
+    <% if (bags = Category.find_by(name: "Leather Bags")) %>
+      <%= link_to "Shop Leather Bags", products_path(category: bags.slug),
           class: "btn btn-primary btn-lg shadow-sm me-2" %>
-      <%= link_to "Shop Men’s Shoes", products_path(category: "shoes"),
+    <% end %>
+
+    <% if (shoes = Category.find_by(name: "Men’s Leather Shoes")) %>
+      <%= link_to "Shop Men’s Shoes", products_path(category: shoes.slug),
           class: "btn btn-outline-light btn-lg shadow-sm" %>
-    </div>
-  </section>
+    <% end %>
+  </div>
+</section>
+
 
   <!-- 🧭 Sticky Category Bar -->
   <div class="category-bar sticky-top bg-white py-2 px-3 mb-3 d-flex align-items-center gap-3 overflow-auto border-bottom shadow-sm"

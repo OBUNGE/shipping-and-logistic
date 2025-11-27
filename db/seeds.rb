@@ -12,3 +12,5 @@ AdminUser.find_or_create_by!(email: 'admin@example.com') do |admin|
   admin.password_confirmation = 'password'
 end
 load Rails.root.join("db/seeds/categories.rb")
+
+

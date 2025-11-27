@@ -8,6 +8,9 @@
 //= link controllers/index.js
 //= link application.js
 //= link product_form.js
+//= link star_rating.js
+//= link controllers/shipping_controller.js
+
 
 
 

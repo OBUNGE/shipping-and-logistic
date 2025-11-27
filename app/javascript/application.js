@@ -3,6 +3,7 @@ import "controllers"
 import "./star_rating"
 import "./product_form"
 
+
 // Turbo Configuration
 
 Turbo.config.drive.progressBarDelay = 0

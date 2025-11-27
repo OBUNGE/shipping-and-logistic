@@ -39,7 +39,7 @@ class ReceiptGenerator
       end
 
       # === Header ===
-      pdf.text "AfriXpress RECEIPT", size: 22, style: :bold, align: :center, color: "333333"
+      pdf.text "Tajaone RECEIPT", size: 22, style: :bold, align: :center, color: "333333"
       pdf.move_down 5
       pdf.stroke_horizontal_rule
       pdf.move_down 15
@@ -57,13 +57,6 @@ class ReceiptGenerator
       pdf.move_down 5
       pdf.text "Name: #{@buyer.name.presence || [@buyer.first_name, @buyer.last_name].compact.join(' ').presence || @buyer.email}"
       pdf.text "Email: #{@buyer.email}"
-      pdf.text "Delivery Address: #{@order.shipment&.address || '—'}"
-      pdf.text "Recipient: #{@order.shipment&.first_name} #{@order.shipment&.last_name}"
-      pdf.text "Phone: #{@order.shipment&.phone_number || '—'}"
-      pdf.text "City: #{@order.shipment&.city || '—'}"
-      pdf.text "Country: #{@order.shipment&.country || '—'}"
-      pdf.text "Region: #{@order.shipment&.region || '—'}"
-      pdf.text "Notes: #{@order.shipment&.delivery_notes || '—'}"
       pdf.move_down 10
 
       pdf.text "Seller Information", style: :bold, size: 12, color: "0070C0"
