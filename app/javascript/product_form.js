@@ -22,7 +22,7 @@ document.addEventListener("turbo:load", () => {
 
   // Make it clickable → opens WhatsApp chat
   banner.onclick = () => {
-    window.open("https://wa.me/254726565342", "_blank");
+    window.open("https://wa.me/+254726565342", "_blank");
   };
 
   document.body.appendChild(banner);

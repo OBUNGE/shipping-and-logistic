@@ -15,7 +15,7 @@
         api_instance = @client
 
         # Ensure we have a sender email (fallback to admin@tajaone.app)
-        sender_email = mail.from&.first || ENV.fetch("BREVO_SENDER_EMAIL", "admin@tajaone.app")
+        sender_email = ENV.fetch("BREVO_SENDER_EMAIL", "admin@tajaone.app")
 
         # Plain‑text fallback if none provided
         text_content = ActionView::Base.full_sanitizer.sanitize(mail.body.encoded).squish
