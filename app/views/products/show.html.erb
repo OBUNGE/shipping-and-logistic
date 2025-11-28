@@ -18,57 +18,57 @@
 
   <%# Prepare image array for JSON-LD (robust method) %>
   <% all_images = [@product.image_url].compact + @product.gallery_image_urls.compact %>
-  <% image_json = all_images.map { |url| "\"#{url}\"" }.join(",\n    ") %>
+  <% image_json = all_images.map { |url| "\"#{url}\"" }.join(",\n    ") %>
 
   <%# --- Structured Data (Product Schema) --- %>
   <script type="application/ld+json">
   {
-    "@context": "https://schema.org/",
-    "@type": "Product",
-    "name": "<%= j @product.title %>",
-    "image": [
-      <%= raw image_json %>
-    ],
-    "description": "<%= j strip_tags(@product.description) %>",
-    "sku": "<%= @product.id %>",
-    "brand": {
-      "@type": "Brand",
-      "name": "<%= j @product.seller_name %>"
-    },
-    <% if @product.average_rating > 0 %>
-    "aggregateRating": {
-      "@type": "AggregateRating",
-      "ratingValue": "<%= @product.average_rating %>",
-      "reviewCount": "<%= @product.reviews.count %>"
-    },
-    <% end %>
-    "offers": {
-      "@type": "Offer",
-      "url": "<%= product_url(@product) %>",
-      "priceCurrency": "KES",
-      "price": "<%= ExchangeRateService.convert(@product.discount&.active? ? @product.discounted_price : @product.price, from: @product.currency, to: 'KES') %>",
-      "availability": "<%= @product.stock.to_i > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock' %>",
-      "itemCondition": "https://schema.org/NewCondition"
-    }
+    "@context": "https://schema.org/",
+    "@type": "Product",
+    "name": "<%= j @product.title %>",
+    "image": [
+      <%= raw image_json %>
+    ],
+    "description": "<%= j strip_tags(@product.description) %>",
+    "sku": "<%= @product.id %>",
+    "brand": {
+      "@type": "Brand",
+      "name": "<%= j @product.seller_name %>"
+    },
+    <% if @product.average_rating > 0 %>
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "<%= @product.average_rating %>",
+      "reviewCount": "<%= @product.reviews.count %>"
+    },
+    <% end %>
+    "offers": {
+      "@type": "Offer",
+      "url": "<%= product_url(@product) %>",
+      "priceCurrency": "KES",
+      "price": "<%= ExchangeRateService.convert(@product.discount&.active? ? @product.discounted_price : @product.price, from: @product.currency, to: 'KES') %>",
+      "availability": "<%= @product.stock.to_i > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock' %>",
+      "itemCondition": "https://schema.org/NewCondition"
+    }
   }
   </script>
 
   <%# --- Structured Data (Breadcrumb Schema) --- %>
   <script type="application/ld+json">
   {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    "itemListElement": [{
-      "@type": "ListItem",
-      "position": 1,
-      "name": "Products",
-      "item": "<%= products_url %>"
-    },{
-      "@type": "ListItem",
-      "position": 2,
-      "name": "<%= j @product.title %>",
-      "item": "<%= product_url(@product) %>"
-    }]
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [{
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Products",
+      "item": "<%= products_url %>"
+    },{
+      "@type": "ListItem",
+      "position": 2,
+      "name": "<%= j @product.title %>",
+      "item": "<%= product_url(@product) %>"
+    }]
   }
   </script>
 <% end %>
@@ -78,369 +78,380 @@
 <%# ------------------------------------------------------------------------------------------------ %>
 
 <div class="container py-4 py-lg-5">
-  
-  <nav aria-label="breadcrumb" class="mb-4">
-    <ol class="breadcrumb">
-      <li class="breadcrumb-item"><%= link_to "Products", products_path, class: "text-decoration-none text-muted" %></li>
-      <li class="breadcrumb-item active" aria-current="page"><%= @product.title %></li>
-    </ol>
-  </nav>
+ 
+  <nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><%= link_to "Products", products_path, class: "text-decoration-none text-muted" %></li>
+      <li class="breadcrumb-item active" aria-current="page"><%= @product.title %></li>
+    </ol>
+  </nav>
 
-  <div class="row g-5">
+  <div class="row g-5">
 
-    <div class="col-lg-7">
-      <% if @product.image_url.present? || @product.gallery_image_urls.any? || @product.variants.joins(:variant_images).exists? %>
-        <div class="border rounded-4 overflow-hidden bg-white shadow-sm p-3 position-relative">
-          <div id="productCarousel" class="carousel slide" data-bs-ride="carousel">
-            <div class="carousel-inner rounded-4 bg-light">
-              <% slide_index = 0 %>
+    <div class="col-lg-7">
+      <% if @product.image_url.present? || @product.gallery_image_urls.any? || @product.variants.joins(:variant_images).exists? %>
+        <div class="border rounded-4 overflow-hidden bg-white shadow-sm p-3 position-relative">
+          <div id="productCarousel" class="carousel slide" data-bs-ride="carousel">
+            <div class="carousel-inner rounded-4 bg-light">
+              <% slide_index = 0 %>
 
-              <% if @product.image_url.present? %>
-                <div class="carousel-item active">
-                  <%# LCP Image: No lazy loading here %>
-                  <%= image_tag @product.image_url, class: "d-block w-100 rounded-3", style: "max-height: 600px; object-fit: contain;", alt: "#{@product.title} - Main View" %>
-                </div>
-                <% slide_index += 1 %>
-              <% end %>
+              <% if @product.image_url.present? %>
+                <div class="carousel-item active">
+                  <%# LCP Image: No lazy loading here %>
+                  <%= image_tag(@product.image_url, 
+                        class: "d-block w-100 rounded-3", 
+                        style: "max-height: 600px; object-fit: contain;", 
+                        alt: "#{@product.title} - Main View") %>
+                </div>
+                <% slide_index += 1 %>
+              <% end %>
 
-              <% @product.gallery_image_urls.each_with_index do |url, index| %>
-                <% next unless url.is_a?(String) && url.present? %>
-                <div class="carousel-item <%= 'active' if @product.image_url.blank? && index == 0 %>">
-                  <%= image_tag url, class: "d-block w-100 rounded-3", style: "max-height: 600px; object-fit: contain;", loading: "lazy", alt: "#{@product.title} - Gallery #{index + 1}" %>
-                </div>
-                <% slide_index += 1 %>
-              <% end %>
+              <% @product.gallery_image_urls.each_with_index do |url, index| %>
+                <% next unless url.is_a?(String) && url.present? %>
+                <div class="carousel-item <%= 'active' if @product.image_url.blank? && index == 0 %>">
+                  <%= image_tag(url, 
+                        class: "d-block w-100 rounded-3", 
+                        style: "max-height: 600px; object-fit: contain;", 
+                        loading: "lazy", 
+                        alt: "#{@product.title} - Gallery #{index + 1}") %>
+                </div>
+                <% slide_index += 1 %>
+              <% end %>
 
-              <% @product.variants.includes(:variant_images).each do |variant| %>
-                <% variant.variant_images.each_with_index do |img, index| %>
-                  <% next if img.image_url.blank? %>
-                  <div class="carousel-item <%= 'active' if @product.image_url.blank? && @product.gallery_image_urls.blank? && index == 0 %>">
-                    <%= image_tag img.image_url, class: "d-block w-100 rounded-3", style: "max-height: 600px; object-fit: contain;", loading: "lazy", alt: "#{@product.title} - #{variant.name} #{variant.value}" %>
-                    <div class="carousel-caption bg-dark bg-opacity-75 rounded-pill px-3 py-1 mb-3">
-                      <small class="text-white fw-bold"><%= variant.name %>: <%= variant.value %></small>
-                    </div>
-                  </div>
-                  <% slide_index += 1 %>
-                <% end %>
-              <% end %>
-            </div>
+              <% @product.variants.includes(:variant_images).each do |variant| %>
+                <% variant.variant_images.each_with_index do |img, index| %>
+                  <% next if img.image_url.blank? %>
+                  <div class="carousel-item <%= 'active' if @product.image_url.blank? && @product.gallery_image_urls.blank? && index == 0 %>">
+                    <%= image_tag(img.image_url, 
+                          class: "d-block w-100 rounded-3", 
+                          style: "max-height: 600px; object-fit: contain;", 
+                          loading: "lazy", 
+                          alt: "#{@product.title} - #{variant.name} #{variant.value}") %>
+                    <div class="carousel-caption bg-dark bg-opacity-75 rounded-pill px-3 py-1 mb-3">
+                      <small class="text-white fw-bold"><%= variant.name %>: <%= variant.value %></small>
+                    </div>
+                  </div>
+                  <% slide_index += 1 %>
+                <% end %>
+              <% end %>
+            </div>
 
-            <% if slide_index > 1 %>
-              <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
-                <span class="carousel-control-prev-icon bg-dark rounded-circle p-3 bg-opacity-50" aria-hidden="true"></span>
-                <span class="visually-hidden">Previous</span>
-              </button>
-              <button class="carousel-control-next" type="button" data-bs-target="#productCarousel" data-bs-slide="next">
-                <span class="carousel-control-next-icon bg-dark rounded-circle p-3 bg-opacity-50" aria-hidden="true"></span>
-                <span class="visually-hidden">Next</span>
-              </button>
-            <% end %>
-          </div>
+            <% if slide_index > 1 %>
+              <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon bg-dark rounded-circle p-3 bg-opacity-50" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+              </button>
+              <button class="carousel-control-next" type="button" data-bs-target="#productCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon bg-dark rounded-circle p-3 bg-opacity-50" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+              </button>
+            <% end %>
+          </div>
 
-          <div class="position-relative d-none d-md-block mt-3">
-            <div class="thumbnail-scroll d-flex flex-row overflow-auto gap-2 p-2 border rounded-3 bg-light scrollbar-custom">
-              <% thumb_index = 0 %>
+          <div class="position-relative d-none d-md-block mt-3">
+            <div class="thumbnail-scroll d-flex flex-row overflow-auto gap-2 p-2 border rounded-3 bg-light scrollbar-custom">
+              <% thumb_index = 0 %>
 
-              <% if @product.image_url.present? %>
-                <%= image_tag @product.image_url,
-                      class: "img-thumbnail shadow-sm border rounded-3 hover-scale active-thumb",
-                      style: "width: 80px; height: 80px; object-fit: cover; cursor: pointer; flex: 0 0 auto;",
-                      alt: "Thumbnail Main",
-                      data: { bs_target: "#productCarousel", bs_slide_to: thumb_index } %>
-                <% thumb_index += 1 %>
-              <% end %>
+              <% if @product.image_url.present? %>
+                <%= image_tag(@product.image_url,
+                      class: "img-thumbnail shadow-sm border rounded-3 hover-scale active-thumb",
+                      style: "width: 80px; height: 80px; object-fit: cover; cursor: pointer; flex: 0 0 auto;",
+                      alt: "Thumbnail Main",
+                      data: { bs_target: "#productCarousel", bs_slide_to: thumb_index }) %>
+                <% thumb_index += 1 %>
+              <% end %>
 
-              <% @product.gallery_image_urls.each do |url| %>
-                <% next unless url.is_a?(String) && url.present? %>
-                <%= image_tag url,
-                      class: "img-thumbnail shadow-sm border rounded-3 hover-scale",
-                      style: "width: 80px; height: 80px; object-fit: cover; cursor: pointer; flex: 0 0 auto;",
-                      loading: "lazy",
-                      alt: "Thumbnail Gallery",
-                      data: { bs_target: "#productCarousel", bs_slide_to: thumb_index } %>
-                <% thumb_index += 1 %>
-              <% end %>
+              <% @product.gallery_image_urls.each do |url| %>
+                <% next unless url.is_a?(String) && url.present? %>
+                <%= image_tag(url,
+                      class: "img-thumbnail shadow-sm border rounded-3 hover-scale",
+                      style: "width: 80px; height: 80px; object-fit: cover; cursor: pointer; flex: 0 0 auto;",
+                      loading: "lazy",
+                      alt: "Thumbnail Gallery",
+                      data: { bs_target: "#productCarousel", bs_slide_to: thumb_index }) %>
+                <% thumb_index += 1 %>
+              <% end %>
 
-              <% @product.variants.includes(:variant_images).each do |variant| %>
-                <% variant.variant_images.each do |img| %>
-                  <% next if img.image_url.blank? || img.image_url.start_with?("blob:") %>
-                  <div class="text-center flex-shrink-0" style="width: 80px;">
-                    <%= image_tag img.image_url,
-                          class: "img-thumbnail border rounded-3 hover-scale",
-                          style: "width: 80px; height: 80px; object-fit: cover; cursor: pointer;",
-                          loading: "lazy",
-                          alt: "Thumbnail #{variant.value}",
-                          data: { bs_target: "#productCarousel", bs_slide_to: thumb_index } %>
-                  </div>
-                  <% thumb_index += 1 %>
-                <% end %>
-              <% end %>
-            </div>
-          </div>
-        </div>
-      <% else %>
-        <%= image_tag asset_path("placeholder.jpg"), class: "img-fluid rounded-4 shadow-sm border w-100", alt: "No image available for #{@product.title}" %>
-      <% end %>
-    </div>
+              <% @product.variants.includes(:variant_images).each do |variant| %>
+                <% variant.variant_images.each do |img| %>
+                  <% next if img.image_url.blank? || img.image_url.start_with?("blob:") %>
+                  <div class="text-center flex-shrink-0" style="width: 80px;">
+                    <%= image_tag(img.image_url,
+                          class: "img-thumbnail border rounded-3 hover-scale",
+                          style: "width: 80px; height: 80px; object-fit: cover; cursor: pointer;",
+                          loading: "lazy",
+                          alt: "Thumbnail #{variant.value}",
+                          data: { bs_target: "#productCarousel", bs_slide_to: thumb_index }) %>
+                  </div>
+                  <% thumb_index += 1 %>
+                <% end %>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% else %>
+        <%= image_tag asset_path("placeholder.jpg"), class: "img-fluid rounded-4 shadow-sm border w-100", alt: "No image available for #{@product.title}" %>
+      <% end %>
+    </div>
 
-    <div class="col-lg-5">
-      <div class="sticky-top" style="top: 2rem; z-index: 10;">
-        <header>
-          <h1 class="fw-bold mb-2 lh-sm text-dark"><%= @product.title %></h1>
-          
-          <div class="d-flex align-items-center mb-3 text-muted small">
-             <span class="fw-semibold me-2"><i class="bi bi-shop me-1"></i><%= @product.seller_name %></span>
-             <span class="mx-2">|</span>
-             <div class="d-flex align-items-center">
-               <%= render_stars(@product.average_rating) %> 
-               <span class="ms-1">(<%= @product.average_rating %>/5)</span>
-             </div>
-             <% if @product.average_rating >= 4.5 %>
-               <span class="badge bg-success bg-opacity-10 text-success border border-success ms-2">Highly Rated</span>
-             <% end %>
-          </div>
-        </header>
+    <div class="col-lg-5">
+      <div class="sticky-top" style="top: 2rem; z-index: 10;">
+        <header>
+          <h1 class="fw-bold mb-2 lh-sm text-dark"><%= @product.title %></h1>
+          
+          <div class="d-flex align-items-center mb-3 text-muted small">
+             <span class="fw-semibold me-2"><i class="bi bi-shop me-1"></i><%= @product.seller_name %></span>
+             <span class="mx-2">|</span>
+             <div class="d-flex align-items-center">
+               <%= render_stars(@product.average_rating) %> 
+               <span class="ms-1">(<%= @product.average_rating %>/5)</span>
+             </div>
+             <% if @product.average_rating >= 4.5 %>
+               <span class="badge bg-success bg-opacity-10 text-success border border-success ms-2">Highly Rated</span>
+             <% end %>
+          </div>
+        </header>
 
-        <div class="card border-0 bg-light rounded-4 p-3 mb-4">
-          <div class="card-body p-0">
-            <% price_in_kes = ExchangeRateService.convert(@product.price, from: @product.currency, to: "KES") %>
-            
-            <% if @product.discount&.active? %>
-               <% discounted_kes = ExchangeRateService.convert(@product.discounted_price, from: @product.currency, to: "KES") %>
-               <div class="d-flex align-items-baseline gap-2">
-                  <h2 class="fw-bold text-danger mb-0 display-6"><%= number_to_currency(discounted_kes, unit: "KES ") %></h2>
-                  <span class="text-muted text-decoration-line-through"><%= number_to_currency(price_in_kes, unit: "KES ") %></span>
-               </div>
-               <span class="badge bg-danger mt-1"><%= @product.discount.percentage %>% OFF</span>
-            <% else %>
-               <h2 class="fw-bold text-primary mb-0 display-6"><%= number_to_currency(price_in_kes, unit: "KES ") %></h2>
-            <% end %>
+        <div class="card border-0 bg-light rounded-4 p-3 mb-4">
+          <div class="card-body p-0">
+            <% price_in_kes = ExchangeRateService.convert(@product.price, from: @product.currency, to: "KES") %>
+            
+            <% if @product.discount&.active? %>
+               <% discounted_kes = ExchangeRateService.convert(@product.discounted_price, from: @product.currency, to: "KES") %>
+               <div class="d-flex align-items-baseline gap-2">
+                  <h2 class="fw-bold text-danger mb-0 display-6"><%= number_to_currency(discounted_kes, unit: "KES ") %></h2>
+                  <span class="text-muted text-decoration-line-through"><%= number_to_currency(price_in_kes, unit: "KES ") %></span>
+               </div>
+               <span class="badge bg-danger mt-1"><%= @product.discount.percentage %>% OFF</span>
+            <% else %>
+               <h2 class="fw-bold text-primary mb-0 display-6"><%= number_to_currency(price_in_kes, unit: "KES ") %></h2>
+            <% end %>
 
-            <% usd_price = ExchangeRateService.convert(price_in_kes, from: "KES", to: "USD") %>
-            <small class="text-muted d-block mt-1">≈ <%= number_to_currency(usd_price, unit: "USD ") %></small>
-          </div>
-        </div>
+            <% usd_price = ExchangeRateService.convert(price_in_kes, from: "KES", to: "USD") %>
+            <small class="text-muted d-block mt-1">≈ <%= number_to_currency(usd_price, unit: "USD ") %></small>
+          </div>
+        </div>
 
-        <div class="bg-white border rounded-4 p-4 shadow-sm mb-4">
-          
-          <% if @order.present? %>
-            <% latest_payment = @order.payments.last %>
-            <div class="alert alert-info border-0 rounded-3">
-              <% if latest_payment.nil? %>
-                <h6 class="alert-heading fw-bold">Complete your purchase</h6>
-                <%= button_to "Pay Now", order_payment_path(@order), method: :post, class: "btn btn-success w-100 fw-bold shadow-sm" %>
-              <% else %>
-                <p class="mb-1"><strong>Order Status:</strong> <span class="badge bg-dark"><%= @order.status.capitalize %></span></p>
-                <p class="mb-0"><strong>Payment Status:</strong> <span class="badge bg-secondary"><%= latest_payment.status.capitalize %></span></p>
-              <% end %>
-            </div>
-          <% else %>
-            <%= form_with url: new_order_path, method: :get, local: true do |f| %>
-              <%= f.hidden_field :product_id, value: @product.id %>
-              <%= f.hidden_field :quantity, value: @product.min_order || 1 %>
-              <%= f.submit "Buy Now", class: "btn btn-primary bg-gradient w-100 mb-3 fw-bold py-2 shadow-sm rounded-3" %>
-            <% end %>
-          <% end %>
+        <div class="bg-white border rounded-4 p-4 shadow-sm mb-4">
+          
+          <% if @order.present? %>
+            <% latest_payment = @order.payments.last %>
+            <div class="alert alert-info border-0 rounded-3">
+              <% if latest_payment.nil? %>
+                <h6 class="alert-heading fw-bold">Complete your purchase</h6>
+                <%= button_to "Pay Now", order_payment_path(@order), method: :post, class: "btn btn-success w-100 fw-bold shadow-sm" %>
+              <% else %>
+                <p class="mb-1"><strong>Order Status:</strong> <span class="badge bg-dark"><%= @order.status.capitalize %></span></p>
+                <p class="mb-0"><strong>Payment Status:</strong> <span class="badge bg-secondary"><%= latest_payment.status.capitalize %></span></p>
+              <% end %>
+            </div>
+          <% else %>
+            <%= form_with url: new_order_path, method: :get, local: true do |f| %>
+              <%= f.hidden_field :product_id, value: @product.id %>
+              <%= f.hidden_field :quantity, value: @product.min_order || 1 %>
+              <%= f.submit "Buy Now", class: "btn btn-primary bg-gradient w-100 mb-3 fw-bold py-2 shadow-sm rounded-3" %>
+            <% end %>
+          <% end %>
 
-          <%= form_with url: add_cart_path, method: :post, local: true, data: { turbo: false } do %>
-            <%= hidden_field_tag :product_id, @product.id %>
+          <%= form_with url: add_cart_path, method: :post, local: true, data: { turbo: false } do %>
+            <%= hidden_field_tag :product_id, @product.id %>
 
-            <% if @product.variants.any? %>
-              <div class="mb-4">
-                <% @product.variants.group_by(&:name).each do |name, variants| %>
-                  <label class="form-label small fw-bold text-uppercase text-muted"><%= name %></label>
-                  <div class="d-flex flex-wrap gap-2 mb-3">
-                    <% variants.each do |variant| %>
-                      <label class="variant-option position-relative" style="cursor: pointer;">
-                        <%= radio_button_tag "variants[#{name}]", variant.id, false, class: "d-none peer-radio" %>
-                        
-                        <% if variant.primary_image_url.present? %>
-                           <%= image_tag variant.primary_image_url, class: "rounded-circle border border-2 variant-img-selector", style: "width: 40px; height: 40px; object-fit: cover;", alt: variant.value %>
-                        <% else %>
-                           <span class="badge bg-light text-dark border p-2 rounded-3 variant-text-selector"><%= variant.value %></span>
-                        <% end %>
-                      </label>
-                    <% end %>
-                  </div>
-                <% end %>
-              </div>
-            <% end %>
+            <% if @product.variants.any? %>
+              <div class="mb-4">
+                <% @product.variants.group_by(&:name).each do |name, variants| %>
+                  <label class="form-label small fw-bold text-uppercase text-muted"><%= name %></label>
+                  <div class="d-flex flex-wrap gap-2 mb-3">
+                    <% variants.each do |variant| %>
+                      <label class="variant-option position-relative" style="cursor: pointer;">
+                        <%= radio_button_tag "variants[#{name}]", variant.id, false, class: "d-none peer-radio" %>
+                        
+                        <% if variant.primary_image_url.present? %>
+                           <%= image_tag(variant.primary_image_url, class: "rounded-circle border border-2 variant-img-selector", style: "width: 40px; height: 40px; object-fit: cover;", alt: variant.value) %>
+                        <% else %>
+                           <span class="badge bg-light text-dark border p-2 rounded-3 variant-text-selector"><%= variant.value %></span>
+                        <% end %>
+                      </label>
+                    <% end %>
+                  </div>
+                <% end %>
+              </div>
+            <% end %>
 
-            <div class="row g-2 align-items-end">
-              <div class="col-4">
-                 <label class="form-label small fw-bold text-muted">Qty</label>
-                 <div class="input-group input-group-sm">
-                    <button type="button" class="btn btn-outline-secondary qty-minus" data-target="product_quantity">−</button>
-                    <%= number_field_tag :quantity,
-                          @product.min_order || 1,
-                          min: @product.min_order || 1,
-                          class: "form-control text-center variant-qty fw-bold",
-                          id: "product_quantity",
-                          data: { price: (@product.discount&.active? ? @product.discounted_price : @product.price) } %>
-                    <button type="button" class="btn btn-outline-secondary qty-plus" data-target="product_quantity">+</button>
-                 </div>
-              </div>
-              <div class="col-8">
-                 <%= submit_tag "Add to Cart", class: "btn btn-outline-dark w-100 fw-bold h-100" %>
-              </div>
-            </div>
+            <div class="row g-2 align-items-end">
+              <div class="col-4">
+                 <label class="form-label small fw-bold text-muted">Qty</label>
+                 <div class="input-group input-group-sm">
+                    <button type="button" class="btn btn-outline-secondary qty-minus" data-target="product_quantity">−</button>
+                    <%= number_field_tag(:quantity,
+                          @product.min_order || 1,
+                          min: @product.min_order || 1,
+                          class: "form-control text-center variant-qty fw-bold",
+                          id: "product_quantity",
+                          data: { price: (@product.discount&.active? ? @product.discounted_price : @product.price) }) %>
+                    <button type="button" class="btn btn-outline-secondary qty-plus" data-target="product_quantity">+</button>
+                 </div>
+              </div>
+              <div class="col-8">
+                 <%= submit_tag "Add to Cart", class: "btn btn-outline-dark w-100 fw-bold h-100" %>
+              </div>
+            </div>
 
-            <div id="subtotal" class="fw-bold text-primary mt-3 text-end small"></div>
-          <% end %>
-        </div>
+            <div id="subtotal" class="fw-bold text-primary mt-3 text-end small"></div>
+          <% end %>
+        </div>
 
-        <div class="small bg-light rounded-3 p-3 text-muted">
-          <div class="d-flex justify-content-between mb-2 border-bottom pb-2">
-            <span>Stock Status</span>
-            <span class="<%= @product.stock > 0 ? 'text-success fw-bold' : 'text-danger fw-bold' %>">
-              <%= @product.stock > 0 ? "#{@product.stock} Available" : "Out of Stock" %>
-            </span>
-          </div>
-          <div class="d-flex justify-content-between mb-2 border-bottom pb-2">
-             <span>Min Order</span>
-             <span class="fw-semibold"><%= @product.min_order %> units</span>
-          </div>
-          <div class="d-flex justify-content-between mb-2 border-bottom pb-2">
-             <span>Est. Delivery</span>
-             <span class="fw-semibold"><%= @product.delivery_estimate %></span>
-          </div>
-          <div class="d-flex justify-content-between">
-             <span>Shipping Cost</span>
-             <% shipping_kes = ExchangeRateService.convert(@product.shipping_cost || 0, from: @product.currency, to: "KES") %>
-             <span class="fw-semibold"><%= number_to_currency(shipping_kes, unit: "KES ") %></span>
-          </div>
-        </div>
+        <div class="small bg-light rounded-3 p-3 text-muted">
+          <div class="d-flex justify-content-between mb-2 border-bottom pb-2">
+            <span>Stock Status</span>
+            <span class="<%= @product.stock > 0 ? 'text-success fw-bold' : 'text-danger fw-bold' %>">
+              <%= @product.stock > 0 ? "#{@product.stock} Available" : "Out of Stock" %>
+            </span>
+          </div>
+          <div class="d-flex justify-content-between mb-2 border-bottom pb-2">
+             <span>Min Order</span>
+             <span class="fw-semibold"><%= @product.min_order %> units</span>
+          </div>
+          <div class="d-flex justify-content-between mb-2 border-bottom pb-2">
+             <span>Est. Delivery</span>
+             <span class="fw-semibold"><%= @product.delivery_estimate %></span>
+          </div>
+          <div class="d-flex justify-content-between">
+             <span>Shipping Cost</span>
+             <% shipping_kes = ExchangeRateService.convert(@product.shipping_cost || 0, from: @product.currency, to: "KES") %>
+             <span class="fw-semibold"><%= number_to_currency(shipping_kes, unit: "KES ") %></span>
+          </div>
+        </div>
 
-        <% if user_signed_in? && current_user.seller? && current_user == @product.seller %>
-          <div class="mt-3 text-center">
-            <%= link_to edit_product_path(@product), class: "btn btn-link text-decoration-none btn-sm" do %>
-              <i class="bi bi-pencil"></i> Edit Product
-            <% end %>
-            <%= button_to product_path(@product), method: :delete, data: { confirm: "Are you sure?" }, class: "btn btn-link text-danger text-decoration-none btn-sm" do %>
-              <i class="bi bi-trash"></i> Delete
-            <% end %>
-          </div>
-        <% end %>
+        <% if user_signed_in? && current_user.seller? && current_user == @product.seller %>
+          <div class="mt-3 text-center">
+            <%= link_to edit_product_path(@product), class: "btn btn-link text-decoration-none btn-sm" do %>
+              <i class="bi bi-pencil"></i> Edit Product
+            <% end %>
+            <%= button_to product_path(@product), method: :delete, data: { confirm: "Are you sure?" }, class: "btn btn-link text-danger text-decoration-none btn-sm" do %>
+              <i class="bi bi-trash"></i> Delete
+            <% end %>
+          </div>
+        <% end %>
 
-      </div> </div> </div> <section class="row mt-5">
-    <div class="col-12">
-      <div class="border rounded-4 p-4 p-lg-5 bg-white shadow-sm">
-        <h2 class="h4 fw-bold mb-4 border-bottom pb-3">Product Description</h2>
-        <div class="text-muted lh-lg">
-          <%= @product.description.presence || "No description provided." %>
-        </div>
-      </div>
-    </div>
-  </section>
+      </div> </div> </div> <section class="row mt-5">
+    <div class="col-12">
+      <div class="border rounded-4 p-4 p-lg-5 bg-white shadow-sm">
+        <h2 class="h4 fw-bold mb-4 border-bottom pb-3">Product Description</h2>
+        <div class="text-muted lh-lg">
+          <%= @product.description.presence || "No description provided." %>
+        </div>
+      </div>
+    </div>
+  </section>
 
-  <section class="row mt-5">
-    <div class="col-12">
-      <div class="border rounded-4 p-4 p-lg-5 bg-white shadow-sm">
-        <div class="d-flex align-items-center justify-content-between mb-4 border-bottom pb-3">
-           <h2 class="h4 fw-bold mb-0">Customer Reviews</h2>
-           <div class="text-end">
-             <%= render_stars(@product.average_rating) %>
-             <div class="small text-muted"><%= @product.reviews.count %> global ratings</div>
-           </div>
-        </div>
+  <section class="row mt-5">
+    <div class="col-12">
+      <div class="border rounded-4 p-4 p-lg-5 bg-white shadow-sm">
+        <div class="d-flex align-items-center justify-content-between mb-4 border-bottom pb-3">
+           <h2 class="h4 fw-bold mb-0">Customer Reviews</h2>
+           <div class="text-end">
+             <%= render_stars(@product.average_rating) %>
+             <div class="small text-muted"><%= @product.reviews.count %> global ratings</div>
+           </div>
+        </div>
 
-        <% if @product.reviews.any? %>
-          <div class="row">
-            <% @reviews.each do |review| %>
-              <div class="col-md-6 mb-4">
-                <div class="border rounded-3 p-3 h-100 bg-light position-relative">
-                  <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                      <strong><%= review.user.name %></strong>
-                      <div class="small text-muted"><%= review.created_at.strftime("%b %d, %Y") %></div>
-                    </div>
-                    <%= render_stars(review.rating) %>
-                  </div>
-                  
-                  <p class="mt-2 mb-3 text-dark"><%= review.comment %></p>
+        <% if @product.reviews.any? %>
+          <div class="row">
+            <% @reviews.each do |review| %>
+              <div class="col-md-6 mb-4">
+                <div class="border rounded-3 p-3 h-100 bg-light position-relative">
+                  <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                      <strong><%= review.user.name %></strong>
+                      <div class="small text-muted"><%= review.created_at.strftime("%b %d, %Y") %></div>
+                    </div>
+                    <%= render_stars(review.rating) %>
+                  </div>
+                  
+                  <p class="mt-2 mb-3 text-dark"><%= review.comment %></p>
 
-                  <div class="d-flex align-items-center justify-content-between mt-auto pt-2 border-top border-secondary border-opacity-10">
-                    <div class="d-flex align-items-center">
-                       <%= button_to vote_product_review_path(@product, review),
-                            method: :post,
-                            class: "btn btn-sm btn-outline-success me-2 rounded-pill px-3",
-                            data: { turbo_stream: true } do %>
-                          <i class="bi bi-hand-thumbs-up"></i> Helpful
-                       <% end %>
-                       <span class="small text-muted"><%= review.helpful_count %></span>
-                    </div>
+                  <div class="d-flex align-items-center justify-content-between mt-auto pt-2 border-top border-secondary border-opacity-10">
+                    <div class="d-flex align-items-center">
+                       <%= button_to(vote_product_review_path(@product, review),
+                           method: :post,
+                           class: "btn btn-sm btn-outline-success me-2 rounded-pill px-3",
+                           data: { turbo_stream: true }) do %>
+                          <i class="bi bi-hand-thumbs-up"></i> Helpful
+                       <% end %>
+                       <span class="small text-muted"><%= review.helpful_count %></span>
+                    </div>
 
-                    <% if review.user == current_user %>
-                      <div>
-                        <%= link_to "Edit", edit_product_review_path(@product, review), class: "btn btn-sm btn-link text-secondary p-0 me-2" %>
-                        <%= button_to "Delete", product_review_path(@product, review), method: :delete, class: "btn btn-sm btn-link text-danger p-0" %>
-                      </div>
-                    <% end %>
-                  </div>
-                </div>
-              </div>
-            <% end %>
-          </div>
-          <%= paginate @reviews %>
-        <% else %>
-          <div class="text-center py-5">
-             <i class="bi bi-chat-square-text display-4 text-muted mb-3 d-block"></i>
-             <p class="text-muted">No reviews yet. Be the first to share your thoughts!</p>
-          </div>
-        <% end %>
+                    <% if review.user == current_user %>
+                      <div>
+                        <%= link_to "Edit", edit_product_review_path(@product, review), class: "btn btn-sm btn-link text-secondary p-0 me-2" %>
+                        <%= button_to "Delete", product_review_path(@product, review), method: :delete, class: "btn btn-sm btn-link text-danger p-0" %>
+                      </div>
+                    <% end %>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+          </div>
+          <%= paginate @reviews %>
+        <% else %>
+          <div class="text-center py-5">
+             <i class="bi bi-chat-square-text display-4 text-muted mb-3 d-block"></i>
+             <p class="text-muted">No reviews yet. Be the first to share your thoughts!</p>
+          </div>
+        <% end %>
 
-        <div class="mt-4 p-4 bg-light rounded-3">
-           <h5 class="fw-bold mb-3">Write a Review</h5>
-           <%= render partial: "reviews/form", locals: { product: @product, review: Review.new } %>
-        </div>
-      </div>
-    </div>
-  </section>
+        <div class="mt-4 p-4 bg-light rounded-3">
+           <h5 class="fw-bold mb-3">Write a Review</h5>
+           <%= render partial: "reviews/form", locals: { product: @product, review: Review.new } %>
+        </div>
+      </div>
+    </div>
+  </section>
 
-  <section class="mt-5">
-    <h3 class="fw-bold mb-4">Related Products</h3>
-    <div class="row row-cols-2 row-cols-md-4 g-4">
-      <% Product.where.not(id: @product.id).limit(4).each do |related| %>
-        <div class="col">
-          <div class="card h-100 border-0 shadow-sm hover-shadow rounded-4 overflow-hidden transition-all">
-            <%= link_to product_path(related), class: "text-decoration-none text-dark" do %>
-              <div class="position-relative overflow-hidden">
-                 <%# Lazy load related products as they are below fold %>
-                 <%= image_tag(related.image_url.presence || related.gallery_image_urls.first || asset_path("placeholder.jpg"), 
-                      class: "card-img-top hover-zoom", 
-                      style: "height: 220px; object-fit: cover;",
-                      loading: "lazy",
-                      alt: related.title) %>
-              </div>
-              <div class="card-body">
-                <h6 class="fw-bold text-truncate mb-1"><%= related.title %></h6>
-                <p class="text-primary fw-bold mb-0">KES <%= related.price %></p>
-              </div>
-            <% end %>
-            <div class="card-footer bg-white border-0 pt-0 pb-3">
-              <%= link_to "View Details", product_path(related), class: "btn btn-sm btn-outline-primary w-100 rounded-pill fw-semibold" %>
-            </div>
-          </div>
-        </div>
-      <% end %>
-    </div>
-  </section>
+  <section class="mt-5">
+    <h3 class="fw-bold mb-4">Related Products</h3>
+    <div class="row row-cols-2 row-cols-md-4 g-4">
+      <% Product.where.not(id: @product.id).limit(4).each do |related| %>
+        <div class="col">
+          <div class="card h-100 border-0 shadow-sm hover-shadow rounded-4 overflow-hidden transition-all">
+            <%= link_to product_path(related), class: "text-decoration-none text-dark" do %>
+              <div class="position-relative overflow-hidden">
+                 <%# Lazy load related products as they are below fold %>
+                 <%= image_tag(related.image_url.presence || related.gallery_image_urls.first || asset_path("placeholder.jpg"), 
+                      class: "card-img-top hover-zoom", 
+                      style: "height: 220px; object-fit: cover;",
+                      loading: "lazy",
+                      alt: related.title) %>
+              </div>
+              <div class="card-body">
+                <h6 class="fw-bold text-truncate mb-1"><%= related.title %></h6>
+                <p class="text-primary fw-bold mb-0">KES <%= related.price %></p>
+              </div>
+            <% end %>
+            <div class="card-footer bg-white border-0 pt-0 pb-3">
+              <%= link_to "View Details", product_path(related), class: "btn btn-sm btn-outline-primary w-100 rounded-pill fw-semibold" %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </section>
 
-  <div class="text-start mt-5">
-    <%= link_to products_path, class: "btn btn-outline-secondary rounded-pill px-4 fw-semibold" do %>
-      <i class="bi bi-arrow-left"></i> Back to Products
-    <% end %>
-  </div>
+  <div class="text-start mt-5">
+    <%= link_to products_path, class: "btn btn-outline-secondary rounded-pill px-4 fw-semibold" do %>
+      <i class="bi bi-arrow-left"></i> Back to Products
+    <% end %>
+  </div>
 
 </div>
 
 <style>
-  .hover-scale:hover { transform: scale(1.05); transition: transform 0.2s; }
-  .active-thumb { border-color: var(--bs-primary) !important; border-width: 2px !important; }
-  .scrollbar-custom::-webkit-scrollbar { height: 6px; }
-  .scrollbar-custom::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
-  .hover-shadow:hover { box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important; transform: translateY(-2px); transition: all 0.3s ease; }
-  /* Ensure radio buttons are hidden but accessible logic remains */
-  .peer-radio:checked + .variant-img-selector { border-color: var(--bs-primary) !important; box-shadow: 0 0 0 2px var(--bs-primary); }
-  .peer-radio:checked + .variant-text-selector { background-color: var(--bs-primary) !important; color: white !important; border-color: var(--bs-primary) !important; }
+  .hover-scale:hover { transform: scale(1.05); transition: transform 0.2s; }
+  .active-thumb { border-color: var(--bs-primary) !important; border-width: 2px !important; }
+  .scrollbar-custom::-webkit-scrollbar { height: 6px; }
+  .scrollbar-custom::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+  .hover-shadow:hover { box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important; transform: translateY(-2px); transition: all 0.3s ease; }
+  /* Ensure radio buttons are hidden but accessible logic remains */
+  .peer-radio:checked + .variant-img-selector { border-color: var(--bs-primary) !important; box-shadow: 0 0 0 2px var(--bs-primary); }
+  .peer-radio:checked + .variant-text-selector { background-color: var(--bs-primary) !important; color: white !important; border-color: var(--bs-primary) !important; }
 </style>
