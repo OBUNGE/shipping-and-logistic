@@ -1,22 +1,43 @@
 <%# ------------------------------------------------------------------------------------------------ %>
-<%# --- 1. Content for application.html.erb layout (Crucial for page-specific SEO/Social sharing) --- %>
+<%# --- 1. Content for application.html.erb layout (SEO + Social Sharing) --- %>
 <%# ------------------------------------------------------------------------------------------------ %>
 <% content_for :title, "#{@product.title} | Buy Online - Tajaone" %>
 <% content_for :meta_description, truncate(strip_tags(@product.description), length: 155) %>
 <% content_for :canonical, product_url(@product) %>
+
+<%# --- OPEN GRAPH (Facebook, LinkedIn, WhatsApp, Pinterest) --- %>
 <% content_for :og_title, @product.title %>
+<% content_for :og_description, truncate(strip_tags(@product.description), length: 200) %>
 <% content_for :og_image, @product.image_url %>
 <% content_for :og_type, "product" %>
+<% content_for :og_url, product_url(@product) %>
+<% content_for :og_site_name, "Tajaone" %>
+
+<%# --- TWITTER CARD (Large Images on X/Twitter) --- %>
+<% content_for :twitter_card, "summary_large_image" %>
+<% content_for :twitter_title, @product.title %>
+<% content_for :twitter_image, @product.image_url %>
 
 <%# --- 2. Specific Head Content for Product Page (Structured Data & Custom OG) --- %>
 <% content_for :head do %>
-  <%# Dynamic Open Graph Tags (Overrides application.html.erb defaults) %>
-  <meta property="og:image:width" content="1200" />
-  <meta property="og:image:height" content="630" />
+  <%# Social Media Image Optimization (WhatsApp/LinkedIn/Pinterest) %>
+  <meta property="og:image:width" content="1000" />
+  <meta property="og:image:height" content="1500" /> <%# Pinterest prefers tall images %>
+  <meta property="og:image:alt" content="<%= @product.title %>" />
+
+  <%# Twitter Specific Tags %>
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:site" content="@tajaone" /> <%# Replace with your actual handle %>
+  <meta name="twitter:title" content="<%= @product.title %>" />
+  <meta name="twitter:description" content="<%= truncate(strip_tags(@product.description), length: 200) %>" />
+  <meta name="twitter:image" content="<%= @product.image_url %>" />
+
+  <%# Pinterest Rich Pin Data (uses OG + Product meta) %>
   <meta property="product:price:amount" content="<%= @product.discount&.active? ? @product.discounted_price : @product.price %>" />
   <meta property="product:price:currency" content="<%= @product.currency %>" />
+  <meta property="og:availability" content="<%= @product.stock.to_i > 0 ? 'instock' : 'outofstock' %>" />
 
-  <%# Prepare image array for JSON-LD (robust method) %>
+  <%# Prepare image array for JSON-LD (main + gallery) %>
   <% all_images = [@product.image_url].compact + @product.gallery_image_urls.compact %>
   <% image_json = all_images.map { |url| "\"#{url}\"" }.join(",\n    ") %>
 
