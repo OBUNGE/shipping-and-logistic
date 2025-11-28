@@ -80,10 +80,10 @@ end
   end
   
   
-  def create
+def create
   @order = user_signed_in? ? current_user.orders_as_buyer.build(order_params) : Order.new(order_params)
   @order.currency ||= "KES"
-  @order.guest_token ||= SecureRandom.hex(10) unless user_signed_in? # ✅ guest access
+  @order.guest_token ||= SecureRandom.hex(10) unless user_signed_in?
 
   provider       = order_params[:provider] || "mpesa"
   phone_number   = order_params[:phone_number].presence || current_user&.phone
@@ -125,14 +125,11 @@ end
 
     notify_seller(@order)
 
-    # ✅ Pass correct contact info depending on provider
-    if provider == "pod"
-      handle_payment_or_pod(@order, provider, contact_number, email)
-    else
-      handle_payment_or_pod(@order, provider, phone_number, email)
-    end
+    # ✅ Unified payment handler
+    handle_payment(@order, provider, phone_number, email)
+    return  # <-- prevent double redirect
 
-    # ✅ Redirect guests with token
+    # ✅ Redirect guests with token (only reached if handle_payment does not redirect)
     if user_signed_in?
       redirect_to @order, notice: "Order placed successfully"
     else
@@ -195,14 +192,11 @@ end
 
     session[:cart] = []
 
-    # ✅ Pass correct contact info depending on provider
-    if provider == "pod"
-      handle_payment_or_pod(orders.first, provider, contact_number, email)
-    else
-      handle_payment_or_pod(orders.first, provider, phone_number, email)
-    end
+    # ✅ Unified payment handler (use first order for payment)
+    handle_payment(orders.first, provider, phone_number, email)
+    return  # <-- prevent double redirect
 
-    # ✅ Redirect guests with token
+    # ✅ Redirect guests with token (only reached if handle_payment does not redirect)
     if user_signed_in?
       redirect_to orders.first, notice: "Order placed successfully"
     else
@@ -216,24 +210,6 @@ rescue ActiveRecord::RecordInvalid => e
 end
 
 
-private
-
-def handle_payment_or_pod(order, provider, phone_number, email)
-  if provider == "pod"
-    # ✅ POD: just create pending payment record
-    order.payments.create!(
-      provider: "POD",
-      amount: order.total,
-      currency: order.currency,
-      status: :pending
-    )
-    # No redirect here — leave it to create
-  else
-    # ✅ Gateway flow
-    PaymentService.process(order, provider: provider, phone_number: phone_number, email: email)
-    # No redirect here — leave it to create
-  end
-end
 
   def receipt
     order = Order.find(params[:id])
@@ -362,41 +338,53 @@ end
     )
   end
 
-  def handle_payment(order, provider, phone_number, email)
-    unless order.present?
-      Rails.logger.error("⚠️ handle_payment called with nil order")
-      redirect_to root_path, alert: "Order not found" and return
-    end
+def handle_payment(order, provider, phone_number, email)
+  unless order.present?
+    Rails.logger.error("⚠️ handle_payment called with nil order")
+    redirect_to root_path, alert: "Order not found" and return
+  end
 
-    Rails.logger.info("💳 Initiating payment: order_id=#{order.id}, provider=#{provider}, currency=#{order.currency}")
+  Rails.logger.info("💳 Initiating payment: order_id=#{order.id}, provider=#{provider}, currency=#{order.currency}")
 
-    result = PaymentService.process(
-      order,
-      provider: provider,
-      phone_number: phone_number,
-      email: email,
+  if provider == "pod"
+    order.payments.create!(
+      provider: "POD",
+      amount: order.total,
       currency: order.currency,
-      return_url: order_url(order),
-      callback_url: mpesa_callback_url(
-        order_id: order.id,
-        host: ENV["APP_HOST"] || "tajaone.app"
-      )
+      status: :pending
     )
+    redirect_to order_path(order), notice: "Order placed with Pay on Delivery. We’ll contact you to confirm delivery in Nairobi."
+    return
+  end
 
-    respond_to do |format|
-      if result.is_a?(Hash) && result[:redirect_url]
-        Rails.logger.info("✅ Payment redirect for order #{order.id}: #{result[:redirect_url]}")
-        format.html         { redirect_to result[:redirect_url], allow_other_host: true }
-        format.turbo_stream { redirect_to result[:redirect_url], allow_other_host: true }
-      elsif result.is_a?(Hash) && result[:error]
-        Rails.logger.error("❌ Payment error for order #{order.id}: #{result[:error]}")
-        format.html         { redirect_to order_path(order), alert: result[:error] }
-        format.turbo_stream { redirect_to order_path(order), alert: result[:error] }
-      else
-        Rails.logger.info("ℹ️ Payment fallback for order #{order.id}")
-        format.html         { redirect_to order_path(order), notice: "Order created successfully. Please proceed to payment." }
-        format.turbo_stream { redirect_to order_path(order), notice: "Order created successfully. Please proceed to payment." }
-      end
+  result = PaymentService.process(
+    order,
+    provider: provider,
+    phone_number: phone_number,
+    email: email,
+    currency: order.currency,
+    return_url: order_url(order),
+    callback_url: mpesa_callback_url(
+      order_id: order.id,
+      host: ENV["APP_HOST"] || "tajaone.app"
+    )
+  )
+
+  respond_to do |format|
+    if result.is_a?(Hash) && result[:redirect_url]
+      Rails.logger.info("✅ Payment redirect for order #{order.id}: #{result[:redirect_url]}")
+      format.html         { redirect_to result[:redirect_url], allow_other_host: true }
+      format.turbo_stream { redirect_to result[:redirect_url], allow_other_host: true }
+    elsif result.is_a?(Hash) && result[:error]
+      Rails.logger.error("❌ Payment error for order #{order.id}: #{result[:error]}")
+      format.html         { redirect_to order_path(order), alert: result[:error] }
+      format.turbo_stream { redirect_to order_path(order), alert: result[:error] }
+    else
+      Rails.logger.info("ℹ️ Payment fallback for order #{order.id}")
+      format.html         { redirect_to order_path(order), notice: "Order created successfully. Please proceed to payment." }
+      format.turbo_stream { redirect_to order_path(order), notice: "Order created successfully. Please proceed to payment." }
     end
   end
+end
+
 end
