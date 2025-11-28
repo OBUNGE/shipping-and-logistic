@@ -1,6 +1,7 @@
-<h2>Hi <%= @buyer.first_name %>,</h2>
+<h2>Hi <%= @buyer&.first_name || "Customer" %>,</h2>
 
-<p>Your shipment for Order ##<%= @order.id %> has been updated to <strong><%= @status.humanize %></strong>.</p>
+<p>Your shipment for Order ##<%= @order.id %> has been updated to
+   <strong><%= @status.humanize %></strong>.</p>
 
 <p>
   <strong>Carrier:</strong> <%= @shipment.carrier %><br>

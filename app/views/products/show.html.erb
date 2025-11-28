@@ -1,8 +1,27 @@
-<%# --- SEO: Meta Tags & Title --- %>
+<%# --- SEO: Meta Tags, Title & Social Cards --- %>
 <% content_for :title, "#{@product.title} | Buy Online" %>
 <% content_for :meta_description, truncate(strip_tags(@product.description), length: 155) %>
 
-<%# --- SEO: Structured Data (Schema.org) --- %>
+<%# --- Canonical URL (Prevents duplicate content issues) --- %>
+<link rel="canonical" href="<%= product_url(@product) %>" />
+
+<%# --- Open Graph (Facebook/WhatsApp/LinkedIn) --- %>
+<meta property="og:title" content="<%= @product.title %>" />
+<meta property="og:description" content="<%= truncate(strip_tags(@product.description), length: 155) %>" />
+<meta property="og:image" content="<%= @product.image_url %>" />
+<meta property="og:url" content="<%= product_url(@product) %>" />
+<meta property="og:type" content="product" />
+<meta property="og:site_name" content="tajaone.app" /> <%# tajaone %>
+<meta property="product:price:amount" content="<%= @product.discount&.active? ? @product.discounted_price : @product.price %>" />
+<meta property="product:price:currency" content="<%= @product.currency %>" />
+
+<%# --- Twitter Cards --- %>
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="<%= @product.title %>" />
+<meta name="twitter:description" content="<%= truncate(strip_tags(@product.description), length: 155) %>" />
+<meta name="twitter:image" content="<%= @product.image_url %>" />
+
+<%# --- SEO: Structured Data (Product Schema) --- %>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org/",
@@ -40,7 +59,34 @@
 }
 </script>
 
-<div class="container py-5">
+<%# --- SEO: Structured Data (Breadcrumb Schema) --- %>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [{
+    "@type": "ListItem",
+    "position": 1,
+    "name": "Products",
+    "item": "<%= products_url %>"
+  },{
+    "@type": "ListItem",
+    "position": 2,
+    "name": "<%= j @product.title %>",
+    "item": "<%= product_url(@product) %>"
+  }]
+}
+</script>
+
+<div class="container py-4 py-lg-5">
+  
+  <nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><%= link_to "Products", products_path, class: "text-decoration-none text-muted" %></li>
+      <li class="breadcrumb-item active" aria-current="page"><%= @product.title %></li>
+    </ol>
+  </nav>
+
   <div class="row g-5">
 
     <div class="col-lg-7">
@@ -52,6 +98,7 @@
 
               <% if @product.image_url.present? %>
                 <div class="carousel-item active">
+                  <%# LCP Image: No lazy loading here %>
                   <%= image_tag @product.image_url, class: "d-block w-100 rounded-3", style: "max-height: 600px; object-fit: contain;", alt: "#{@product.title} - Main View" %>
                 </div>
                 <% slide_index += 1 %>
@@ -60,7 +107,7 @@
               <% @product.gallery_image_urls.each_with_index do |url, index| %>
                 <% next unless url.is_a?(String) && url.present? %>
                 <div class="carousel-item <%= 'active' if @product.image_url.blank? && index == 0 %>">
-                  <%= image_tag url, class: "d-block w-100 rounded-3", style: "max-height: 600px; object-fit: contain;", alt: "#{@product.title} - Gallery #{index + 1}" %>
+                  <%= image_tag url, class: "d-block w-100 rounded-3", style: "max-height: 600px; object-fit: contain;", loading: "lazy", alt: "#{@product.title} - Gallery #{index + 1}" %>
                 </div>
                 <% slide_index += 1 %>
               <% end %>
@@ -69,7 +116,7 @@
                 <% variant.variant_images.each_with_index do |img, index| %>
                   <% next if img.image_url.blank? %>
                   <div class="carousel-item <%= 'active' if @product.image_url.blank? && @product.gallery_image_urls.blank? && index == 0 %>">
-                    <%= image_tag img.image_url, class: "d-block w-100 rounded-3", style: "max-height: 600px; object-fit: contain;", alt: "#{@product.title} - #{variant.name} #{variant.value}" %>
+                    <%= image_tag img.image_url, class: "d-block w-100 rounded-3", style: "max-height: 600px; object-fit: contain;", loading: "lazy", alt: "#{@product.title} - #{variant.name} #{variant.value}" %>
                     <div class="carousel-caption bg-dark bg-opacity-75 rounded-pill px-3 py-1 mb-3">
                       <small class="text-white fw-bold"><%= variant.name %>: <%= variant.value %></small>
                     </div>
@@ -109,6 +156,7 @@
                 <%= image_tag url,
                       class: "img-thumbnail shadow-sm border rounded-3 hover-scale",
                       style: "width: 80px; height: 80px; object-fit: cover; cursor: pointer; flex: 0 0 auto;",
+                      loading: "lazy",
                       alt: "Thumbnail Gallery",
                       data: { bs_target: "#productCarousel", bs_slide_to: thumb_index } %>
                 <% thumb_index += 1 %>
@@ -121,6 +169,7 @@
                     <%= image_tag img.image_url,
                           class: "img-thumbnail border rounded-3 hover-scale",
                           style: "width: 80px; height: 80px; object-fit: cover; cursor: pointer;",
+                          loading: "lazy",
                           alt: "Thumbnail #{variant.value}",
                           data: { bs_target: "#productCarousel", bs_slide_to: thumb_index } %>
                   </div>
@@ -207,7 +256,7 @@
                         <%= radio_button_tag "variants[#{name}]", variant.id, false, class: "d-none peer-radio" %>
                         
                         <% if variant.primary_image_url.present? %>
-                           <%= image_tag variant.primary_image_url, class: "rounded-circle border border-2 variant-img-selector", style: "width: 40px; height: 40px; object-fit: cover;" %>
+                           <%= image_tag variant.primary_image_url, class: "rounded-circle border border-2 variant-img-selector", style: "width: 40px; height: 40px; object-fit: cover;", alt: variant.value %>
                         <% else %>
                            <span class="badge bg-light text-dark border p-2 rounded-3 variant-text-selector"><%= variant.value %></span>
                         <% end %>
@@ -357,9 +406,11 @@
           <div class="card h-100 border-0 shadow-sm hover-shadow rounded-4 overflow-hidden transition-all">
             <%= link_to product_path(related), class: "text-decoration-none text-dark" do %>
               <div class="position-relative overflow-hidden">
+                 <%# Lazy load related products as they are below fold %>
                  <%= image_tag(related.image_url.presence || related.gallery_image_urls.first || asset_path("placeholder.jpg"), 
                       class: "card-img-top hover-zoom", 
                       style: "height: 220px; object-fit: cover;",
+                      loading: "lazy",
                       alt: related.title) %>
               </div>
               <div class="card-body">

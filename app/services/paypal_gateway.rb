@@ -3,10 +3,12 @@ require "paypal-checkout-sdk"
 class PaypalGateway
   include Rails.application.routes.url_helpers
 
-  def initialize(order:, return_url:, currency: nil)
+  def initialize(order:, return_url:, currency: nil, amount: nil)
     @order      = order
     @return_url = return_url
     @currency   = currency || order.currency || "USD"
+    # Use converted amount if provided, otherwise fall back to order.total
+    @amount     = amount || order.total
   end
 
   def default_url_options
@@ -17,18 +19,17 @@ class PaypalGateway
     options
   end
 
-def client
-  Rails.logger.info("🔐 PAYPAL_CLIENT_ID: #{ENV['PAYPAL_CLIENT_ID']}")
-  Rails.logger.info("🔐 PAYPAL_CLIENT_SECRET: #{ENV['PAYPAL_CLIENT_SECRET']&.slice(0, 6)}...")
+  def client
+    Rails.logger.info("🔐 PAYPAL_CLIENT_ID: #{ENV['PAYPAL_CLIENT_ID']}")
+    Rails.logger.info("🔐 PAYPAL_CLIENT_SECRET: #{ENV['PAYPAL_CLIENT_SECRET']&.slice(0, 6)}...")
 
-  env = if Rails.env.production?
-          PayPal::LiveEnvironment.new(ENV["PAYPAL_CLIENT_ID"], ENV["PAYPAL_CLIENT_SECRET"])
-        else
-          PayPal::SandboxEnvironment.new(ENV["PAYPAL_CLIENT_ID"], ENV["PAYPAL_CLIENT_SECRET"])
-        end
-  PayPal::PayPalHttpClient.new(env)
-end
-
+    env = if Rails.env.production?
+            PayPal::LiveEnvironment.new(ENV["PAYPAL_CLIENT_ID"], ENV["PAYPAL_CLIENT_SECRET"])
+          else
+            PayPal::SandboxEnvironment.new(ENV["PAYPAL_CLIENT_ID"], ENV["PAYPAL_CLIENT_SECRET"])
+          end
+    PayPal::PayPalHttpClient.new(env)
+  end
 
   def initiate
     request = PayPalCheckoutSdk::Orders::OrdersCreateRequest.new
@@ -38,7 +39,7 @@ end
       purchase_units: [{
         amount: {
           currency_code: @currency,
-          value: sprintf("%.2f", @order.total.to_f.round(2))
+          value: sprintf("%.2f", @amount.to_f.round(2))
         }
       }],
       application_context: {
@@ -56,7 +57,7 @@ end
       @order.create_payment!(
         user:           @order.buyer,
         provider:       "PayPal",
-        amount:         @order.total,
+        amount:         @amount,
         currency:       @currency,
         status:         :pending,
         transaction_id: response.result.id
@@ -66,15 +67,14 @@ end
       { error: "PayPal did not return approval link" }
     end
   rescue PayPalHttp::HttpError => e
-  Rails.logger.error("❌ PayPal API Error: #{e.status_code}")
-  Rails.logger.error("📦 PayPal Response: #{e.result.inspect}")
-  { error: "PayPal initiation failed" }
-
+    Rails.logger.error("❌ PayPal API Error: #{e.status_code}")
+    Rails.logger.error("📦 PayPal Response: #{e.result.inspect}")
+    { error: "PayPal initiation failed" }
   end
 
   private
 
-def callback_url(success: false, cancel: false)
-  paypal_callback_order_payments_url(@order, host: ENV["APP_HOST"] || "shipping-and-logistic-wuo1.onrender.com")
-end
+  def callback_url(success: false, cancel: false)
+    paypal_callback_order_payments_url(@order, host: ENV["APP_HOST"] || "shipping-and-logistic-wuo1.onrender.com")
+  end
 end

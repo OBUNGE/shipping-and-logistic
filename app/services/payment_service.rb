@@ -51,6 +51,16 @@ class PaymentService
         email: email || order.email || order.buyer&.email
       ).create_payment
 
+    when "pod"
+      # ✅ Pay on Delivery (Cash on Delivery)
+      order.payments.create!(
+        provider: "POD",
+        amount: order.total,
+        currency: currency,
+        status: :pending
+      )
+      { message: "Order placed with Pay on Delivery. Please prepare for cash collection." }
+
     else
       raise ArgumentError, "Unsupported payment provider: #{provider}"
     end

@@ -6,7 +6,14 @@ class Shipment < ApplicationRecord
   delegate :buyer, :seller, to: :order
 
   # === Carrier options ===
-  enum :carrier, { dhl: "dhl", sendy: "sendy" }
+  # Ensure `carrier` column is a string in your DB migration
+  enum :carrier, {
+    dhl:       "dhl",
+    sendy:     "sendy",
+    ena_coach: "ena_coach",
+    g4s:       "g4s",
+    fargo:     "fargo"
+  }
 
   # === Status lifecycle ===
   enum :status, {
@@ -21,8 +28,16 @@ class Shipment < ApplicationRecord
   # === Validations ===
   validates :status, :carrier, :tracking_number, presence: true
   validates :tracking_number, uniqueness: true
-  validates :first_name, :last_name, :phone_number, :country, :city, :address, presence: true
-  validates :cost, numericality: { greater_than_or_equal_to: 0.01 }, allow_nil: true
+
+  # Require shipping details only on creation, not on every update
+  validates :first_name, :last_name, :phone_number, :country, :city, :address,
+            presence: true, on: :create
+
+  # Allow blank cost values, but enforce numeric if present
+  validates :cost,
+            numericality: { greater_than_or_equal_to: 0.01 },
+            allow_nil: true,
+            allow_blank: true
 
   # === Callbacks ===
   after_update :handle_status_change, if: :saved_change_to_status?
@@ -79,6 +94,6 @@ class Shipment < ApplicationRecord
 
   def send_status_email
     return unless buyer&.email.present? && defined?(ShipmentMailer)
-    ShipmentMailer.status_update(self, status)
+    ShipmentMailer.status_update(self, status).deliver_later
   end
 end

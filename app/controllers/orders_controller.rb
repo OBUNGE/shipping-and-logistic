@@ -1,73 +1,94 @@
 class OrdersController < ApplicationController
-  before_action :authenticate_user!, except: [:new, :create, :pay, :receipt]
+  # 🔓 Guests can shop freely — only restrict account history
+  before_action :authenticate_user!, only: [:index]
   before_action :set_product, only: [:new, :create], if: -> { params[:product_id].present? }
   before_action :set_order, only: [:show, :receipt, :pay]
 
   def index
+    # Only available for signed-in users
     @orders = (current_user.orders_as_buyer + current_user.orders_as_seller).uniq
   end
 
-  def show; end
+def show
+  # Find the order first
+  @order = Order.find_by(id: params[:id])
 
-def new
-  if params[:product_id].present?
-    # --- Single product checkout ---
-    @product = Product.find(params[:product_id])
-    @order   = user_signed_in? ? current_user.orders_as_buyer.new : Order.new(currency: "KES")
+  if @order.nil?
+    redirect_to root_path, alert: "Order not found"
+    return
+  end
 
-    # Calculate shipping for single product using service
-    destination = current_user&.city.presence || "Nairobi"
-    calculator  = ShippingCalculator.new(strategy: :weight_based, destination: destination)
-    @shipping_total = calculator.calculate([{ product: @product, variants: [], quantity: 1 }])
+  # Guests can view orders if they have the guest_token in the URL
+  if @order.guest_token.present? && params[:token] == @order.guest_token
+    render :show
+
+  # Signed-in users can view if they are buyer or seller
+  elsif user_signed_in? && (@order.buyer == current_user || @order.seller == current_user)
+    render :show
 
   else
-    # --- Cart checkout ---
-    if session[:cart].blank?
-      redirect_to cart_path, alert: "Your cart is empty." and return
-    end
-
-    order_currency = "KES"
-
-    @cart_items = session[:cart].map do |item|
-      product     = Product.find(item["product_id"])
-      variant_ids = Array(item["variant_ids"]).map(&:to_i)
-      variants    = Variant.where(id: variant_ids)
-      quantity    = item["quantity"].to_i.nonzero? || 1
-
-      # Centralized price (discount + modifiers), then convert currency
-      effective   = product.discount&.active? ? product.discounted_price : product.price
-      effective  += variants.sum { |v| v.price_modifier.to_f }
-
-      unit_price  = ExchangeRateService.convert(effective, from: product.currency, to: order_currency)
-      subtotal    = unit_price * quantity
-
-      {
-        product:    product,
-        variants:   variants,
-        quantity:   quantity,
-        unit_price: unit_price,
-        subtotal:   subtotal
-        # 🚫 no per-item shipping here
-      }
-    end
-
-    # ✅ Centralized shipping calculation
-    destination = current_user&.city.presence || "Nairobi"
-    calculator  = ShippingCalculator.new(strategy: :weight_based, destination: destination)
-    @shipping_total = calculator.calculate(@cart_items)
-
-    @order = user_signed_in? ? current_user.orders_as_buyer.new(currency: order_currency) : Order.new(currency: order_currency)
+    redirect_to root_path, alert: "You don’t have access to this order."
   end
 end
 
 
-def create
+  def new
+    if params[:product_id].present?
+      # --- Single product checkout ---
+      @product = Product.find(params[:product_id])
+      @order   = user_signed_in? ? current_user.orders_as_buyer.new : Order.new(currency: "KES")
+
+      destination = current_user&.city.presence || "Nairobi"
+      calculator  = ShippingCalculator.new(strategy: :weight_based, destination: destination)
+      @shipping_total = calculator.calculate([{ product: @product, variants: [], quantity: 1 }])
+
+    else
+      # --- Cart checkout ---
+      if session[:cart].blank?
+        redirect_to cart_path, alert: "Your cart is empty." and return
+      end
+
+      order_currency = "KES"
+
+      @cart_items = session[:cart].map do |item|
+        product     = Product.find(item["product_id"])
+        variant_ids = Array(item["variant_ids"]).map(&:to_i)
+        variants    = Variant.where(id: variant_ids)
+        quantity    = item["quantity"].to_i.nonzero? || 1
+
+        effective   = product.discount&.active? ? product.discounted_price : product.price
+        effective  += variants.sum { |v| v.price_modifier.to_f }
+
+        unit_price  = ExchangeRateService.convert(effective, from: product.currency, to: order_currency)
+        subtotal    = unit_price * quantity
+
+        {
+          product:    product,
+          variants:   variants,
+          quantity:   quantity,
+          unit_price: unit_price,
+          subtotal:   subtotal
+        }
+      end
+
+      destination = current_user&.city.presence || "Nairobi"
+      calculator  = ShippingCalculator.new(strategy: :weight_based, destination: destination)
+      @shipping_total = calculator.calculate(@cart_items)
+
+      @order = user_signed_in? ? current_user.orders_as_buyer.new(currency: order_currency) : Order.new(currency: order_currency)
+    end
+  end
+  
+  
+  def create
   @order = user_signed_in? ? current_user.orders_as_buyer.build(order_params) : Order.new(order_params)
   @order.currency ||= "KES"
+  @order.guest_token ||= SecureRandom.hex(10) unless user_signed_in? # ✅ guest access
 
-  provider     = order_params[:provider] || "mpesa"
-  phone_number = order_params[:phone_number].presence || current_user&.phone
-  email        = order_params[:email].presence || current_user&.email
+  provider       = order_params[:provider] || "mpesa"
+  phone_number   = order_params[:phone_number].presence || current_user&.phone
+  contact_number = order_params[:contact_number].presence || current_user&.phone
+  email          = order_params[:email].presence || current_user&.email
 
   Rails.logger.info("🛒 Starting order creation: provider=#{provider}, currency=#{@order.currency}, email=#{email}")
 
@@ -87,7 +108,6 @@ def create
       @order.seller = product.seller
       @order.status = :pending
 
-      # ✅ Calculate totals
       subtotal = @order.order_items.sum(&:subtotal)
       calculator = ShippingCalculator.new(
         strategy:    :weight_based,
@@ -104,7 +124,20 @@ def create
     end
 
     notify_seller(@order)
-    handle_payment(@order, provider, phone_number, email)
+
+    # ✅ Pass correct contact info depending on provider
+    if provider == "pod"
+      handle_payment_or_pod(@order, provider, contact_number, email)
+    else
+      handle_payment_or_pod(@order, provider, phone_number, email)
+    end
+
+    # ✅ Redirect guests with token
+    if user_signed_in?
+      redirect_to @order, notice: "Order placed successfully"
+    else
+      redirect_to order_path(@order, token: @order.guest_token), notice: "Order placed successfully"
+    end
 
   else
     # --- Cart checkout ---
@@ -121,6 +154,7 @@ def create
                                   Order.new(order_params.merge(seller_id: seller_id, status: :pending))
 
         order.currency ||= "KES"
+        order.guest_token ||= SecureRandom.hex(10) unless user_signed_in?
 
         items.each do |item|
           product       = Product.find(item["product_id"])
@@ -135,7 +169,6 @@ def create
           build_order_item!(order, product, variants, requested_qty)
         end
 
-        # ✅ Calculate totals
         subtotal = order.order_items.sum(&:subtotal)
         calculator = ShippingCalculator.new(
           strategy:    :weight_based,
@@ -161,12 +194,45 @@ def create
     end
 
     session[:cart] = []
-    handle_payment(orders.first, provider, phone_number, email)
+
+    # ✅ Pass correct contact info depending on provider
+    if provider == "pod"
+      handle_payment_or_pod(orders.first, provider, contact_number, email)
+    else
+      handle_payment_or_pod(orders.first, provider, phone_number, email)
+    end
+
+    # ✅ Redirect guests with token
+    if user_signed_in?
+      redirect_to orders.first, notice: "Order placed successfully"
+    else
+      redirect_to order_path(orders.first, token: orders.first.guest_token), notice: "Order placed successfully"
+    end
   end
 rescue ActiveRecord::RecordInvalid => e
   Rails.logger.error("⚠️ Order Creation Failed: #{e.record.errors.full_messages.join(', ')}")
   redirect_to new_order_path(product_id: params[:product_id]),
               alert: "Failed to create order: #{e.record.errors.full_messages.join(', ')}"
+end
+
+
+private
+
+def handle_payment_or_pod(order, provider, phone_number, email)
+  if provider == "pod"
+    # ✅ POD: just create pending payment record
+    order.payments.create!(
+      provider: "POD",
+      amount: order.total,
+      currency: order.currency,
+      status: :pending
+    )
+    # No redirect here — leave it to create
+  else
+    # ✅ Gateway flow
+    PaymentService.process(order, provider: provider, phone_number: phone_number, email: email)
+    # No redirect here — leave it to create
+  end
 end
 
   def receipt
@@ -177,11 +243,22 @@ end
       redirect_to order, alert: "Receipt is only available after payment." and return
     end
 
-    pdf = ReceiptGenerator.new(order, latest_payment, Time.current).generate
-    send_data pdf,
-              filename: "receipt_order_#{order.id}.pdf",
-              type: "application/pdf",
-              disposition: "inline"
+    # ✅ Allow guests via token
+    if order.guest_token.present? && params[:token] == order.guest_token
+      pdf = ReceiptGenerator.new(order, latest_payment, Time.current).generate
+      send_data pdf,
+                filename: "receipt_order_#{order.id}.pdf",
+                type: "application/pdf",
+                disposition: "inline"
+    elsif user_signed_in? && (order.buyer == current_user || order.seller == current_user)
+      pdf = ReceiptGenerator.new(order, latest_payment, Time.current).generate
+      send_data pdf,
+                filename: "receipt_order_#{order.id}.pdf",
+                type: "application/pdf",
+                disposition: "inline"
+    else
+      redirect_to root_path, alert: "You don’t have access to this receipt."
+    end
   end
 
   def pay
@@ -199,14 +276,16 @@ end
     respond_to do |format|
       if result.is_a?(Hash) && result[:error]
         format.html { redirect_to order_path(@order), alert: result[:error] }
-        format.json { render json: result, status: :unprocessable_entity }
+        format.json { render json: { error: result[:error] }, status: :unprocessable_entity }
+      elsif result.is_a?(Hash) && result[:checkout_url]
+        format.html { redirect_to result[:checkout_url], allow_other_host: true }
+        format.json { render json: { checkout_url: result[:checkout_url] } }
       else
-        format.html { redirect_to order_path(@order), notice: "STK Push initiated. Check your phone to complete payment." }
-        format.json { render json: result, status: :ok }
+        format.html { redirect_to order_path(@order), notice: "Please complete the payment on your phone." }
+        format.json { render json: { message: "Please complete the payment on your phone." } }
       end
     end
   end
-
   private
 
   def set_product

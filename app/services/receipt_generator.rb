@@ -55,14 +55,16 @@ class ReceiptGenerator
       pdf.text "Buyer Information", style: :bold, size: 12, color: "0070C0"
       pdf.stroke_horizontal_rule
       pdf.move_down 5
-      pdf.text "Name: #{@buyer.name.presence || [@buyer.first_name, @buyer.last_name].compact.join(' ').presence || @buyer.email}"
-      pdf.text "Email: #{@buyer.email}"
+      buyer_name = safe_buyer_name(@buyer)
+      pdf.text "Name: #{buyer_name}"
+      pdf.text "Email: #{@buyer&.email || '—'}"
       pdf.move_down 10
 
       pdf.text "Seller Information", style: :bold, size: 12, color: "0070C0"
       pdf.stroke_horizontal_rule
       pdf.move_down 5
-      pdf.text "Seller: #{@order.seller&.company_name.presence || @order.seller&.name.presence || 'Unknown Seller'}"
+      seller_display = @order.seller&.company_name.presence || @order.seller&.name.presence || "Unknown Seller"
+      pdf.text "Seller: #{seller_display}"
       pdf.move_down 15
 
       # === Payment Info ===
@@ -72,7 +74,7 @@ class ReceiptGenerator
 
       if @payment.present?
         pdf.text "Payment Method: #{@payment.provider.to_s.capitalize}"
-        pdf.text "Payment Status: #{@payment.status.capitalize}"
+        pdf.text "Payment Status: #{@payment.status.to_s.capitalize}"
         pdf.text "Transaction ID: #{@payment.transaction_id || '—'}"
         pdf.text "M-PESA Receipt #: #{@payment.mpesa_receipt_number || '—'}"
         pdf.text "Amount Paid: #{format_price(@payment.amount)}"
@@ -89,14 +91,15 @@ class ReceiptGenerator
 
       data = [["Product", "Quantity", "Price (#{@currency})"]]
       @order.order_items.each do |item|
-        price = item.subtotal
-        discounted = if item.product.discount.present? && item.product.discount.percentage.to_f > 0
-          price * (1 - item.product.discount.percentage / 100.0)
-        end
+        product_title = item.product&.title || "Unknown Product"
+        price = item.subtotal || 0
+        discounted = if item.product&.discount&.percentage.to_f > 0
+                       price * (1 - item.product.discount.percentage / 100.0)
+                     end
 
         price_display = discounted ? "#{format_price(price)} → #{format_price(discounted)}" : format_price(price)
 
-        # ✅ Combine variants
+        # ✅ Combine variants safely
         variant_info =
           if item.respond_to?(:variants) && item.variants.present?
             item.variants.map { |v| "#{v.name}: #{v.value}" }.join(", ")
@@ -106,7 +109,7 @@ class ReceiptGenerator
             "—"
           end
 
-        product_display = variant_info == "—" ? item.product.title : "#{item.product.title} (#{variant_info})"
+        product_display = variant_info == "—" ? product_title : "#{product_title} (#{variant_info})"
 
         data << [product_display, item.quantity.to_s, price_display]
       end
@@ -129,7 +132,7 @@ class ReceiptGenerator
         pdf.text "Shipment Information", style: :bold, size: 12, color: "0070C0"
         pdf.stroke_horizontal_rule
         pdf.move_down 5
-        pdf.text "Status: #{@order.shipment.status.humanize}"
+        pdf.text "Status: #{@order.shipment.status.to_s.humanize}"
         pdf.text "Tracking Number: #{@order.shipment.tracking_number || '—'}"
         pdf.move_down 15
       end
@@ -138,10 +141,10 @@ class ReceiptGenerator
       pdf.move_down 30
       pdf.stroke_horizontal_rule
       pdf.move_down 10
-      pdf.text "Thank you for shopping with AfriXpress!", align: :center, style: :italic, size: 10, color: "555555"
-      pdf.text "Need help? Contact support@afrixpress.com", align: :center, size: 9, color: "888888"
+      pdf.text "Thank you for shopping with Tajaone!", align: :center, style: :italic, size: 10, color: "555555"
+      pdf.text "Need help? Contact sales@Tajaone.app", align: :center, size: 9, color: "888888"
       pdf.move_down 5
-      pdf.text "© #{Time.current.year} AfriXpress Marketplace", align: :center, size: 8, color: "AAAAAA"
+      pdf.text "© #{Time.current.year} Tajaone", align: :center, size: 8, color: "AAAAAA"
     end.render
   end
 
@@ -150,5 +153,13 @@ class ReceiptGenerator
   def format_price(amount)
     return "—" unless amount.present?
     number_to_currency(amount, unit: "KES ")
+  end
+
+  def safe_buyer_name(buyer)
+    return "—" unless buyer.present?
+    buyer.name.presence ||
+      [buyer.first_name, buyer.last_name].compact.join(" ").presence ||
+      buyer.email.presence ||
+      "Unknown Buyer"
   end
 end

@@ -40,7 +40,7 @@
 <div class="row">
   <div class="col-md-6 mb-3">
     <%= f.label :city, "City / Town", class: "form-label fw-semibold" %>
-    <%= f.text_field :city, class: "form-control shadow-sm", required: true %>
+    <%= f.text_field :city, class: "form-control shadow-sm", required: true, id: "order_city" %>
   </div>
   <div class="col-md-6 mb-3">
     <%= f.label :country, "Country", class: "form-label fw-semibold" %>
@@ -56,7 +56,7 @@
     <%= f.select :county,
           options_for_select(["Nairobi", "Mombasa", "Kisumu", "Nakuru", "Kiambu", "Machakos", "Uasin Gishu"], f.object&.county),
           { prompt: "Select County" },
-          class: "form-select shadow-sm" %>
+          class: "form-select shadow-sm", id: "order_county" %>
   </div>
   <div class="col-md-6 mb-3">
     <%= f.label :region, "Region / State", class: "form-label fw-semibold" %>
@@ -87,7 +87,7 @@
         value: (current_user&.phone || ""),
         class: "form-control shadow-sm",
         placeholder: "e.g. 2547XXXXXXXX",
-        required: true %>
+        id: "mpesa_phone_number" %>
 </div>
 
 <div class="form-check mb-3">
@@ -95,7 +95,17 @@
   <%= f.label :provider_paypal, "PayPal", class: "form-check-label fw-semibold" %>
 </div>
 
-<div class="form-check mb-4">
+<div class="form-check mb-3">
   <%= f.radio_button :provider, "paystack", class: "form-check-input", id: "provider_paystack" %>
   <%= f.label :provider_paystack, "Credit/Debit Card", class: "form-check-label fw-semibold" %>
+</div>
+
+<%# ✅ Jumia-style POD option: always rendered, JS handles enabling/disabling %>
+<div class="form-check mb-3">
+  <%= f.radio_button :provider, "pod", class: "form-check-input", id: "provider_pod" %>
+  <%= f.label :provider_pod, "🚚 Pay on Delivery (Nairobi only)", class: "form-check-label fw-semibold text-success" %>
+</div>
+
+<div id="pod-note" class="text-muted small ms-4">
+  🚫 Not available in your location. Please choose another payment method.
 </div>
