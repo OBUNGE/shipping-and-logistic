@@ -92,9 +92,9 @@ def create
 
   Rails.logger.info("🛒 Starting order creation: provider=#{provider}, currency=#{@order.currency}, email=#{email}")
 
-  if params[:product_id].present?
+  if params[:product_slug].present?
     # --- Single product checkout ---
-    product     = Product.find(params[:product_id])
+    product     = Product.find_by!(slug: params[:product_slug])
     variant_ids = Array(params[:order][:variant_ids] || params[:order][:variant_id]).map(&:to_i)
     variants    = Variant.where(id: variant_ids)
     quantity    = params[:order][:quantity].to_i.nonzero? || 1
@@ -119,22 +119,15 @@ def create
       @order.subtotal = subtotal
       @order.total    = subtotal + @order.shipping_total
 
+      @order.update!(provider: provider, payment_method: provider)
       @order.save!
       decrement_stock!(@order)
     end
 
     notify_seller(@order)
 
-    # ✅ Unified payment handler
     handle_payment(@order, provider, phone_number, email)
-    return  # <-- prevent double redirect
-
-    # ✅ Redirect guests with token (only reached if handle_payment does not redirect)
-    if user_signed_in?
-      redirect_to @order, notice: "Order placed successfully"
-    else
-      redirect_to order_path(@order, token: @order.guest_token), notice: "Order placed successfully"
-    end
+    return  # prevent double redirect
 
   else
     # --- Cart checkout ---
@@ -183,6 +176,7 @@ def create
         order.subtotal = subtotal
         order.total    = subtotal + order.shipping_total
 
+        order.update!(provider: provider, payment_method: provider)
         order.save!
         decrement_stock!(order)
         notify_seller(order)
@@ -192,24 +186,14 @@ def create
 
     session[:cart] = []
 
-    # ✅ Unified payment handler (use first order for payment)
     handle_payment(orders.first, provider, phone_number, email)
-    return  # <-- prevent double redirect
-
-    # ✅ Redirect guests with token (only reached if handle_payment does not redirect)
-    if user_signed_in?
-      redirect_to orders.first, notice: "Order placed successfully"
-    else
-      redirect_to order_path(orders.first, token: orders.first.guest_token), notice: "Order placed successfully"
-    end
+    return  # prevent double redirect
   end
 rescue ActiveRecord::RecordInvalid => e
   Rails.logger.error("⚠️ Order Creation Failed: #{e.record.errors.full_messages.join(', ')}")
-  redirect_to new_order_path(product_id: params[:product_id]),
+  redirect_to new_order_path(product_slug: params[:product_slug]),
               alert: "Failed to create order: #{e.record.errors.full_messages.join(', ')}"
 end
-
-
 
   def receipt
     order = Order.find(params[:id])
@@ -329,20 +313,39 @@ def build_order_item!(order, product, variants, quantity)
 end
 
 
-  def order_params
-    params.require(:order).permit(
-      :currency, :provider, :phone_number, :email, :contact_number,
-      :first_name, :last_name, :alternate_contact,
-      :city, :county, :country, :region, :address, :delivery_notes,
-      :variant_id, :quantity
-    )
-  end
+def order_params
+  params.require(:order).permit(
+    :buyer_id,
+    :seller_id,
+    :currency,
+    :provider,
+    :payment_method,
+    :phone_number,
+    :email,
+    :contact_number,
+    :first_name,
+    :last_name,
+    :alternate_contact,
+    :city,
+    :county,
+    :country,
+    :region,
+    :address,
+    :delivery_notes,
+    :subtotal,
+    :shipping_total,
+    :status
+  )
+end
 
 def handle_payment(order, provider, phone_number, email)
   unless order.present?
     Rails.logger.error("⚠️ handle_payment called with nil order")
     redirect_to root_path, alert: "Order not found" and return
   end
+
+  # Persist chosen provider/payment method
+  order.update!(provider: provider, payment_method: provider)
 
   Rails.logger.info("💳 Initiating payment: order_id=#{order.id}, provider=#{provider}, currency=#{order.currency}")
 
@@ -386,5 +389,6 @@ def handle_payment(order, provider, phone_number, email)
     end
   end
 end
+
 
 end

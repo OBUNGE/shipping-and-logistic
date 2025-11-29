@@ -69,8 +69,13 @@ class ShipmentTrackingService
   end
 
   # 🔹 Update shipment record in DB
-  def update_shipment(data)
-    @shipment.update(status: data[:status])
-    data
+ def update
+  @shipment = Shipment.find(params[:id])
+  if @shipment.update(shipment_params.merge(order_id: params[:order_id]))
+    redirect_to @shipment, notice: "Shipment updated successfully"
+  else
+    render :edit, status: :unprocessable_entity
   end
+end
+
 end

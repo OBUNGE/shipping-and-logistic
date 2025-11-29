@@ -49,6 +49,7 @@ def update
       Rails.logger.error("❌ Shipment update failed: #{@shipment.errors.full_messages.join(', ')}")
       render :edit, status: :unprocessable_entity
     end
+
   elsif current_user == @order.buyer && @shipment.status == "in_transit"
     if @shipment.update(status: "delivered")
       @order.mark_as_delivered!
@@ -58,6 +59,7 @@ def update
       Rails.logger.error("❌ Buyer delivery confirmation failed: #{@shipment.errors.full_messages.join(', ')}")
       redirect_to order_shipment_path(@order), alert: "Could not confirm delivery."
     end
+
   else
     redirect_to order_shipment_path(@order), alert: "You are not authorized to update this shipment."
   end
@@ -75,29 +77,7 @@ end
     end
   end
 
-  # === PATCH/PUT /orders/:order_id/shipment ===
-  def update
-    if current_user == @order.seller
-      if @shipment.update(shipment_params)
-        log_status_change(@shipment.status)
-        redirect_to order_shipment_path(@order), notice: "Shipment updated successfully."
-      else
-        render :edit, status: :unprocessable_entity
-      end
 
-    elsif current_user == @order.buyer && @shipment.status == "in_transit"
-      if @shipment.update(status: "delivered")
-        @order.mark_as_delivered!
-        log_status_change("delivered")
-        redirect_to order_shipment_path(@order), notice: "Order marked as delivered. Thank you!"
-      else
-        redirect_to order_shipment_path(@order), alert: "Could not confirm delivery."
-      end
-
-    else
-      redirect_to order_shipment_path(@order), alert: "You are not authorized to update this shipment."
-    end
-  end
 
   # === POST /orders/:order_id/shipment/track ===
   def track
@@ -186,12 +166,24 @@ end
 
 def shipment_params
   permitted = params.require(:shipment).permit(
-    :carrier, :cost, :address, :first_name, :last_name,
-    :phone_number, :country, :city, :status,
-    :alternate_contact, :county, :region, :delivery_notes
+    :carrier,
+    :tracking_number,   # <-- include this, it exists in your schema
+    :cost,
+    :status,
+    :first_name,
+    :last_name,
+    :address,
+    :alternate_contact,
+    :phone_number,
+    :city,
+    :county,
+    :country,
+    :region,
+    :delivery_notes
   )
   Rails.logger.debug("🔎 shipment_params permitted: #{permitted.inspect}")
   permitted
 end
+
 
 end

@@ -6,7 +6,6 @@ class Shipment < ApplicationRecord
   delegate :buyer, :seller, to: :order
 
   # === Carrier options ===
-  # Ensure `carrier` column is a string in your DB migration
   enum :carrier, {
     dhl:       "dhl",
     sendy:     "sendy",
@@ -33,9 +32,9 @@ class Shipment < ApplicationRecord
   validates :first_name, :last_name, :phone_number, :country, :city, :address,
             presence: true, on: :create
 
-  # Allow blank cost values, but enforce numeric if present
+  # Allow blank or zero cost values, enforce numeric if present
   validates :cost,
-            numericality: { greater_than_or_equal_to: 0.01 },
+            numericality: { greater_than_or_equal_to: 0 },
             allow_nil: true,
             allow_blank: true
 
@@ -50,14 +49,14 @@ class Shipment < ApplicationRecord
   def fail!;              update!(status: :failed);    end
 
   # === Ransack (Admin filtering) ===
-  def self.ransackable_attributes(auth_object = nil)
+  def self.ransackable_attributes(_auth_object = nil)
     %w[
       id order_id carrier tracking_number cost status created_at updated_at
       first_name last_name phone_number address city county country region delivery_notes
     ]
   end
 
-  def self.ransackable_associations(auth_object = nil)
+  def self.ransackable_associations(_auth_object = nil)
     %w[order shipment_status_logs]
   end
 
@@ -69,6 +68,7 @@ class Shipment < ApplicationRecord
   private
 
   def handle_status_change
+    Rails.logger.info("📦 Shipment #{id} status changed to #{status}")
     log_status_change
     notify_users
     send_status_email
@@ -80,20 +80,26 @@ class Shipment < ApplicationRecord
       changed_by_id: Current.user&.id || order.seller_id,
       changed_at: Time.current
     )
+  rescue => e
+    Rails.logger.error("⚠️ Failed to log status change for Shipment #{id}: #{e.message}")
   end
 
   def notify_users
     return unless defined?(Notification)
-    [buyer, seller].each do |user|
+    [buyer, seller].compact.each do |user|
       Notification.create!(
         user: user,
         message: "Order ##{order.id} shipment status updated to #{status.humanize}"
       )
     end
+  rescue => e
+    Rails.logger.error("⚠️ Failed to notify users for Shipment #{id}: #{e.message}")
   end
 
   def send_status_email
     return unless buyer&.email.present? && defined?(ShipmentMailer)
     ShipmentMailer.status_update(self, status).deliver_later
+  rescue => e
+    Rails.logger.error("⚠️ Failed to send status email for Shipment #{id}: #{e.message}")
   end
 end
