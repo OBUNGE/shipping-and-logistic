@@ -1,34 +1,231 @@
 <%# --- SEO Meta Tags --- %>
-<% content_for :title, "Contact Us | TAJAONE.APP – Get in Touch" %>
-<% content_for :meta_description, "Reach out to TAJAONE.APP for inquiries, support, or returns. Contact us via email, phone, or our online form." %>
-<% content_for :meta_keywords, "contact TAJAONE.APP, leather store Nairobi contact, customer support Kenya, sales@tajaone.app" %>
+<% content_for :title, "Contact Us | TAJAONE – Leather Support & Inquiries" %>
+<% content_for :meta_description, "Need help with your order? Contact TAJAONE.APP for support regarding our leather bags, shoes, and accessories. Call, email, or visit us in Nairobi." %>
+<% content_for :meta_keywords, "customer care Tajaone, leather shop contact Nairobi, M-PESA support, sales@tajaone.app, wholesale leather Kenya" %>
 
-<div class="contact-page">
-  <h1>Contact TAJAONE.APP</h1>
+<%# --- Structured Data (JSON-LD) --- %>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Store",
+  "name": "TAJAONE.APP",
+  "description": "Premium Leather Marketplace in Kenya",
+  "telephone": "+254726565342",
+  "email": "sales@tajaone.app",
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "Nairobi",
+    "addressCountry": "KE"
+  },
+  "openingHoursSpecification": {
+    "@type": "OpeningHoursSpecification",
+    "dayOfWeek": [
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday"
+    ],
+    "opens": "08:00",
+    "closes": "18:00"
+  },
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "telephone": "+254726565342",
+    "contactType": "customer service",
+    "areaServed": "KE",
+    "availableLanguage": ["English", "Swahili"]
+  }
+}
+</script>
 
-  <h2>We’re Here to Help</h2>
-  <p>
-    Whether you have questions about our products, need help with an order, or want to initiate a return,
-    our team is ready to assist you.
-  </p>
+<section class="bg-light py-5 border-bottom">
+  <div class="container text-center">
+    <h1 class="fw-bold display-5 mb-3">Get in Touch</h1>
+    <p class="lead text-muted col-lg-7 mx-auto">
+      Have a question about leather care, sizing, or your recent order? 
+      Our dedicated team in Nairobi is ready to assist you.
+    </p>
+  </div>
+</section>
 
-  <h2>Contact Information</h2>
-  <ul>
-    <li>Email: <a href="mailto:sales@tajaone.app">sales@tajaone.app</a></li>
-    <li>Phone: +254 726565342</li>
-    <li>Location: Nairobi, Kenya</li>
-  </ul>
+<section class="container py-5">
+  <div class="row g-5">
+    
+    <div class="col-lg-5">
+      <div class="pe-lg-4">
+        <h3 class="fw-bold mb-4">Contact Information</h3>
+        
+        <div class="d-flex align-items-start mb-4">
+          <div class="icon-square bg-primary bg-opacity-10 text-primary rounded-circle p-3 me-3">
+            <i class="bi bi-telephone-fill fs-5"></i>
+          </div>
+          <div>
+            <h6 class="fw-bold mb-1">Phone & WhatsApp</h6>
+            <p class="text-muted small mb-1">Mon-Sat from 8am to 6pm.</p>
+            <a href="tel:+254726565342" class="text-decoration-none fw-bold text-dark hover-primary">+254 726 565 342</a>
+          </div>
+        </div>
 
-  <h2>Quick Links</h2>
-  <p>
-    For returns, please see our <%= link_to "Return Policy", return_policy_path %>.
-  </p>
+        <div class="d-flex align-items-start mb-4">
+          <div class="icon-square bg-primary bg-opacity-10 text-primary rounded-circle p-3 me-3">
+            <i class="bi bi-envelope-fill fs-5"></i>
+          </div>
+          <div>
+            <h6 class="fw-bold mb-1">Email Support</h6>
+            <p class="text-muted small mb-1">For orders, returns, and general inquiries.</p>
+            <a href="mailto:sales@tajaone.app" class="text-decoration-none fw-bold text-dark hover-primary">sales@tajaone.app</a>
+          </div>
+        </div>
 
-  <hr>
+        <div class="d-flex align-items-start mb-4">
+          <div class="icon-square bg-primary bg-opacity-10 text-primary rounded-circle p-3 me-3">
+            <i class="bi bi-geo-alt-fill fs-5"></i>
+          </div>
+          <div>
+            <h6 class="fw-bold mb-1">Location</h6>
+            <p class="text-muted small mb-0">Nairobi, Kenya</p>
+            <small class="text-muted">(Online Store / Dispatch Center)</small>
+          </div>
+        </div>
 
-  <nav class="contact-links">
-    <%= link_to "Home", root_path %> |
-    <%= link_to "About Us", about_path %> |
-    <%= link_to "Return Policy", return_policy_path %>
-  </nav>
-</div>
+        <div class="card border-0 bg-light rounded-4 mt-5 p-4">
+          <h5 class="fw-bold">Looking for Corporate Gifts?</h5>
+          <p class="small text-muted mb-3">We offer bulk pricing for custom branded leather notebooks, laptop bags, and wallets.</p>
+          <a href="mailto:corporate@tajaone.app" class="btn btn-outline-dark btn-sm rounded-pill px-4">Contact Wholesale Team</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-7">
+      <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5">
+        <h3 class="fw-bold mb-4">Send us a Message</h3>
+        
+        <form>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold">Your Name</label>
+              <input type="text" class="form-control" placeholder="John Doe">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold">Email Address</label>
+              <input type="email" class="form-control" placeholder="john@example.com">
+            </div>
+            <div class="col-12">
+              <label class="form-label small fw-semibold">Subject</label>
+              <select class="form-select">
+                <option selected>General Inquiry</option>
+                <option value="1">Order Status</option>
+                <option value="2">Return/Exchange Request</option>
+                <option value="3">Product Customization</option>
+              </select>
+            </div>
+            <div class="col-12">
+              <label class="form-label small fw-semibold">Message</label>
+              <textarea class="form-control" rows="5" placeholder="How can we help you today?"></textarea>
+            </div>
+            <div class="col-12 mt-4">
+              <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">Send Message</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="bg-light py-5 mt-5">
+  <div class="container">
+    <div class="text-center mb-5">
+      <h2 class="fw-bold">Frequently Asked Questions</h2>
+    </div>
+    
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <div class="accordion shadow-sm rounded-3 overflow-hidden" id="faqAccordion">
+          
+          <div class="accordion-item border-0 border-bottom">
+            <h2 class="accordion-header" id="headingOne">
+              <button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
+                Do you deliver outside Nairobi?
+              </button>
+            </h2>
+            <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+              <div class="accordion-body text-muted">
+                Yes! We deliver countrywide across Kenya via trusted courier partners (Wells Fargo/G4S). Deliveries within Nairobi are often same-day, while upcountry orders take 24-48 hours.
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item border-0 border-bottom">
+            <h2 class="accordion-header" id="headingTwo">
+              <button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">
+                Is your leather genuine?
+              </button>
+            </h2>
+            <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+              <div class="accordion-body text-muted">
+                Absolutely. We guarantee 100% genuine, full-grain leather sourced from local Kenyan tanneries. We do not use PU or faux leather.
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item border-0">
+            <h2 class="accordion-header" id="headingThree">
+              <button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree">
+                What is your return policy?
+              </button>
+            </h2>
+            <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+              <div class="accordion-body text-muted">
+                We accept returns within 14 days of delivery for unused items in original packaging. Read our full <%= link_to "Return Policy", return_policy_path, class: "text-primary text-decoration-none" %> for details.
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* Match the Premium Leather Theme */
+  .text-primary { color: #8B4513 !important; } /* Saddle Brown */
+  .bg-primary { background-color: #8B4513 !important; }
+  
+  .btn-primary {
+    background-color: #8B4513;
+    border-color: #8B4513;
+    transition: all 0.3s ease;
+  }
+  .btn-primary:hover {
+    background-color: #6F370F;
+    border-color: #6F370F;
+    transform: translateY(-1px);
+  }
+
+  .hover-primary:hover {
+    color: #8B4513 !important;
+    text-decoration: underline !important;
+  }
+
+  .icon-square {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .accordion-button:not(.collapsed) {
+    color: #8B4513;
+    background-color: #fcf4f0; /* Very light brown tint */
+    box-shadow: none;
+  }
+  .accordion-button:focus {
+    box-shadow: none;
+    border-color: rgba(139, 69, 19, 0.1);
+  }
+</style>

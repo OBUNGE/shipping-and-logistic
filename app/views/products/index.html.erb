@@ -1,74 +1,76 @@
-<div class="container-fluid px-0">
+<div class="container-fluid py-4 bg-light">
 
-<!-- 🦸 Hero Section -->
-<section class="hero bg-dark text-white text-center py-5 mb-4">
-  <div class="container">
-    <h1 class="fw-bold display-5">
-      Cheap Leather Bags & Men’s Shoes in Nairobi
-    </h1>
-    <p class="lead mb-4">
-      Discover affordable leather products — handbags, men’s shoes, and accessories. 
-      Shop quality leather in Kenya with secure M-PESA payments.
-    </p>
+  <section class="hero bg-white text-dark text-center py-5 mb-4 rounded-4 shadow-sm mx-2">
+    <div class="container">
+      <h1 class="fw-bold display-6 mb-3">
+        Premium Leather Bags & Shoes in Nairobi
+      </h1>
+      <p class="text-muted lead fs-6 mb-4 col-lg-8 mx-auto">
+        Handcrafted leather handbags, durable men’s shoes, and accessories. 
+        Quality you can feel, prices you'll love. Secure M-PESA payment.
+      </p>
 
-    <% if (bags = Category.find_by(name: "Leather Bags")) %>
-      <%= link_to "Shop Leather Bags", products_path(category: bags.slug),
-          class: "btn btn-primary btn-lg shadow-sm me-2" %>
-    <% end %>
+      <div class="d-flex justify-content-center gap-3">
+        <% if (bags = Category.find_by(name: "Leather Bags")) %>
+          <%= link_to "Shop Bags", products_path(category: bags.slug),
+              class: "btn btn-dark px-4 py-2 rounded-pill" %>
+        <% end %>
 
-    <% if (shoes = Category.find_by(name: "Men’s Leather Shoes")) %>
-      <%= link_to "Shop Men’s Shoes", products_path(category: shoes.slug),
-          class: "btn btn-outline-light btn-lg shadow-sm" %>
-    <% end %>
-  </div>
-</section>
+        <% if (shoes = Category.find_by(name: "Men’s Leather Shoes")) %>
+          <%= link_to "Shop Shoes", products_path(category: shoes.slug),
+              class: "btn btn-outline-dark px-4 py-2 rounded-pill" %>
+        <% end %>
+      </div>
+    </div>
+  </section>
 
+  <div class="sticky-top bg-light pt-2 pb-3 mb-2" style="top: 60px; z-index: 1020;">
+    <div class="container-fluid">
+      <div class="row align-items-center g-2">
+        
+        <div class="col-lg-8 overflow-auto d-flex align-items-center gap-2 pb-2" style="white-space: nowrap; scrollbar-width: none;">
+          <% Category.where(parent_id: nil).each do |category| %>
+            <%= link_to products_path(category: category.slug),
+                class: "category-pill px-3 py-1 rounded-pill border bg-white text-decoration-none small fw-semibold #{'active-pill' if params[:category] == category.slug}" do %>
+              <%= category_icon(category.name) %> <span class="ms-1"><%= category.name %></span>
+            <% end %>
+          <% end %>
+        </div>
 
-  <!-- 🧭 Sticky Category Bar -->
-  <div class="category-bar sticky-top bg-white py-2 px-3 mb-3 d-flex align-items-center gap-3 overflow-auto border-bottom shadow-sm"
-       style="top: 65px; z-index: 1050; white-space: nowrap;">
-    <% Category.where(parent_id: nil).each do |category| %>
-      <%= link_to products_path(category: category.slug),
-          class: "category-pill px-3 py-2 rounded-pill text-dark fw-semibold text-decoration-none border hover-glow" do %>
-        <%= category_icon(category.name) %>
-        <span class="ms-2"><%= category.name %></span>
-      <% end %>
-    <% end %>
-  </div>
+        <div class="col-lg-4">
+          <form action="<%= products_path %>" method="get" class="d-flex" role="search">
+            <div class="input-group input-group-sm bg-white rounded-pill shadow-sm border">
+              <span class="input-group-text bg-transparent border-0 ps-3 text-muted"><i class="bi bi-search"></i></span>
+              <input type="text" name="query" class="form-control border-0 bg-transparent shadow-none"
+                     placeholder="Search..." value="<%= params[:query] %>" aria-label="Search products">
+            </div>
+          </form>
+        </div>
 
-  <!-- 🔍 Search Bar -->
-  <div class="sticky-top bg-white shadow-sm py-2 px-3 mb-4" style="top: 115px; z-index: 1050;">
-    <form action="<%= products_path %>" method="get" class="d-flex" role="search">
-      <input type="text" name="query" class="form-control me-2 input-clean shadow-sm"
-             placeholder="Search leather bags, men’s shoes, accessories..." value="<%= params[:query] %>">
-
-      <button class="btn btn-primary px-4 btn-clean" aria-label="Search">
-        <i class="bi bi-search"></i>
-      </button>
-    </form>
+      </div>
+    </div>
   </div>
 
   <div class="row">
-    <!-- 📁 Sidebar -->
-    <aside class="col-12 col-md-3 col-lg-2 mb-4 d-none d-md-block">
-      <div class="accordion rounded-3 shadow-sm bg-white" id="categoryAccordion" style="top: 180px; position: sticky;">
+    <aside class="col-lg-2 mb-4 d-none d-lg-block">
+      <div class="accordion rounded-3 border-0 bg-transparent" id="categoryAccordion" style="top: 140px; position: sticky;">
+        <h6 class="text-uppercase text-muted small fw-bold mb-3 px-2">Categories</h6>
         <% Category.where(parent_id: nil).includes(:subcategories).each_with_index do |category, idx| %>
-          <div class="accordion-item border-0">
+          <div class="accordion-item border-0 bg-transparent mb-1">
             <h2 class="accordion-header" id="heading-<%= idx %>">
-              <button class="accordion-button collapsed fw-semibold small" type="button"
+              <button class="accordion-button collapsed py-2 px-3 rounded-2 shadow-none bg-white border fw-semibold small text-dark" type="button"
                       data-bs-toggle="collapse" data-bs-target="#collapse-<%= idx %>">
-                <%= category_icon(category.name) %>
-                <span class="ms-2"><%= category.name %></span>
+                <%= category_icon(category.name) %> <span class="ms-2"><%= category.name %></span>
               </button>
             </h2>
             <div id="collapse-<%= idx %>" class="accordion-collapse collapse">
-              <div class="accordion-body p-2">
+              <div class="accordion-body p-2 ms-2 border-start border-2">
                 <ul class="list-unstyled mb-0">
                   <% category.subcategories.each do |sub| %>
                     <li>
                       <%= link_to sub.name,
                           products_path(category: category.slug, subcategory: sub.slug),
-                          class: "d-block py-1 ps-3 text-muted small link-hover" %>
+                          class: "d-block py-1 ps-2 text-muted small text-decoration-none hover-primary" %>
                     </li>
                   <% end %>
                 </ul>
@@ -79,95 +81,69 @@
       </div>
     </aside>
 
-    <!-- 🛍️ Product Grid -->
-    <main class="col-12 col-md-9 col-lg-10">
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2 class="fw-bold text-dark fs-5 mb-0">
-          🛍️ All Leather Products
-        </h2>
-        <% if user_signed_in? && current_user.seller? %>
-          <%= link_to "+ Add Product", new_product_path, class: "btn btn-primary btn-sm btn-clean shadow-sm" %>
-        <% end %>
-      </div>
-
+    <main class="col-12 col-lg-10">
       <div class="row g-3">
         <% @products.each do |product| %>
-          <% seller = product.seller %>
           <div class="col-6 col-md-4 col-lg-3">
-            <div class="card h-100 border-0 shadow-sm rounded-4 hover-zoom position-relative">
-
-              <!-- 🖼️ Image -->
-              <div class="ratio ratio-1x1 bg-light position-relative">
+            <div class="card h-100 border-0 shadow-sm rounded-4 hover-lift product-card">
+              
+              <div class="position-relative bg-light rounded-top-4 overflow-hidden ratio ratio-1x1">
                 <%= link_to product_path(product) do %>
                   <% if product.image_url.present? %>
-                    <%= image_tag product.image_url, alt: "#{product.title} | Cheap Leather Product Nairobi",
-                                  class: "card-img-top rounded-top object-fit-cover" %>
+                    <%= image_tag product.image_url, 
+                        alt: "#{product.title} - Leather Product",
+                        loading: "lazy", 
+                        width: 300, height: 300,
+                        class: "card-img-top object-fit-cover w-100 h-100" %>
                   <% else %>
-                    <%= image_tag asset_path("placeholder.jpg"), alt: "Leather product placeholder",
-                                  class: "card-img-top rounded-top object-fit-cover" %>
+                    <%= image_tag asset_path("placeholder.jpg"), 
+                        alt: "No image",
+                        loading: "lazy",
+                        class: "card-img-top object-fit-cover w-100 h-100 opacity-50" %>
                   <% end %>
                 <% end %>
 
                 <% if product.discount.present? && product.discount.percentage.to_f > 0 %>
-                  <span class="discount-badge position-absolute top-0 end-0 m-1">
-                    -<%= product.discount.percentage.to_i %>% OFF
+                  <span class="badge bg-danger position-absolute top-0 end-0 m-2 shadow-sm rounded-pill px-2">
+                    -<%= product.discount.percentage.to_i %>%
                   </span>
                 <% end %>
               </div>
 
-              <!-- 📦 Details -->
               <div class="card-body d-flex flex-column p-3">
-                <h6 class="fw-semibold text-truncate mb-1">
-                  <%= link_to product.title, product_path(product),
-                      class: "text-dark text-decoration-none hover-link" %>
+                <h6 class="fw-bold text-truncate mb-1" title="<%= product.title %>">
+                  <%= link_to product.title, product_path(product), class: "text-dark text-decoration-none stretched-link" %>
                 </h6>
 
-                <% if product.discount.present? && product.discount.percentage.to_f > 0 %>
-                  <% discounted_price = product.price * (1 - product.discount.percentage / 100.0) %>
-                  <p class="small mb-1">
-                    <span class="text-muted text-decoration-line-through me-2">
-                      <%= display_price(product.price) %>
-                    </span>
-                    <span class="text-danger fw-bold">
-                      <%= display_price(discounted_price) %>
-                    </span>
-                  </p>
-                <% else %>
-                  <p class="text-primary fw-bold small mb-1">
-                    <%= display_price(product.price) %>
-                  </p>
-                <% end %>
+                <div class="mb-2">
+                  <% if product.discount.present? %>
+                    <span class="text-danger fw-bold"><%= display_price(product.discounted_price) %></span>
+                    <small class="text-muted text-decoration-line-through ms-1"><%= display_price(product.price) %></small>
+                  <% else %>
+                    <span class="text-dark fw-bold"><%= display_price(product.price) %></span>
+                  <% end %>
+                </div>
 
-                <p class="small mb-1 <%= product.stock.to_i > 0 ? 'text-success' : 'text-danger' %>">
-                  <%= product.stock.to_i > 0 ? "✅ In Stock" : "❌ Out of Stock" %>
-                </p>
-
-                <% if seller&.store_slug.present? %>
-                  <p class="small text-muted mb-2">
-                    <%= link_to (seller.company_name || seller.name),
-                        seller_path(seller.store_slug),
-                        class: "fw-semibold text-decoration-none hover-link" %>
-                  </p>
-                <% end %>
-
-                <!-- 📞 Call + Add to Cart -->
-                <div class="mt-auto d-flex gap-2">
-                  <a href="tel:+254726565342" class="btn btn-clean btn-call flex-fill">
-                    📞 Call
+                <div class="mt-auto d-flex gap-2 position-relative" style="z-index: 2;">
+                  <a href="tel:+254726565342" class="btn btn-light border rounded-circle d-flex align-items-center justify-content-center p-0" style="width: 38px; height: 38px;" title="Call Seller">
+                    <i class="bi bi-telephone text-muted"></i>
                   </a>
 
                   <% if product.stock.to_i > 0 %>
-                    <%= button_to "Add", add_cart_path,
+                    <%= button_to add_cart_path,
                         method: :post,
                         params: { product_id: product.id },
                         remote: true,
-                        form: { data: { turbo_stream: true } },
-                        class: "btn btn-clean btn-cart flex-fill" %>
+                        form: { data: { turbo_stream: true }, class: "flex-grow-1" },
+                        class: "btn btn-dark w-100 rounded-3 py-1 small fw-semibold" do %>
+                      Add to Cart
+                    <% end %>
                   <% else %>
-                    <button class="btn btn-clean btn-secondary flex-fill" disabled>Out</button>
+                    <button class="btn btn-light border w-100 rounded-3 py-1 small text-muted" disabled>Sold Out</button>
                   <% end %>
                 </div>
               </div>
+
             </div>
           </div>
         <% end %>
@@ -175,3 +151,20 @@
     </main>
   </div>
 </div>
+
+<style>
+  /* ✨ Core Styles for Clean UI */
+  .hover-lift { transition: transform 0.2s, box-shadow 0.2s; }
+  .hover-lift:hover { transform: translateY(-4px); box-shadow: 0 10px 20px rgba(0,0,0,0.08) !important; }
+
+  /* Category Pills */
+  .category-pill { color: #555; transition: all 0.2s; border-color: #eee !important; }
+  .category-pill:hover, .category-pill.active-pill { background-color: #212529 !important; color: #fff !important; border-color: #212529 !important; }
+
+  /* Hover Links */
+  .hover-primary:hover { color: #0d6efd !important; text-decoration: underline !important; }
+
+  /* Hide scrollbar for category row */
+  .overflow-auto::-webkit-scrollbar { display: none; }
+  .overflow-auto { -ms-overflow-style: none; scrollbar-width: none; }
+</style>

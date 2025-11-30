@@ -1,16 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-  <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-11C4F0DR0T"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-11C4F0DR0T"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
 
-  gtag('config', 'G-11C4F0DR0T');
-</script>
-    <%# --- 1. Dynamic Title (Falls back to default if not set in view) --- %>
+      gtag('config', 'G-11C4F0DR0T');
+    </script>
+
+    <%# --- 1. Dynamic Title --- %>
     <title><%= content_for?(:title) ? yield(:title) : "Tajaone | Affordable Leather Bags, Shoes & Goods in Kenya" %></title>
     
     <meta charset="utf-8">
@@ -32,16 +32,17 @@
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
-    <%# --- 4. Performance: DNS Prefetch for CDNs --- %>
+    <%# --- 4. Performance --- %>
     <link rel="preconnect" href="https://cdn.jsdelivr.net">
     <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
 
-    <%# --- 5. Favicons --- %>
+    <%# --- 5. Favicons (Ensure icon.png exists in /public folder) --- %>
     <link rel="icon" href="/icon.png" type="image/png">
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/icon.png">
 
     <%# --- 6. Dynamic Open Graph (Social Media Sharing) --- %>
+    <%# CRITICAL FIX: Ensure 'og_image' is an absolute URL. Use 'url_to_image(blob)' helper in views for ActiveStorage. %>
     <meta property="og:site_name" content="Tajaone">
     <meta property="og:title" content="<%= content_for?(:og_title) ? yield(:og_title) : (content_for?(:title) ? yield(:title) : "Tajaone | Kenya’s Leather Store") %>">
     <meta property="og:description" content="<%= content_for?(:meta_description) ? yield(:meta_description) : "Shop high-quality, affordable leather products in Kenya with secure payments via M-PESA." %>">
@@ -49,11 +50,12 @@
     <meta property="og:url" content="<%= request.original_url %>">
     <meta property="og:type" content="<%= content_for?(:og_type) ? yield(:og_type) : "website" %>">
 
-    <%# --- 7. Dynamic Twitter Cards --- %>
+    <%# --- 7. Dynamic Twitter Cards (X) --- %>
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="<%= content_for?(:title) ? yield(:title) : "Tajaone | Kenya’s Leather Store" %>">
     <meta name="twitter:description" content="<%= content_for?(:meta_description) ? yield(:meta_description) : "Shop high-quality, affordable leather products in Kenya." %>">
     <meta name="twitter:image" content="<%= content_for?(:og_image) ? yield(:og_image) : image_url('icon.png') %>">
+    <%# Twitter often caches images aggressively. Use a version string if updating the icon. %>
 
     <%= yield :head %>
 
@@ -73,7 +75,7 @@
       },
       "potentialAction": {
         "@type": "SearchAction",
-        "target": "<%= products_url %>?search={search_term_string}",
+        "target": "<%= products_url %>?query={search_term_string}",
         "query-input": "required name=search_term_string"
       }
     }
