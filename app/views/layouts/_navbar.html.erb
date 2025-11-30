@@ -1,0 +1,99 @@
+      <nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top shadow-sm" role="navigation">
+        <div class="container-fluid px-0">
+          <a class="navbar-brand px-3 fw-bold text-primary" href="<%= root_path %>" aria-label="Tajaone Home">Tajaone</a>
+
+          <div class="ms-auto me-3" id="cart-badge">
+            <%= render "layouts/cart_badge" %>
+          </div>
+
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                  aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+
+          <div class="collapse navbar-collapse px-3 text-start" id="navbarNav">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+              <li class="nav-item">
+                <%= link_to "Products", products_path, class: "nav-link", aria: { label: "Browse Leather Products" } %>
+              </li>
+            </ul>
+
+            <ul class="navbar-nav align-items-center gap-2">
+              <li class="nav-item dropdown">
+                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                  Currency: <%= session[:currency] || "USD" %>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                  <li>
+                    <%= button_to "KES", set_currency_path(currency: "KES"),
+                        method: :post,
+                        class: "dropdown-item btn btn-link p-0",
+                        form: { "data-turbo" => "false" } %>
+                  </li>
+                  <li>
+                    <%= button_to "USD", set_currency_path(currency: "USD"),
+                        method: :post,
+                        class: "dropdown-item btn btn-link p-0",
+                        form: { "data-turbo" => "false" } %>
+                  </li>
+                </ul>
+              </li>
+
+              <% if user_signed_in? %>
+                <% unread_count = current_user.notifications.where(read: false).count %>
+
+                <li class="nav-item dropdown">
+                  <a class="nav-link dropdown-toggle" href="#" id="accountDropdown" role="button"
+                     data-bs-toggle="dropdown" aria-expanded="false">
+                    My Account
+                  </a>
+                  <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="accountDropdown">
+                    <li><%= link_to "Profile", account_path, class: "dropdown-item" %></li>
+                    <li><%= link_to "Notifications (#{unread_count})", notifications_path, class: "dropdown-item" %></li>
+
+                    <% if current_user.buyer? %>
+                      <li><%= link_to "Buyer Dashboard", buyer_dashboard_path, class: "dropdown-item" %></li>
+                    <% end %>
+
+                    <% if current_user.seller? %>
+                      <li><hr class="dropdown-divider"></li>
+                      <li><h6 class="dropdown-header">Seller Zone</h6></li>
+                      <li><%= link_to "Seller Dashboard", seller_dashboard_path, class: "dropdown-item" %></li>
+                      <li><%= link_to "Storefront Settings", edit_seller_path(current_user.store_slug), class: "dropdown-item" %></li>
+                      <li><%= link_to "My Shipments", shipments_path, class: "dropdown-item" %></li>
+                    <% end %>
+
+                    <% if current_user.admin? %>
+                      <li><hr class="dropdown-divider"></li>
+                      <li><h6 class="dropdown-header">Admin</h6></li>
+                      <li><%= link_to "All Shipments", shipments_path, class: "dropdown-item" %></li>
+                      <li><%= link_to "Admin Panel", admin_root_path, class: "dropdown-item" %></li>
+                    <% end %>
+
+                    <% if current_user.buyer? || current_user.seller? %>
+                      <li><hr class="dropdown-divider"></li>
+                      <li>
+                        <%= button_to "Switch to #{current_user.active_role == 'buyer' ? 'Seller' : 'Buyer'} Mode",
+                                    toggle_role_path,
+                                    method: :post,
+                                    class: "dropdown-item btn btn-link p-0",
+                                    form: { "data-turbo" => "false" } %>
+                      </li>
+                    <% end %>
+
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                      <%= link_to "Logout", destroy_user_session_path,
+                                  data: { turbo_method: :delete },
+                                  class: "dropdown-item text-danger" %>
+                    </li>
+                  </ul>
+                </li>
+              <% else %>
+                <li class="nav-item"><%= link_to "Login", new_user_session_path, class: "nav-link" %></li>
+                <li class="nav-item"><%= link_to "Sign Up", new_user_registration_path, class: "btn btn-primary btn-sm rounded-pill px-3" %></li>
+              <% end %>
+            </ul>
+          </div>
+        </div>
+      </nav>

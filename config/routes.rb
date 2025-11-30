@@ -24,7 +24,7 @@ Rails.application.routes.draw do
     resources :orders, only: [:new, :create]
 
     resources :reviews, only: [:create, :edit, :update, :destroy, :show] do
-      post :vote, on: :member   # ✅ Helpful voting route
+      post :vote, on: :member
       resources :reports, only: [:new, :create]
     end
 
@@ -38,21 +38,21 @@ Rails.application.routes.draw do
       post   :bulk_inventory_upload
       delete :delete_image
 
-      # ✅ Turbo-friendly custom actions
-      post   :add_variant          # builds a new variant via Turbo Stream
-      delete :remove_variant       # expects params[:id] for variant
-      delete :remove_variant_image # expects params[:id] for variant image
-      delete :remove_gallery       # expects params[:url] or :image_id
-      post   :add_variant_image    # adds a new variant image via Turbo Stream
+      # Turbo-friendly custom actions
+      post   :add_variant
+      delete :remove_variant
+      delete :remove_variant_image
+      delete :remove_gallery
+      post   :add_variant_image
     end
 
-    # Legacy gallery image route (if still needed)
+    # Legacy gallery image route
     delete "gallery_images/:image_id",
            to: "products#remove_gallery_image",
            as: :remove_gallery_image
   end
 
-  # === M-PESA Callback (single global route) ===
+  # === M-PESA Callback ===
   post "/mpesa/callback/:order_id", to: "payments#mpesa_callback", as: :mpesa_callback
 
   # Currency
@@ -113,10 +113,15 @@ Rails.application.routes.draw do
   # === Webhooks ===
   post "/dhl/webhook", to: "webhooks#dhl"
 
-  # === ActiveStorage (remove if fully on Supabase) ===
+  # === Static Pages ===
+  root "pages#home"
+  get "about",         to: "pages#about"
+  get "contact",       to: "pages#contact"
+  get "return-policy", to: "pages#return_policy"
+
+  # === ActiveStorage ===
   mount ActiveStorage::Engine => "/rails/active_storage"
 
-  # === Health check and root ===
+  # === Health check ===
   get "up" => "rails/health#show", as: :rails_health_check
-  root "products#index"
 end

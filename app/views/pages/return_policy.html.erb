@@ -1,0 +1,166 @@
+<%# --- SEO Meta Tags --- %>
+<% content_for :title, "Buyer Protection & Return Policy | TAJAONE - Shop Leather with Confidence" %>
+<% content_for :meta_description, "Our hassle-free return policy ensures your satisfaction. Read about returns, exchanges, and M-PESA refunds for leather bags and shoes in Kenya." %>
+<% content_for :meta_keywords, "return policy Kenya, M-PESA refunds, Tajaone returns, leather product warranty, exchange policy Nairobi, online shopping guarantee" %>
+
+<%# --- Structured Data (JSON-LD for Google) --- %>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "MerchantReturnPolicy",
+  "name": "TAJAONE.APP Return Policy",
+  "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
+  "returnWindow": "P14D",
+  "returnFees": "https://schema.org/ReturnShippingFees",
+  "returnMethod": "https://schema.org/ReturnByMail",
+  "applicableCountry": "KE",
+  "customerSupport": {
+    "@type": "ContactPoint",
+    "contactType": "customer support",
+    "email": "support@tajaone.app",
+    "telephone": "+254700000000"
+  }
+}
+</script>
+
+<div class="bg-light py-5 mb-5 border-bottom">
+  <div class="container text-center">
+    <h1 class="fw-bold display-5 mb-3">Shop with Confidence</h1>
+    <p class="lead text-muted col-lg-8 mx-auto">
+      We stand behind the quality of our leather craftsmanship. If you aren't completely in love with your purchase, we're here to make it right.
+    </p>
+  </div>
+</div>
+
+<div class="container pb-5">
+  <div class="row g-5">
+    
+    <div class="col-lg-8">
+      
+      <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body p-4">
+          <div class="d-flex align-items-center mb-3">
+            <div class="icon-square bg-primary bg-opacity-10 text-primary rounded-3 p-2 me-3">
+              <i class="bi bi-box-seam fs-4"></i>
+            </div>
+            <h3 class="fw-bold mb-0">Return Eligibility</h3>
+          </div>
+          <p class="text-muted">To ensure a smooth return process, please note the following conditions:</p>
+          <ul class="list-group list-group-flush rounded-3">
+            <li class="list-group-item px-0 border-0"><i class="bi bi-check2-circle text-success me-2"></i> <strong>Timeframe:</strong> You must initiate a return within <strong>14 days</strong> of delivery.</li>
+            <li class="list-group-item px-0 border-0"><i class="bi bi-check2-circle text-success me-2"></i> <strong>Condition:</strong> Items must be unused, unwashed, and in their original packaging with tags attached.</li>
+            <li class="list-group-item px-0 border-0"><i class="bi bi-check2-circle text-success me-2"></i> <strong>Proof:</strong> A receipt or proof of purchase (Order ID) is required.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="alert alert-warning border-0 rounded-4 d-flex align-items-start p-4 mb-4" role="alert">
+        <i class="bi bi-info-circle-fill fs-4 me-3 mt-1"></i>
+        <div>
+          <h5 class="fw-bold alert-heading">A Note on Genuine Leather</h5>
+          <p class="mb-0 small">
+            At Tajaone, we use 100% full-grain leather. Please note that natural variations in grain texture, slight color distinctness, or minor markings are <strong>not defects</strong>. These are hallmarks of authentic leather that make your item unique. However, if you find structural damage (hardware failure, stitching issues), this is covered under our warranty.
+          </p>
+        </div>
+      </div>
+
+      <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body p-4">
+          <div class="d-flex align-items-center mb-3">
+            <div class="icon-square bg-primary bg-opacity-10 text-primary rounded-3 p-2 me-3">
+              <i class="bi bi-cash-coin fs-4"></i>
+            </div>
+            <h3 class="fw-bold mb-0">Refunds & Processing</h3>
+          </div>
+          <p>Once we receive and inspect your return, we will notify you via email/SMS.</p>
+          
+          <div class="row g-3 mt-2">
+            <div class="col-md-6">
+              <div class="p-3 bg-light rounded-3 h-100">
+                <h6 class="fw-bold">M-PESA Refunds</h6>
+                <p class="small text-muted mb-0">Processed within <strong>24-48 hours</strong> after inspection approval.</p>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="p-3 bg-light rounded-3 h-100">
+                <h6 class="fw-bold">Card/PayPal</h6>
+                <p class="small text-muted mb-0">May take <strong>5-10 business days</strong> depending on your bank.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-4">
+        <h4 class="fw-bold mb-3">Non-Returnable Items</h4>
+        <p class="text-muted">The following items cannot be returned unless verified as defective upon arrival:</p>
+        <ul>
+          <li>Personalized items (e.g., wallets with engraved names).</li>
+          <li>Gift cards.</li>
+          <li>Items marked as "Final Sale" or "Clearance."</li>
+        </ul>
+      </div>
+
+    </div>
+
+    <div class="col-lg-4">
+      <div class="sticky-top" style="top: 100px;">
+        <div class="card border-primary shadow-sm rounded-4 text-center p-4">
+          <h4 class="fw-bold mb-3">Need to return an item?</h4>
+          <p class="small text-muted mb-4">Have your Order ID ready and click the button below to start the process.</p>
+          
+          <%= link_to contact_path, class: "btn btn-primary w-100 py-2 mb-3 fw-semibold" do %>
+            Start Return Request <i class="bi bi-arrow-right ms-2"></i>
+          <% end %>
+          
+          <div class="border-top pt-3 mt-2">
+            <small class="text-muted d-block mb-1">Questions?</small>
+            <a href="mailto:support@tajaone.app" class="text-decoration-none fw-bold text-dark">sales@tajaone.app</a>
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-center gap-3 mt-4 text-muted opacity-75">
+          
+          
+
+[Image of Delivery Truck]
+
+          
+
+[Image of Verified Badge]
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<style>
+  /* Reuse the premium styling from other pages */
+  .icon-square {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .text-primary {
+    color: #8B4513 !important; /* Leather Brown */
+  }
+  
+  .bg-primary {
+    background-color: #8B4513 !important;
+  }
+  
+  .btn-primary {
+    background-color: #8B4513;
+    border-color: #8B4513;
+  }
+  
+  .btn-primary:hover {
+    background-color: #6F370F;
+    border-color: #6F370F;
+  }
+</style>
