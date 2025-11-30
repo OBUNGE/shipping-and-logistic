@@ -6,7 +6,7 @@ document.addEventListener("turbo:load", () => {
   // Floating WhatsApp Chat Button
   // -----------------------------
   const banner = document.createElement("div");
-  banner.innerHTML = '<img src="/assets/whatsapp.png" alt="WhatsApp" style="width:24px;height:24px;vertical-align:middle;margin-right:8px;"> Chat on WhatsApp';
+  banner.innerHTML = '<img src="/assets/whatsapp.png" alt="WhatsApp" style="width:24px;height:24px;vertical-align:middle;margin-right:8px;">';
 
   banner.style.position = "fixed";
   banner.style.bottom = "10px";
