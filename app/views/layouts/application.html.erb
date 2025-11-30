@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+  <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-11C4F0DR0T"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-11C4F0DR0T');
+</script>
     <%# --- 1. Dynamic Title (Falls back to default if not set in view) --- %>
     <title><%= content_for?(:title) ? yield(:title) : "Tajaone | Affordable Leather Bags, Shoes & Goods in Kenya" %></title>
     
