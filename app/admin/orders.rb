@@ -15,7 +15,9 @@ ActiveAdmin.register Order do
     column :seller
     column("Total") { |order| number_to_currency(order.total) }
     column :status
-    column("Provider") { |order| status_tag(order.provider, order.provider == "pod" ? :warning : :ok) }
+    column("Provider") do |order|
+      status_tag(order.provider.to_s, order.provider == "pod" ? :warning : :ok)
+    end
     column :created_at
     actions defaults: true do |order|
       if order.provider == "pod" && order.status == "pending"
