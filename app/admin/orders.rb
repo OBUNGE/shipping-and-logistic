@@ -16,18 +16,21 @@ ActiveAdmin.register Order do
     column("Total") { |order| number_to_currency(order.total) }
     column :status
     column("Provider") do |order|
-      status_tag(order.provider.to_s, order.provider == "pod" ? :warning : :ok)
+      provider_label = order.provider.to_s
+      provider_style = provider_label == "pod" ? :warning : :ok
+      status_tag(provider_label, provider_style)
     end
     column :created_at
     actions defaults: true do |order|
-      if order.provider == "pod" && order.status == "pending"
-        item "Mark as Paid", mark_as_paid_admin_order_path(order), method: :put, class: "member_link"
+      if order.provider.to_s == "pod" && order.status == "pending"
+        item "Mark as Paid", mark_as_paid_admin_order_path(order),
+             method: :put, class: "member_link"
       end
     end
   end
 
   # === Filters ===
-  filter :buyer, collection: -> { User.all }   # ✅ ensures dropdown instead of free-text
+  filter :buyer, collection: -> { User.all }   # ✅ dropdown instead of free-text
   filter :seller, collection: -> { User.all }
   filter :status, as: :select, collection: Order.statuses.keys
   filter :provider, as: :select, collection: ["mpesa", "paypal", "paystack", "pod"]
@@ -65,7 +68,9 @@ ActiveAdmin.register Order do
           row :first_name
           row :last_name
           row :address
-          row("Estimated Delivery") { order.shipment.estimated_delivery_date&.strftime("%B %d, %Y") }
+          row("Estimated Delivery") do
+            order.shipment.estimated_delivery_date&.strftime("%B %d, %Y")
+          end
         end
       end
     end
