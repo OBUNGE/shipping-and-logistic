@@ -36,39 +36,58 @@ class ShipmentsController < ApplicationController
   end
 
   # === POST /orders/:order_id/shipment ===
-def update
-  Rails.logger.info("🚚 Incoming shipment params: #{params[:shipment].inspect}")
-  Rails.logger.info("🔒 Permitted shipment params: #{shipment_params.inspect}")
+  def create
+    @shipment = @order.build_shipment(shipment_params)
 
-  if current_user == @order.seller
-    if @shipment.update(shipment_params)
-      Rails.logger.info("✅ Shipment updated successfully: #{@shipment.inspect}")
+    if @shipment.save
+      Rails.logger.info("✅ Shipment created successfully: #{@shipment.inspect}")
       log_status_change(@shipment.status)
-      redirect_to order_shipment_path(@order), notice: "Shipment updated successfully."
-    else
-      Rails.logger.error("❌ Shipment update failed: #{@shipment.errors.full_messages.join(', ')}")
-      render :edit, status: :unprocessable_entity
-    end
 
-  elsif current_user == @order.buyer && @shipment.status == "in_transit"
-    if @shipment.update(status: "delivered")
-      @order.mark_as_delivered!
-      log_status_change("delivered")
-      redirect_to order_shipment_path(@order), notice: "Order marked as delivered. Thank you!"
+      respond_to do |format|
+        format.html { redirect_to order_shipment_path(@order), notice: "Shipment created successfully." }
+        format.turbo_stream # ensures Turbo Stream updates fire if you’re using Hotwire
+      end
     else
-      Rails.logger.error("❌ Buyer delivery confirmation failed: #{@shipment.errors.full_messages.join(', ')}")
-      redirect_to order_shipment_path(@order), alert: "Could not confirm delivery."
+      Rails.logger.error("❌ Shipment creation failed: #{@shipment.errors.full_messages.join(', ')}")
+      respond_to do |format|
+        format.html { render :new, status: :unprocessable_entity }
+        format.turbo_stream { render turbo_stream: turbo_stream.replace("shipment_form", partial: "shipments/form", locals: { shipment: @shipment }) }
+      end
     end
-
-  else
-    redirect_to order_shipment_path(@order), alert: "You are not authorized to update this shipment."
   end
-end
+
+  # === PATCH/PUT /orders/:order_id/shipment ===
+  def update
+    Rails.logger.info("🚚 Incoming shipment params: #{params[:shipment].inspect}")
+    Rails.logger.info("🔒 Permitted shipment params: #{shipment_params.inspect}")
+
+    if current_user == @order.seller
+      if @shipment.update(shipment_params)
+        Rails.logger.info("✅ Shipment updated successfully: #{@shipment.inspect}")
+        log_status_change(@shipment.status)
+        redirect_to order_shipment_path(@order), notice: "Shipment updated successfully."
+      else
+        Rails.logger.error("❌ Shipment update failed: #{@shipment.errors.full_messages.join(', ')}")
+        render :edit, status: :unprocessable_entity
+      end
+
+    elsif current_user == @order.buyer && @shipment.status == "in_transit"
+      if @shipment.update(status: "delivered")
+        @order.mark_as_delivered!
+        log_status_change("delivered")
+        redirect_to order_shipment_path(@order), notice: "Order marked as delivered. Thank you!"
+      else
+        Rails.logger.error("❌ Buyer delivery confirmation failed: #{@shipment.errors.full_messages.join(', ')}")
+        redirect_to order_shipment_path(@order), alert: "Could not confirm delivery."
+      end
+
+    else
+      redirect_to order_shipment_path(@order), alert: "You are not authorized to update this shipment."
+    end
+  end
 
   # === GET /orders/:order_id/shipment ===
-  def show
-    # @shipment is set by before_action
-  end
+  def show; end
 
   # === GET /orders/:order_id/shipment/edit ===
   def edit
@@ -77,11 +96,9 @@ end
     end
   end
 
-
-
   # === POST /orders/:order_id/shipment/track ===
   def track
-    unless @shipment.carrier == "dhl"
+    unless @shipment.carrier.downcase == "dhl"
       flash[:alert] = "Only DHL tracking is supported."
       redirect_to order_shipment_path(@order) and return
     end
@@ -147,7 +164,7 @@ end
       changed_by: current_user,
       changed_at: Time.current
     )
-    ShipmentMailer.status_update(@shipment, new_status).deliver_later
+    ShipmentEmailJob.perform_later(@shipment.id, new_status)
   end
 
   def require_seller_or_admin
@@ -164,26 +181,24 @@ end
     @shipment = @order.shipment
   end
 
-def shipment_params
-  permitted = params.require(:shipment).permit(
-    :carrier,
-    :tracking_number,   # <-- include this, it exists in your schema
-    :cost,
-    :status,
-    :first_name,
-    :last_name,
-    :address,
-    :alternate_contact,
-    :phone_number,
-    :city,
-    :county,
-    :country,
-    :region,
-    :delivery_notes
-  )
-  Rails.logger.debug("🔎 shipment_params permitted: #{permitted.inspect}")
-  permitted
-end
-
-
+  def shipment_params
+    permitted = params.require(:shipment).permit(
+      :carrier,
+      :tracking_number,
+      :cost,
+      :status,
+      :first_name,
+      :last_name,
+      :address,
+      :alternate_contact,
+      :phone_number,
+      :city,
+      :county,
+      :country,
+      :region,
+      :delivery_notes
+    )
+    Rails.logger.debug("🔎 shipment_params permitted: #{permitted.inspect}")
+    permitted
+  end
 end
