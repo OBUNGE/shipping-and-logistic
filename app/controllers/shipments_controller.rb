@@ -37,21 +37,37 @@ class ShipmentsController < ApplicationController
 
   # === POST /orders/:order_id/shipment ===
   def create
-    @shipment = @order.build_shipment(shipment_params)
+    if params[:shipment].present?
+      # Normal flow with form params
+      @shipment = @order.build_shipment(shipment_params)
+    else
+      # Quick auto-create with defaults
+      @shipment = @order.build_shipment(
+        status: "pending",
+        first_name: @order.first_name,
+        last_name:  @order.last_name,
+        address:    @order.address,
+        phone_number: @order.phone_number,
+        country:    @order.country,
+        city:       @order.city,
+        cost:       0.0,
+       
+      )
+    end
 
     if @shipment.save
       Rails.logger.info("✅ Shipment created successfully: #{@shipment.inspect}")
       log_status_change(@shipment.status)
 
       respond_to do |format|
-        format.html { redirect_to order_shipment_path(@order), notice: "Shipment created successfully." }
-        format.turbo_stream # ensures Turbo Stream updates fire if you’re using Hotwire
+        format.html { redirect_to order_shipment_path(@order), notice: "Shipment created successfully. You can edit details later." }
+        format.turbo_stream { redirect_to order_shipment_path(@order), notice: "Shipment created successfully. You can edit details later." }
       end
     else
       Rails.logger.error("❌ Shipment creation failed: #{@shipment.errors.full_messages.join(', ')}")
       respond_to do |format|
-        format.html { render :new, status: :unprocessable_entity }
-        format.turbo_stream { render turbo_stream: turbo_stream.replace("shipment_form", partial: "shipments/form", locals: { shipment: @shipment }) }
+        format.html { redirect_to order_path(@order), alert: "Could not create shipment." }
+        format.turbo_stream { redirect_to order_path(@order), alert: "Could not create shipment." }
       end
     end
   end
@@ -98,7 +114,7 @@ class ShipmentsController < ApplicationController
 
   # === POST /orders/:order_id/shipment/track ===
   def track
-    unless @shipment.carrier.downcase == "dhl"
+    unless @shipment.carrier.to_s.downcase == "dhl"
       flash[:alert] = "Only DHL tracking is supported."
       redirect_to order_shipment_path(@order) and return
     end

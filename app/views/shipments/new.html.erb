@@ -1,17 +1,14 @@
 <%= form_with model: [@order, @shipment], local: true do |f| %>
-  <div class="mb-3">
-    <%= f.label :first_name %>
-    <%= f.text_field :first_name, value: @order.first_name, class: "form-control", readonly: true %>
-  </div>
-
-  <div class="mb-3">
-    <%= f.label :last_name %>
-    <%= f.text_field :last_name, value: @order.last_name, class: "form-control", readonly: true %>
-  </div>
+  <%= f.hidden_field :status, value: "pending" %>
 
   <div class="mb-3">
     <%= f.label :carrier %>
     <%= f.select :carrier, Shipment.carriers.keys.map { |c| [c.titleize, c] }, {}, class: "form-select" %>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :tracking_number %>
+    <%= f.text_field :tracking_number, class: "form-control" %>
   </div>
 
   <div class="mb-3">
@@ -41,7 +38,3 @@
 
   <%= f.submit "Create Shipment", class: "btn btn-primary" %>
 <% end %>
-
-<div class="mt-4">
-  <%= link_to "← Back to Orders", orders_path, class: "btn btn-sm btn-outline-secondary" %>
-</div>

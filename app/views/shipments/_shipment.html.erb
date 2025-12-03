@@ -1,9 +1,9 @@
 <turbo-frame id="shipment_<%= shipment.id %>">
   <tr>
     <td><%= shipment.order_id %></td>
-    <td><%= shipment.carrier %></td>
-    <td><%= shipment.tracking_number %></td>
-    <td><%= number_to_currency(shipment.cost) %></td>
+    <td><%= shipment.carrier.presence || "—" %></td>
+    <td><%= shipment.tracking_number.presence || "—" %></td>
+    <td><%= shipment.cost.present? ? number_to_currency(shipment.cost) : "—" %></td>
     <td>
       <%= shipment.status.humanize %>
       <div class="progress-container">
@@ -14,6 +14,9 @@
       </div>
     </td>
     <td><%= time_ago_in_words(shipment.updated_at) %> ago</td>
-    <td><%= link_to "View", order_shipment_path(shipment.order), class: "btn btn-sm btn-outline-primary" %></td>
+    <td>
+      <%= link_to "View", order_shipment_path(shipment.order), class: "btn btn-sm btn-outline-primary" %>
+      <%= link_to "Edit", edit_order_shipment_path(shipment.order), class: "btn btn-sm btn-outline-secondary ms-1" %>
+    </td>
   </tr>
 </turbo-frame>

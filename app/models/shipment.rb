@@ -6,13 +6,15 @@ class Shipment < ApplicationRecord
   delegate :buyer, :seller, to: :order
 
   # === Carrier options ===
-  enum :carrier, {
-    dhl:       "dhl",
-    sendy:     "sendy",
-    ena_coach: "ena_coach",
-    g4s:       "g4s",
-    fargo:     "fargo"
-  }
+enum :carrier, {
+  dhl: "dhl",
+  sendy: "sendy",
+  ena_coach: "ena_coach",
+  g4s: "g4s",
+  fargo: "fargo",
+ 
+}
+
 
   # === Status lifecycle ===
   enum :status, {
@@ -25,8 +27,11 @@ class Shipment < ApplicationRecord
   }
 
   # === Validations ===
-  validates :status, :carrier, :tracking_number, presence: true
-  validates :tracking_number, uniqueness: true
+  validates :status, presence: true
+
+  # Carrier and tracking number required only once seller edits/updates
+  validates :carrier, :tracking_number, presence: true, on: :update
+  validates :tracking_number, uniqueness: true, allow_blank: true
 
   # Require shipping details only on creation, not on every update
   validates :first_name, :last_name, :phone_number, :country, :city, :address,
