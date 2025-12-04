@@ -199,6 +199,7 @@
     <% end %>
   </div>
 
+
   <div class="mb-5">
     <h5 class="fw-bold mb-3">Recent Orders</h5>
     <% if @orders.any? %>
@@ -265,7 +266,8 @@
                       </button>
                       <ul class="dropdown-menu dropdown-menu-end border-0 shadow-sm rounded-3 mt-1">
                         <li><%= link_to "View Details", order_path(order), class: "dropdown-item" %></li>
-                        <% if latest_payment&.status == "paid" && order.shipment.nil? %>
+                        
+                        <% if ((latest_payment&.status == "paid") || order.provider == "pod") && order.shipment.nil? %>
                           <li>
                             <%= button_to "Create Shipment", order_shipment_path(order), 
                                 method: :post, 
