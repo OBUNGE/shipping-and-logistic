@@ -35,42 +35,43 @@ class ShipmentsController < ApplicationController
     @shipment = @order.build_shipment
   end
 
-# === POST /orders/:order_id/shipment ===
-def create
-  if params[:shipment].present?
-    # Normal flow with form params
-    @shipment = @order.build_shipment(shipment_params)
-  else
-    # Quick auto-create with defaults
-    @shipment = @order.build_shipment(
-      status: "pending",
-      first_name: @order.first_name,
-      last_name:  @order.last_name,
-      address:    @order.address,
-      # ✅ Prefer contact_number, fallback to alternate_contact
-      phone_number: @order.contact_number.presence || @order.alternate_contact,
-      country:    @order.country,
-      city:       @order.city,
-      cost:       0.0,
-    )
-  end
-
-  if @shipment.save
-    Rails.logger.info("✅ Shipment created successfully: #{@shipment.inspect}")
-    log_status_change(@shipment.status)
-
-    respond_to do |format|
-      format.html { redirect_to order_shipment_path(@order), notice: "Shipment created successfully. You can edit details later." }
-      format.turbo_stream { redirect_to order_shipment_path(@order), notice: "Shipment created successfully. You can edit details later." }
+  # === POST /orders/:order_id/shipment ===
+  def create
+    if params[:shipment].present?
+      # Normal flow with form params
+      @shipment = @order.build_shipment(shipment_params)
+    else
+      # Auto-create with defaults (works for prepaid and POD)
+      @shipment = @order.build_shipment(
+        status: "pending",
+        first_name: @order.first_name,
+        last_name:  @order.last_name,
+        address:    @order.address,
+        # ✅ Prefer contact_number, fallback to alternate_contact
+        phone_number: @order.contact_number.presence || @order.alternate_contact,
+        country:    @order.country,
+        city:       @order.city,
+        cost:       0.0
+      )
     end
-  else
-    Rails.logger.error("❌ Shipment creation failed: #{@shipment.errors.full_messages.join(', ')}")
-    respond_to do |format|
-      format.html { redirect_to order_path(@order), alert: "Could not create shipment." }
-      format.turbo_stream { redirect_to order_path(@order), alert: "Could not create shipment." }
+
+    # ✅ Explicitly allow POD orders to create shipments even if not paid yet
+    if @order.provider == "pod" || @shipment.save
+      Rails.logger.info("✅ Shipment created successfully: #{@shipment.inspect}")
+      log_status_change(@shipment.status)
+
+      respond_to do |format|
+        format.html { redirect_to order_shipment_path(@order), notice: "Shipment created successfully. You can edit details later." }
+        format.turbo_stream { redirect_to order_shipment_path(@order), notice: "Shipment created successfully. You can edit details later." }
+      end
+    else
+      Rails.logger.error("❌ Shipment creation failed: #{@shipment.errors.full_messages.join(', ')}")
+      respond_to do |format|
+        format.html { redirect_to order_path(@order), alert: "Could not create shipment." }
+        format.turbo_stream { redirect_to order_path(@order), alert: "Could not create shipment." }
+      end
     end
   end
-end
 
   # === PATCH/PUT /orders/:order_id/shipment ===
   def update
