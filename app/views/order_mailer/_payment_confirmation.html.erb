@@ -37,9 +37,9 @@
   <%= order.address %><br>
   <%= order.city %>, <%= order.county.presence || order.region.presence || "" %><br>
   <%= order.country %><br>
-  Phone: <%= order.phone_number %><br>
+  Phone (Primary): <%= order.contact_number.presence || "N/A" %><br>
   <% if order.alternate_contact.present? %>
-    Alternate Contact: <%= order.alternate_contact %><br>
+    Phone (Alternate): <%= order.alternate_contact %><br>
   <% end %>
 </p>
 
@@ -94,7 +94,7 @@
 </p>
 
 <p style="font-family:Arial, sans-serif; color:#555; margin-top:20px;">
-  If you have any questions about your order, feel free to reply to this email or contact our support team.
+  If you have any questions about your order, feel free to contacr as sales@tajaone.app or contact our support team.
 </p>
 
 <p style="font-family:Arial, sans-serif; color:#555;">

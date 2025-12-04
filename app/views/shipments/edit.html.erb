@@ -22,12 +22,12 @@
   </div>
 
   <!-- Hidden fields to satisfy validations -->
-  <%= f.hidden_field :first_name %>
-  <%= f.hidden_field :last_name %>
-  <%= f.hidden_field :phone_number %>
-  <%= f.hidden_field :country %>
-  <%= f.hidden_field :city %>
-  <%= f.hidden_field :address %>
+  <%= f.hidden_field :first_name, value: @order.first_name %>
+  <%= f.hidden_field :last_name,  value: @order.last_name %>
+  <%= f.hidden_field :phone_number, value: (@order.contact_number.presence || @order.alternate_contact) %>
+  <%= f.hidden_field :country, value: @order.country %>
+  <%= f.hidden_field :city,    value: @order.city %>
+  <%= f.hidden_field :address, value: @order.address %>
 
   <%= f.submit "Save Changes", class: "btn btn-primary" %>
 <% end %>

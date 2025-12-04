@@ -7,7 +7,7 @@
 </p>
 
 <p>
-  Phone: <%= order.phone_number || "N/A" %><br>
+  Phone: <%= order.contact_number.presence || order.alternate_contact.presence || "N/A" %><br>
   Address: <%= order.address || "N/A" %>
 </p>
 

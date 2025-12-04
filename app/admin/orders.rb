@@ -23,14 +23,17 @@ ActiveAdmin.register Order do
     column :created_at
     actions defaults: true do |order|
       if order.provider.to_s == "pod" && order.status == "pending"
-        item "Mark as Paid", mark_as_paid_admin_order_path(order),
-             method: :put, class: "member_link"
+        # ✅ Use link_to instead of item
+        link_to "Mark as Paid",
+                mark_as_paid_admin_order_path(order),
+                method: :put,
+                class: "member_link"
       end
     end
   end
 
   # === Filters ===
-  filter :buyer, collection: -> { User.all }   # ✅ dropdown instead of free-text
+  filter :buyer, collection: -> { User.all }   # dropdown instead of free-text
   filter :seller, collection: -> { User.all }
   filter :status, as: :select, collection: Order.statuses.keys
   filter :provider, as: :select, collection: ["mpesa", "paypal", "paystack", "pod"]
@@ -83,7 +86,7 @@ ActiveAdmin.register Order do
       f.input :seller, collection: User.all
       f.input :status, as: :select, collection: Order.statuses.keys
       f.input :provider, as: :select, collection: ["mpesa", "paypal", "paystack", "pod"]
-      f.input :total, min: 0.01  # ✅ prevents Formtastic error
+      f.input :total, min: 0.01  # prevents Formtastic error
     end
     f.actions
   end
