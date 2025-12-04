@@ -21,14 +21,21 @@ ActiveAdmin.register Order do
       status_tag(provider_label, provider_style)
     end
     column :created_at
-    actions defaults: true do |order|
+
+    # ✅ Disable defaults and add only the links you want
+    actions defaults: false do |order|
+      links = []
+      links << link_to("View", resource_path(order), class: "member_link")
+      links << link_to("Edit", edit_resource_path(order), class: "member_link")
+
       if order.provider.to_s == "pod" && order.status == "pending"
-        # ✅ Use link_to instead of item
-        link_to "Mark as Paid",
-                mark_as_paid_admin_order_path(order),
-                method: :put,
-                class: "member_link"
+        links << link_to("Mark as Paid",
+                         mark_as_paid_admin_order_path(order),
+                         method: :put,
+                         class: "member_link")
       end
+
+      safe_join(links, " ")
     end
   end
 
