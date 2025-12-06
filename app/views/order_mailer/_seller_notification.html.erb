@@ -1,25 +1,99 @@
-<h2>Hello <%= order.seller&.name || "Seller" %>,</h2>
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <style>
+      /* ✨ Leather Earth Color Email Styles */
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        background-color: #f4f1ed; /* warm beige background */
+        margin: 0;
+        padding: 0;
+        color: #3e2c23; /* deep brown text */
+      }
+      .email-container {
+        max-width: 600px;
+        margin: 20px auto;
+        background: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(62,44,35,0.15); /* subtle brown shadow */
+        overflow: hidden;
+        border: 1px solid #d6c3b5; /* leather‑tone border */
+      }
+      .email-header {
+        background-color: #5c4033; /* rich leather brown */
+        color: #ffffff;
+        padding: 20px;
+        text-align: center;
+      }
+      .email-header h2 {
+        margin: 0;
+        font-size: 22px;
+        font-weight: bold;
+      }
+      .email-body {
+        padding: 24px;
+        line-height: 1.6;
+      }
+      .email-body p {
+        margin-bottom: 12px;
+      }
+      .order-total {
+        font-size: 16px;
+        font-weight: bold;
+        margin-top: 16px;
+        color: #5c4033; /* highlight in leather brown */
+      }
+      .muted {
+        color: #8c7b75; /* muted earthy gray‑brown */
+        font-size: 13px;
+      }
+      .email-footer {
+        background-color: #ede3d9; /* soft parchment tone */
+        padding: 16px;
+        text-align: center;
+        font-size: 13px;
+        color: #5c4033;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="email-container">
+      <!-- Header -->
+      <div class="email-header">
+        <h2>Hello <%= order.seller&.name || "Seller" %>,</h2>
+      </div>
 
-<p>
-  Order ##<%= order.id %> has been paid by
-  <%= [order.first_name, order.last_name].compact.join(" ") %>
-  (<%= order.email %>).
-</p>
+      <!-- Body -->
+      <div class="email-body">
+        <p>
+          Order <strong>##<%= order.id %></strong> has been paid by
+          <strong><%= [order.first_name, order.last_name].compact.join(" ") %></strong>
+          (<%= order.email %>).
+        </p>
 
-<p>
-  Phone: <%= order.contact_number.presence || order.alternate_contact.presence || "N/A" %><br>
-  Address: <%= order.address || "N/A" %>
-</p>
+        <p>
+          Phone: <%= order.contact_number.presence || order.alternate_contact.presence || "N/A" %><br>
+          Address: <%= order.address || "N/A" %>
+        </p>
 
-<p>Please prepare the shipment and update tracking when ready.</p>
+        <p>Please prepare the shipment and update tracking when ready.</p>
 
-<%# Always show KES first, then USD conversion %>
-<p>
-  <strong>Total:</strong>
-  <%= number_to_currency(order.total, unit: "KES ") %>
-  <% usd_total = ExchangeRateService.convert(order.total, from: "KES", to: "USD") %>
-  <span class="text-muted small">≈ <%= number_to_currency(usd_total, unit: "USD ") %></span>
-</p>
+        <%# Always show KES first, then USD conversion %>
+        <p class="order-total">
+          Total: <%= number_to_currency(order.total, unit: "KES ") %><br>
+          <% usd_total = ExchangeRateService.convert(order.total, from: "KES", to: "USD") %>
+          <span class="muted">≈ <%= number_to_currency(usd_total, unit: "USD ") %></span>
+        </p>
 
-<p>Thank you for using our platform.</p>
-<p>Best regards,<br>The Tajaone Team</p>
+        <p>Thank you for using our platform.</p>
+        <p>Best regards,<br><strong>The Tajaone Team</strong></p>
+      </div>
+
+      <!-- Footer -->
+      <div class="email-footer">
+        &copy; <%= Time.current.year %> Tajaone. All rights reserved.
+      </div>
+    </div>
+  </body>
+</html>

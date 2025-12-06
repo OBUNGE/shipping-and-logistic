@@ -102,6 +102,8 @@ Rails.application.routes.draw do
   # === Dashboards and Cart ===
   get "dashboard/buyer",  to: "dashboards#buyer",  as: :buyer_dashboard
   get "dashboard/seller", to: "dashboards#seller", as: :seller_dashboard
+  get "dashboard/analytics", to: "dashboards#analytics", as: :analytics
+
 
   resource :cart, only: [:show] do
     post 'add',    to: 'carts#add'

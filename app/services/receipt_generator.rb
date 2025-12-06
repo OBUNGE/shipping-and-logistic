@@ -12,7 +12,7 @@ class ReceiptGenerator
     @buyer = order.buyer
     @downloaded_at = downloaded_at
     @currency = "KES" # ✅ always KES now
-    @logo_url = "https://yourdomain.com/assets/afrixpress-logo.png"
+    @logo_url = "https://tajaone.app/assets/afrixpress-logo.png"
   end
 
   def generate

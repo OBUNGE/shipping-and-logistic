@@ -42,10 +42,6 @@ gem "friendly_id", "~> 5.4.0"
 
 
 
-gem "highcharts-rails"
-gem "lazy_high_charts"
-gem "googlecharts"
-gem "gon"
 
 
 gem "chartkick"

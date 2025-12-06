@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Tajaone Seller Admin</title>
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <%= javascript_include_tag "application", "data-turbo-track": "reload", defer: true %>
+  </head>
+
+  <body style="background-color:#f6f6f7;">
+    <div class="d-flex">
+      <!-- Sidebar -->
+      <aside class="bg-white border-end p-4" style="width: 240px; min-height: 100vh;">
+        <h5 class="fw-bold mb-4">Seller Admin</h5>
+        <ul class="nav flex-column gap-2">
+          <!-- Overview -->
+          <li>
+            <%= link_to "Overview", seller_dashboard_path,
+              class: "nav-link fw-semibold text-dark #{'active' if current_page?(seller_dashboard_path)}" %>
+          </li>
+
+          <!-- Products -->
+          <li>
+            <%= link_to "Products", products_path,
+              class: "nav-link fw-semibold text-dark #{'active' if controller_name == 'products'}" %>
+          </li>
+
+          <!-- Orders -->
+          <li>
+            <%= link_to "Orders", orders_path,
+              class: "nav-link fw-semibold text-dark #{'active' if controller_name == 'orders'}" %>
+          </li>
+
+          <!-- Analytics -->
+          <li>
+            <%= link_to "Analytics", analytics_path,
+              class: "nav-link fw-semibold text-dark #{'active' if controller_name == 'analytics'}" %>
+          </li>
+
+          <!-- Settings -->
+          <li>
+            <%= link_to "Settings", edit_seller_path(current_user.store_slug),
+              class: "nav-link fw-semibold text-dark" %>
+          </li>
+        </ul>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="flex-grow-1 p-4">
+        <%= yield %>
+      </main>
+    </div>
+
+    <!-- Shopify-inspired styles -->
+    <style>
+      .nav-link {
+        padding: 0.75rem 1rem;
+        border-radius: 0.5rem;
+        transition: background-color 0.2s ease-in-out;
+      }
+      .nav-link:hover {
+        background-color: #f6f6f7;
+      }
+      .nav-link.active {
+        background-color: #e6f4ea;
+        font-weight: bold;
+        color: #008060 !important;
+      }
+      .card { transition: all 0.2s ease-in-out; }
+      .hover-lift:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.08) !important; }
+      .table-hover tbody tr:hover { background-color: #fafbfb; }
+    </style>
+  </body>
+</html>

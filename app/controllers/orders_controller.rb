@@ -79,7 +79,6 @@ end
     end
   end
   
-  
 def create
   @order = user_signed_in? ? current_user.orders_as_buyer.build(order_params) : Order.new(order_params)
   @order.currency ||= "KES"
@@ -125,9 +124,14 @@ def create
     end
 
     notify_seller(@order)
-
     handle_payment(@order, provider, phone_number, email)
-    return  # prevent double redirect
+
+    # ✅ Single redirect to confirmation page
+    if user_signed_in?
+      redirect_to order_path(@order), notice: "Order placed successfully."
+    else
+      redirect_to order_path(@order, token: @order.guest_token), notice: "Order placed successfully."
+    end
 
   else
     # --- Cart checkout ---
@@ -185,15 +189,21 @@ def create
     end
 
     session[:cart] = []
-
     handle_payment(orders.first, provider, phone_number, email)
-    return  # prevent double redirect
+
+    # ✅ Single redirect to confirmation page
+    if user_signed_in?
+      redirect_to order_path(orders.first), notice: "Order placed successfully."
+    else
+      redirect_to order_path(orders.first, token: orders.first.guest_token), notice: "Order placed successfully."
+    end
   end
 rescue ActiveRecord::RecordInvalid => e
   Rails.logger.error("⚠️ Order Creation Failed: #{e.record.errors.full_messages.join(', ')}")
   redirect_to new_order_path(product_slug: params[:product_slug]),
               alert: "Failed to create order: #{e.record.errors.full_messages.join(', ')}"
 end
+
 
   def receipt
     order = Order.find(params[:id])
@@ -337,11 +347,10 @@ def order_params
     :status
   )
 end
-
 def handle_payment(order, provider, phone_number, email)
   unless order.present?
     Rails.logger.error("⚠️ handle_payment called with nil order")
-    redirect_to root_path, alert: "Order not found" and return
+    return { error: "Order not found" }
   end
 
   # Persist chosen provider/payment method
@@ -356,8 +365,7 @@ def handle_payment(order, provider, phone_number, email)
       currency: order.currency,
       status: :pending
     )
-    redirect_to order_path(order), notice: "Order placed with Pay on Delivery. We’ll contact you to confirm delivery in Nairobi."
-    return
+    return { notice: "Order placed with Pay on Delivery. We’ll contact you to confirm delivery in Nairobi." }
   end
 
   result = PaymentService.process(
@@ -373,20 +381,15 @@ def handle_payment(order, provider, phone_number, email)
     )
   )
 
-  respond_to do |format|
-    if result.is_a?(Hash) && result[:redirect_url]
-      Rails.logger.info("✅ Payment redirect for order #{order.id}: #{result[:redirect_url]}")
-      format.html         { redirect_to result[:redirect_url], allow_other_host: true }
-      format.turbo_stream { redirect_to result[:redirect_url], allow_other_host: true }
-    elsif result.is_a?(Hash) && result[:error]
-      Rails.logger.error("❌ Payment error for order #{order.id}: #{result[:error]}")
-      format.html         { redirect_to order_path(order), alert: result[:error] }
-      format.turbo_stream { redirect_to order_path(order), alert: result[:error] }
-    else
-      Rails.logger.info("ℹ️ Payment fallback for order #{order.id}")
-      format.html         { redirect_to order_path(order), notice: "Order created successfully. Please proceed to payment." }
-      format.turbo_stream { redirect_to order_path(order), notice: "Order created successfully. Please proceed to payment." }
-    end
+  if result.is_a?(Hash) && result[:redirect_url]
+    Rails.logger.info("✅ Payment redirect for order #{order.id}: #{result[:redirect_url]}")
+    return { redirect_url: result[:redirect_url] }
+  elsif result.is_a?(Hash) && result[:error]
+    Rails.logger.error("❌ Payment error for order #{order.id}: #{result[:error]}")
+    return { error: result[:error] }
+  else
+    Rails.logger.info("ℹ️ Payment fallback for order #{order.id}")
+    return { notice: "Order created successfully. Please proceed to payment." }
   end
 end
 
