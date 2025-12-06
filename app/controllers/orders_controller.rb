@@ -18,19 +18,21 @@ def show
     return
   end
 
-  # Guests can view orders if they have the guest_token in the URL
+  # ✅ Guests can view orders if they have the guest_token in the URL
   if @order.guest_token.present? && params[:token] == @order.guest_token
     render :show
-
-  # Signed-in users can view if they are buyer or seller
-  elsif user_signed_in? && (@order.buyer == current_user || @order.seller == current_user)
-    render :show
-
-  else
-    redirect_to root_path, alert: "You don’t have access to this order."
+    return
   end
-end
 
+  # ✅ Signed-in users can view if they are buyer or seller
+  if user_signed_in? && (@order.buyer == current_user || @order.seller == current_user)
+    render :show
+    return
+  end
+
+  # ❌ Otherwise, deny access
+  redirect_to root_path, alert: "You don’t have access to this order."
+end
 
   def new
     if params[:product_id].present?
@@ -79,12 +81,14 @@ end
     end
   end
   
-def create
+  def create
+  # Build order depending on whether user is signed in or guest
   @order = user_signed_in? ? current_user.orders_as_buyer.build(order_params) : Order.new(order_params)
   @order.currency ||= "KES"
   @order.guest_token ||= SecureRandom.hex(10) unless user_signed_in?
 
-  provider       = order_params[:provider] || "mpesa"
+  # Normalize payment provider and identifiers
+  provider       = order_params[:provider].presence || "mpesa"
   phone_number   = order_params[:phone_number].presence || current_user&.phone
   contact_number = order_params[:contact_number].presence || current_user&.phone
   email          = order_params[:email].presence || current_user&.email
@@ -124,14 +128,7 @@ def create
     end
 
     notify_seller(@order)
-    handle_payment(@order, provider, phone_number, email)
-
-    # ✅ Single redirect to confirmation page
-    if user_signed_in?
-      redirect_to order_path(@order), notice: "Order placed successfully."
-    else
-      redirect_to order_path(@order, token: @order.guest_token), notice: "Order placed successfully."
-    end
+    return handle_payment(@order, provider, phone_number, email)
 
   else
     # --- Cart checkout ---
@@ -189,20 +186,14 @@ def create
     end
 
     session[:cart] = []
-    handle_payment(orders.first, provider, phone_number, email)
-
-    # ✅ Single redirect to confirmation page
-    if user_signed_in?
-      redirect_to order_path(orders.first), notice: "Order placed successfully."
-    else
-      redirect_to order_path(orders.first, token: orders.first.guest_token), notice: "Order placed successfully."
-    end
+    return handle_payment(orders.first, provider, phone_number, email)
   end
 rescue ActiveRecord::RecordInvalid => e
   Rails.logger.error("⚠️ Order Creation Failed: #{e.record.errors.full_messages.join(', ')}")
   redirect_to new_order_path(product_slug: params[:product_slug]),
               alert: "Failed to create order: #{e.record.errors.full_messages.join(', ')}"
 end
+
 
 
   def receipt
@@ -347,10 +338,11 @@ def order_params
     :status
   )
 end
+
 def handle_payment(order, provider, phone_number, email)
   unless order.present?
     Rails.logger.error("⚠️ handle_payment called with nil order")
-    return { error: "Order not found" }
+    redirect_to root_path, alert: "Order not found" and return
   end
 
   # Persist chosen provider/payment method
@@ -358,6 +350,7 @@ def handle_payment(order, provider, phone_number, email)
 
   Rails.logger.info("💳 Initiating payment: order_id=#{order.id}, provider=#{provider}, currency=#{order.currency}")
 
+  # --- Pay on Delivery (POD) ---
   if provider == "pod"
     order.payments.create!(
       provider: "POD",
@@ -365,16 +358,25 @@ def handle_payment(order, provider, phone_number, email)
       currency: order.currency,
       status: :pending
     )
-    return { notice: "Order placed with Pay on Delivery. We’ll contact you to confirm delivery in Nairobi." }
+
+    if user_signed_in?
+      redirect_to order_path(order),
+                  notice: "Order placed with Pay on Delivery. We’ll contact you to confirm delivery in Nairobi."
+    else
+      redirect_to order_path(order, token: order.guest_token),
+                  notice: "Order placed with Pay on Delivery. We’ll contact you to confirm delivery in Nairobi."
+    end
+    return
   end
 
+  # --- Online Payment Providers (Paystack, M-Pesa, etc.) ---
   result = PaymentService.process(
     order,
     provider: provider,
     phone_number: phone_number,
     email: email,
     currency: order.currency,
-    return_url: order_url(order),
+    return_url: user_signed_in? ? order_url(order) : order_url(order, token: order.guest_token),
     callback_url: mpesa_callback_url(
       order_id: order.id,
       host: ENV["APP_HOST"] || "tajaone.app"
@@ -383,13 +385,23 @@ def handle_payment(order, provider, phone_number, email)
 
   if result.is_a?(Hash) && result[:redirect_url]
     Rails.logger.info("✅ Payment redirect for order #{order.id}: #{result[:redirect_url]}")
-    return { redirect_url: result[:redirect_url] }
+    redirect_to result[:redirect_url], allow_other_host: true
+
   elsif result.is_a?(Hash) && result[:error]
     Rails.logger.error("❌ Payment error for order #{order.id}: #{result[:error]}")
-    return { error: result[:error] }
+    if user_signed_in?
+      redirect_to order_path(order), alert: result[:error]
+    else
+      redirect_to order_path(order, token: order.guest_token), alert: result[:error]
+    end
+
   else
     Rails.logger.info("ℹ️ Payment fallback for order #{order.id}")
-    return { notice: "Order created successfully. Please proceed to payment." }
+    if user_signed_in?
+      redirect_to order_path(order), notice: "Order created successfully. Please proceed to payment."
+    else
+      redirect_to order_path(order, token: order.guest_token), notice: "Order created successfully. Please proceed to payment."
+    end
   end
 end
 
