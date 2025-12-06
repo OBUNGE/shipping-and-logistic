@@ -15,14 +15,19 @@ WORKDIR /rails
 
 # Install base packages
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y curl libjemalloc2 libvips sqlite3 imagemagick && \
+    apt-get install --no-install-recommends -y \
+      curl \
+      libjemalloc2 \
+      libvips \
+      sqlite3 \
+      imagemagick && \
     rm -rf /var/lib/apt/lists/* /var/cache/apt/archives
 
 # Set production environment
 ENV RAILS_ENV="production" \
     BUNDLE_DEPLOYMENT="1" \
     BUNDLE_PATH="/usr/local/bundle" \
-    BUNDLE_WITHOUT="development"
+    BUNDLE_WITHOUT="development test"
 
 # -----------------------------
 # Build Stage
@@ -31,13 +36,22 @@ FROM base AS build
 
 # Install packages needed to build gems
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y build-essential git libyaml-dev pkg-config && \
+    apt-get install --no-install-recommends -y \
+      build-essential \
+      git \
+      libyaml-dev \
+      pkg-config && \
     rm -rf /var/lib/apt/lists/* /var/cache/apt/archives
 
-# Install application gems
+# Copy Gemfiles first (to leverage Docker layer caching)
 COPY Gemfile Gemfile.lock ./
-RUN bundle install && \
-    rm -rf ~/.bundle/ "${BUNDLE_PATH}"/ruby/*/cache "${BUNDLE_PATH}"/ruby/*/bundler/gems/*/.git && \
+
+# Ensure Bundler version matches lockfile
+RUN gem install bundler -v "$(grep -A1 'BUNDLED WITH' Gemfile.lock | tail -n1)" && \
+    bundle config set deployment true && \
+    bundle config set without 'development test' && \
+    bundle install && \
+    rm -rf ~/.bundle "${BUNDLE_PATH}"/ruby/*/cache "${BUNDLE_PATH}"/ruby/*/bundler/gems/*/.git && \
     bundle exec bootsnap precompile --gemfile
 
 # Copy application code
@@ -47,7 +61,7 @@ COPY . .
 RUN bundle exec bootsnap precompile app/ lib/
 
 # Precompile assets for production without requiring secret RAILS_MASTER_KEY
-RUN ./bin/rails assets:precompile
+RUN RAILS_MASTER_KEY=dummy ./bin/rails assets:precompile
 
 ENV RAILS_MASTER_KEY=$RAILS_MASTER_KEY
 
