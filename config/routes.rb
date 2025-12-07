@@ -103,7 +103,8 @@ Rails.application.routes.draw do
   get "dashboard/buyer",  to: "dashboards#buyer",  as: :buyer_dashboard
   get "dashboard/seller", to: "dashboards#seller", as: :seller_dashboard
   get "dashboard/analytics", to: "dashboards#analytics", as: :analytics
-  get "/merchant_feed", to: "feeds#merchant"
+  get "/merchant_feed.csv", to: "feeds#feed"
+
 
 
   resource :cart, only: [:show] do
