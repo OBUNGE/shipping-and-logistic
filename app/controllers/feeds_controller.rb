@@ -1,6 +1,6 @@
 require "csv"
 
-class MerchantCenterController < ApplicationController
+class FeedsController < ApplicationController
   def feed
     @products = Product.all
 
