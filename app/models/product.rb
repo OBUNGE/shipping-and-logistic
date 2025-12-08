@@ -154,9 +154,13 @@ class Product < ApplicationRecord
     description.to_s.truncate(160)
   end
 
-  def canonical_url
-    Rails.application.routes.url_helpers.product_url(self)
-  end
+def canonical_url
+  Rails.application.routes.url_helpers.product_url(
+    self,
+    host: "tajaone.app",
+    protocol: "https"
+  )
+end
 
   # === Currency Formatting ===
   def formatted_price(view_context, variants_or_variant = nil)
