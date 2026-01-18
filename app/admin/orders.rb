@@ -43,7 +43,7 @@ ActiveAdmin.register Order do
   filter :buyer, collection: -> { User.all }   # dropdown instead of free-text
   filter :seller, collection: -> { User.all }
   filter :status, as: :select, collection: Order.statuses.keys
-  filter :provider, as: :select, collection: ["mpesa", "paypal", "paystack", "pod"]
+  filter :provider, as: :select, collection: [ "mpesa", "paypal", "paystack", "pod" ]
   filter :total
   filter :created_at
 
@@ -92,7 +92,7 @@ ActiveAdmin.register Order do
       f.input :buyer, collection: User.all
       f.input :seller, collection: User.all
       f.input :status, as: :select, collection: Order.statuses.keys
-      f.input :provider, as: :select, collection: ["mpesa", "paypal", "paystack", "pod"]
+      f.input :provider, as: :select, collection: [ "mpesa", "paypal", "paystack", "pod" ]
       f.input :total, min: 0.01  # prevents Formtastic error
     end
     f.actions

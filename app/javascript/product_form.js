@@ -1,5 +1,174 @@
 console.log("product_form.js loaded");
 
+// ============================================================
+// EVENT DELEGATION (Outside turbo:load to prevent duplicates)
+// ============================================================
+
+const subtotalEl = document.getElementById("subtotal");
+
+function updateSubtotal() {
+  let totalKES = 0;
+  document.querySelectorAll(".variant-qty").forEach(input => {
+    const qty = parseInt(input.value || "0", 10);
+    const price = parseFloat(input.dataset.price || "0");
+    const variantSubtotalEl = document.getElementById(`subtotal_${input.id}`);
+    const subtotalKES = qty * price;
+
+    if (variantSubtotalEl) {
+      variantSubtotalEl.textContent = qty > 0 ? `= ${subtotalKES.toFixed(2)} KES` : "";
+    }
+
+    totalKES += subtotalKES;
+  });
+
+  if (subtotalEl) {
+    const usdRate = 0.0075; 
+    const totalUSD = totalKES * usdRate;
+    subtotalEl.textContent = `Subtotal: ${totalKES.toFixed(2)} KES ≈ ${totalUSD.toFixed(2)} USD`;
+  }
+}
+
+// Consolidated Click Handler (attached once, never duplicated)
+document.addEventListener("click", (e) => {
+  // Quantity +/- buttons
+  if (e.target.classList.contains("qty-plus") || e.target.classList.contains("qty-minus")) {
+    e.preventDefault();
+    const targetId = e.target.dataset.target;
+    const input = document.getElementById(targetId);
+    if (!input) return;
+
+    let value = parseInt(input.value || "0", 10);
+    const min = parseInt(input.min || "0", 10);
+
+    if (e.target.classList.contains("qty-plus")) {
+      value += 1;
+    } else {
+      value = Math.max(min, value - 1);
+    }
+
+    input.value = value;
+    updateSubtotal();
+    return;
+  }
+
+  // Delete Gallery Image (Persisted)
+  if (e.target.classList.contains("delete-gallery-image")) {
+    e.preventDefault();
+    e.stopPropagation();
+    const btn = e.target;
+    const url = btn.dataset.url;
+    const form = btn.closest("form");
+    
+    if (!form.querySelector(`input[name='remove_gallery[]'][value='${url}']`)) {
+      const hidden = document.createElement("input");
+      hidden.type = "hidden";
+      hidden.name = "remove_gallery[]";
+      hidden.value = url;
+      form.appendChild(hidden);
+    }
+    btn.closest(".gallery-image-block").style.display = "none";
+    return;
+  }
+
+  // Add Variant
+  if (e.target.classList.contains("add-variant-btn")) {
+    e.preventDefault();
+    e.stopPropagation();
+    const container = document.getElementById("variant-fields");
+    const template = document.getElementById("variant-template");
+    const templateContent = template && template.content ? template.content : template;
+
+    if (templateContent && container) {
+      const clone = templateContent.querySelector(".variant-block").cloneNode(true);
+      const timestamp = Date.now().toString();
+      clone.innerHTML = clone.innerHTML.replace(/NEW_RECORD/g, timestamp);
+      clone.dataset.key = timestamp;
+      container.appendChild(clone);
+      
+      // Init dropdown
+      clone.querySelectorAll("select[name*='[name]']").forEach(typeSelect => {
+        updateValueOptions(typeSelect);
+      });
+    }
+    return;
+  }
+
+  // Delete Variant
+  if (e.target.classList.contains("delete-variant")) {
+    e.preventDefault();
+    e.stopPropagation();
+    const block = e.target.closest(".variant-block");
+    const destroyInput = block.querySelector(".destroy-flag");
+    const idInput = block.querySelector("input[name*='[id]']");
+
+    if (idInput && idInput.value && destroyInput) {
+      destroyInput.value = "1";
+      block.style.display = "none";
+    } else {
+      block.remove();
+    }
+    return;
+  }
+
+  // Add Variant Image
+  if (e.target.classList.contains("add-variant-image-btn")) {
+    e.preventDefault();
+    e.stopPropagation();
+    const block = e.target.closest(".variant-block");
+    const imagesWrapper = block.querySelector(".variant-images-wrapper");
+    const template = document.getElementById("variant-image-template");
+    const templateContent = template && template.content ? template.content : template;
+
+    if (templateContent && imagesWrapper && block) {
+      const newImageBlock = templateContent.querySelector(".variant-image-block").cloneNode(true);
+      const variantKey = block.dataset.key || Date.now().toString();
+      const index = imagesWrapper.querySelectorAll(".variant-image-block").length;
+
+      newImageBlock.querySelectorAll("input, button").forEach(element => {
+        if (element.name) {
+          element.name = element.name.replace(/INDEX/g, variantKey).replace(/NEW_IMAGE/g, index);
+        }
+      });
+      imagesWrapper.appendChild(newImageBlock);
+    }
+    return;
+  }
+
+  // Delete Variant Image
+  if (e.target.classList.contains("delete-variant-image")) {
+    e.preventDefault();
+    e.stopPropagation();
+    const imgBlock = e.target.closest(".variant-image-block");
+    const destroyInput = imgBlock.querySelector("input[name*='[_destroy]']");
+    const idInput = imgBlock.querySelector("input[name*='[id]']");
+
+    if (idInput && idInput.value && destroyInput) {
+      destroyInput.value = "1";
+      imgBlock.style.display = "none";
+    } else {
+      imgBlock.remove();
+    }
+    return;
+  }
+});
+
+// Consolidated Input Handler (attached once, never duplicated)
+document.addEventListener("input", (e) => {
+  if (e.target.classList.contains("variant-qty")) {
+    updateSubtotal();
+  }
+});
+
+// Consolidated Change Handler (attached once, never duplicated)
+document.addEventListener("change", (e) => {
+  if (e.target.matches("select[name*='[name]']")) {
+    updateValueOptions(e.target);
+  }
+  if (e.target.matches("input[type='file'][name*='[image]']")) {
+    previewVariantImage(e);
+  }
+});
+
 // Use turbo:load so bindings re-apply after Turbo Stream updates
 document.addEventListener("turbo:load", () => {
   // -----------------------------
@@ -134,251 +303,79 @@ document.addEventListener("turbo:load", () => {
     });
   }
 
-  // -----------------------------
-  // 5. Quantity & Subtotal Logic (CONSOLIDATED)
-  // -----------------------------
-  const subtotalEl = document.getElementById("subtotal");
-
-  function updateSubtotal() {
-    let totalKES = 0;
-    document.querySelectorAll(".variant-qty").forEach(input => {
-      const qty = parseInt(input.value || "0", 10);
-      const price = parseFloat(input.dataset.price || "0");
-      // Find the specific subtotal element for this variant/product
-      // Assumes HTML structure: id="variants_123" -> subtotal element id="subtotal_variants_123"
-      const variantSubtotalEl = document.getElementById(`subtotal_${input.id}`);
-      const subtotalKES = qty * price;
-
-      if (variantSubtotalEl) {
-        variantSubtotalEl.textContent = qty > 0 ? `= ${subtotalKES.toFixed(2)} KES` : "";
-      }
-
-      totalKES += subtotalKES;
-    });
-
-    if (subtotalEl) {
-      const usdRate = 0.0075; 
-      const totalUSD = totalKES * usdRate;
-      subtotalEl.textContent = `Subtotal: ${totalKES.toFixed(2)} KES ≈ ${totalUSD.toFixed(2)} USD`;
-    }
-  }
-
-  // Unified Click Handler for +/- buttons
-  document.addEventListener("click", (e) => {
-    if (e.target.classList.contains("qty-plus") || e.target.classList.contains("qty-minus")) {
-      e.preventDefault(); // Stop any default button behavior
-      const targetId = e.target.dataset.target;
-      const input = document.getElementById(targetId);
-      if (!input) return;
-
-      let value = parseInt(input.value || "0", 10);
-      const min = parseInt(input.min || "0", 10);
-
-      if (e.target.classList.contains("qty-plus")) {
-        value += 1;
-      } else {
-        value = Math.max(min, value - 1);
-      }
-
-      input.value = value;
-      updateSubtotal();
-    }
-  });
-
-  // Listener for manual input
-  document.addEventListener("input", (e) => {
-    if (e.target.classList.contains("variant-qty")) {
-      updateSubtotal();
-    }
-  });
-
-  // Initial calculation
-  updateSubtotal();
-
-
-  // -----------------------------
-  // 6. Preview Variant Image (Helper)
-  // -----------------------------
-  window.previewVariantImage = function(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    const block = event.target.closest(".variant-image-block");
-    if (!block) return;
-
-    let preview = block.querySelector(".variant-image-preview");
-    if (!preview) {
-      preview = document.createElement("img");
-      preview.className = "img-thumbnail mb-2 variant-image-preview";
-      preview.style.maxHeight = "150px";
-      event.target.insertAdjacentElement("beforebegin", preview);
-    }
-
-    const blobUrl = URL.createObjectURL(file);
-    preview.src = blobUrl;
-    preview.style.display = "block"; 
-    preview.onload = () => URL.revokeObjectURL(blobUrl);
-  };
-
-  // -----------------------------
-  // 7. Variant Dropdown Logic
-  // -----------------------------
-  const typeOptions = {
-    Color: ["Black","Blue","Red","Green","White"],
-    Size: ["XS","S","M","L","XL","XXL"],
-    Storage: ["64GB","128GB","256GB","512GB","1TB"],
-    Material: ["Cotton","Leather","Polyester","Plastic","Metal","Wood"],
-    Packaging: ["Box","Bag","Sachet","Envelope","Bottle","Jar"]
-  };
-
-  function updateValueOptions(typeSelect) {
-    const selected = typeSelect.value;
-    const block = typeSelect.closest(".variant-block");
-    const valueSelect = block.querySelector("select[name*='[value]']");
-    if (!valueSelect) return;
-
-    valueSelect.innerHTML = "";
-    const options = typeOptions[selected] || [];
-    
-    const promptOption = document.createElement("option");
-    promptOption.value = "";
-    promptOption.textContent = "Select option";
-    valueSelect.appendChild(promptOption);
-
-    options.forEach(opt => {
-      const option = document.createElement("option");
-      option.value = opt;
-      option.textContent = opt;
-      valueSelect.appendChild(option);
-    });
-
-    const savedValue = valueSelect.dataset.current || block.dataset.savedValue;
-    if (savedValue) {
-      const match = Array.from(valueSelect.options).find(o => o.value === savedValue);
-      if (match) valueSelect.value = savedValue;
-    }
-
-    const actions = block.querySelector(".color-image-actions");
-    if (actions) actions.classList.toggle("d-none", selected !== "Color");
-  }
-
-  // -----------------------------
-  // 8. Event Delegation for Dynamic Elements
-  // -----------------------------
+  // === Quantity & Subtotal Logic ===
+  // (Now handled by delegated event listeners defined outside turbo:load)
   
-  // Change event for Variant Type Select
-  document.addEventListener("change", (e) => {
-    if (e.target.matches("select[name*='[name]']")) {
-      updateValueOptions(e.target);
-    }
-    // Preview Variant Image Input
-    if (e.target.matches("input[type='file'][name*='[image]']")) {
-      previewVariantImage(e);
-    }
-  });
+  // Initial calculation on page load
+  updateSubtotal();
 
   // Initialize existing variant selects
   document.querySelectorAll("select[name*='[name]']").forEach(typeSelect => {
     updateValueOptions(typeSelect);
   });
+});
 
-  // Click events for Add/Delete buttons
-  document.addEventListener("click", (e) => {
-    
-    // Delete Gallery Image (Persisted)
-    if (e.target.classList.contains("delete-gallery-image")) {
-      e.preventDefault();
-      e.stopPropagation();
-      const btn = e.target;
-      const url = btn.dataset.url;
-      const form = btn.closest("form");
-      
-      if (!form.querySelector(`input[name='remove_gallery[]'][value='${url}']`)) {
-        const hidden = document.createElement("input");
-        hidden.type = "hidden";
-        hidden.name = "remove_gallery[]";
-        hidden.value = url;
-        form.appendChild(hidden);
-      }
-      btn.closest(".gallery-image-block").style.display = "none";
-    }
+// ============================================================
+// HELPER FUNCTIONS (Outside turbo:load, reusable)
+// ============================================================
 
-    // Add Variant
-    if (e.target.classList.contains("add-variant-btn")) {
-      e.preventDefault();
-      e.stopPropagation();
-      const container = document.getElementById("variant-fields");
-      const template = document.getElementById("variant-template");
-      const templateContent = template && template.content ? template.content : template;
+const typeOptions = {
+  Color: ["Black","Blue","Red","Green","White"],
+  Size: ["XS","S","M","L","XL","XXL"],
+  Storage: ["64GB","128GB","256GB","512GB","1TB"],
+  Material: ["Cotton","Leather","Polyester","Plastic","Metal","Wood"],
+  Packaging: ["Box","Bag","Sachet","Envelope","Bottle","Jar"]
+};
 
-      if (templateContent && container) {
-        const clone = templateContent.querySelector(".variant-block").cloneNode(true);
-        const timestamp = Date.now().toString();
-        clone.innerHTML = clone.innerHTML.replace(/NEW_RECORD/g, timestamp);
-        clone.dataset.key = timestamp;
-        container.appendChild(clone);
-        
-        // Init dropdown
-        clone.querySelectorAll("select[name*='[name]']").forEach(typeSelect => {
-          updateValueOptions(typeSelect);
-        });
-      }
-    }
+function updateValueOptions(typeSelect) {
+  const selected = typeSelect.value;
+  const block = typeSelect.closest(".variant-block");
+  const valueSelect = block.querySelector("select[name*='[value]']");
+  if (!valueSelect) return;
 
-    // Delete Variant
-    if (e.target.classList.contains("delete-variant")) {
-      e.preventDefault();
-      e.stopPropagation();
-      const block = e.target.closest(".variant-block");
-      const destroyInput = block.querySelector(".destroy-flag");
-      const idInput = block.querySelector("input[name*='[id]']");
+  valueSelect.innerHTML = "";
+  const options = typeOptions[selected] || [];
+  
+  const promptOption = document.createElement("option");
+  promptOption.value = "";
+  promptOption.textContent = "Select option";
+  valueSelect.appendChild(promptOption);
 
-      if (idInput && idInput.value && destroyInput) {
-        destroyInput.value = "1";
-        block.style.display = "none";
-      } else {
-        block.remove();
-      }
-    }
-
-    // Add Variant Image
-    if (e.target.classList.contains("add-variant-image-btn")) {
-      e.preventDefault();
-      e.stopPropagation();
-      const block = e.target.closest(".variant-block");
-      const imagesWrapper = block.querySelector(".variant-images-wrapper");
-      const template = document.getElementById("variant-image-template");
-      const templateContent = template && template.content ? template.content : template;
-
-      if (templateContent && imagesWrapper && block) {
-        const newImageBlock = templateContent.querySelector(".variant-image-block").cloneNode(true);
-        const variantKey = block.dataset.key || Date.now().toString();
-        const index = imagesWrapper.querySelectorAll(".variant-image-block").length;
-
-        newImageBlock.querySelectorAll("input, button").forEach(element => {
-          if (element.name) {
-            element.name = element.name.replace(/INDEX/g, variantKey).replace(/NEW_IMAGE/g, index);
-          }
-        });
-        imagesWrapper.appendChild(newImageBlock);
-      }
-    }
-
-    // Delete Variant Image
-    if (e.target.classList.contains("delete-variant-image")) {
-      e.preventDefault();
-      e.stopPropagation();
-      const imgBlock = e.target.closest(".variant-image-block");
-      const destroyInput = imgBlock.querySelector("input[name*='[_destroy]']");
-      const idInput = imgBlock.querySelector("input[name*='[id]']");
-
-      if (idInput && idInput.value && destroyInput) {
-        destroyInput.value = "1";
-        imgBlock.style.display = "none";
-      } else {
-        imgBlock.remove();
-      }
-    }
+  options.forEach(opt => {
+    const option = document.createElement("option");
+    option.value = opt;
+    option.textContent = opt;
+    valueSelect.appendChild(option);
   });
 
-});
+  const savedValue = valueSelect.dataset.current || block.dataset.savedValue;
+  if (savedValue) {
+    const match = Array.from(valueSelect.options).find(o => o.value === savedValue);
+    if (match) valueSelect.value = savedValue;
+  }
+
+  const actions = block.querySelector(".color-image-actions");
+  if (actions) actions.classList.toggle("d-none", selected !== "Color");
+}
+
+// Preview Variant Image (Helper)
+window.previewVariantImage = function(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const block = event.target.closest(".variant-image-block");
+  if (!block) return;
+
+  let preview = block.querySelector(".variant-image-preview");
+  if (!preview) {
+    preview = document.createElement("img");
+    preview.className = "img-thumbnail mb-2 variant-image-preview";
+    preview.style.maxHeight = "150px";
+    event.target.insertAdjacentElement("beforebegin", preview);
+  }
+
+  const blobUrl = URL.createObjectURL(file);
+  preview.src = blobUrl;
+  preview.style.display = "block"; 
+  preview.onload = () => URL.revokeObjectURL(blobUrl);
+};
