@@ -1,8 +1,7 @@
 require "csv"
 
 class FeedsController < ApplicationController
-  skip_authentication # Allow public access to feeds
-  skip_authorization  # Allow public access to feeds
+  skip_before_action :authenticate_user!, only: [:feed, :google_merchant, :json_feed]
   
   # CSV feed for merchants (Google Merchant Center, Facebook Catalog, etc.)
   def feed
