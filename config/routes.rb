@@ -103,7 +103,11 @@ Rails.application.routes.draw do
   get "dashboard/buyer",  to: "dashboards#buyer",  as: :buyer_dashboard
   get "dashboard/seller", to: "dashboards#seller", as: :seller_dashboard
   get "dashboard/analytics", to: "dashboards#analytics", as: :analytics
-  get "/merchant_feed.csv", to: "feeds#feed"
+  
+  # === Product Feeds ===
+  get "/merchant_feed.csv",      to: "feeds#feed",           as: :merchant_feed_csv
+  get "/feeds/google_merchant",  to: "feeds#google_merchant", format: "xml", as: :google_merchant_feed
+  get "/feeds/products.json",    to: "feeds#json_feed",       format: "json", as: :json_feed
 
 
 
