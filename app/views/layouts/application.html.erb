@@ -92,6 +92,24 @@
     <%= javascript_importmap_tags %>
 
     <style>
+      /* ============================================================
+         EARTHY LEATHER THEME COLORS
+         ============================================================ */
+      :root {
+        --leather-dark: #3d2817;
+        --leather-medium: #5d4e37;
+        --leather-light: #8b6f47;
+        --leather-accent: #d4c5b9;
+        --leather-tan: #c9b8a3;
+      }
+
+      body {
+        background-color: #fafaf8;
+      }
+
+      /* ============================================================
+         NAVBAR STYLING
+         ============================================================ */
       .navbar.sticky-top { z-index: 3000 !important; }
       .dropdown-menu { z-index: 3100 !important; }
       .navbar-collapse { text-align: left !important; }
@@ -100,13 +118,20 @@
       .navbar {
         backdrop-filter: blur(10px);
         background-color: rgba(255, 255, 255, 0.95) !important;
+        border-bottom: 2px solid rgba(141, 111, 71, 0.1);
       }
 
       /* Search bar in navbar */
       .navbar .input-group {
         border-radius: 20px !important;
-        border: 1px solid #e5e7eb !important;
+        border: 2px solid #e5e7eb !important;
         overflow: hidden;
+        transition: all 0.3s ease;
+      }
+
+      .navbar .input-group:focus-within {
+        border-color: var(--leather-light) !important;
+        box-shadow: 0 0 0 3px rgba(139, 111, 71, 0.1);
       }
 
       .navbar .form-control {
@@ -120,10 +145,16 @@
         font-size: 14px;
       }
 
+      .navbar .form-control:focus {
+        box-shadow: none !important;
+        border: none !important;
+      }
+
       /* Category dropdown styling */
       .dropdown-menu {
         border-radius: 12px !important;
         border: 1px solid #e5e7eb !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
       }
 
       .dropdown-item {
@@ -134,13 +165,15 @@
       }
 
       .dropdown-item:hover {
-        background-color: #f3f4f6 !important;
-        color: #1f2937 !important;
+        background-color: rgba(139, 111, 71, 0.1) !important;
+        color: var(--leather-medium) !important;
+        padding-left: 20px !important;
       }
 
       .dropdown-divider {
         margin: 4px 0 !important;
         opacity: 0.5;
+        border-color: var(--leather-light);
       }
 
       /* Nav link styling */
@@ -153,14 +186,158 @@
       }
 
       .navbar-nav .nav-link:hover {
-        color: #1f2937 !important;
-        background-color: #f3f4f6;
+        color: var(--leather-medium) !important;
+        background-color: rgba(139, 111, 71, 0.05);
       }
 
       /* Brand styling */
       .navbar-brand {
         font-size: 1.5rem !important;
         letter-spacing: -0.5px;
+        color: var(--leather-medium) !important;
+        font-weight: 700;
+      }
+
+      .navbar-brand:hover {
+        color: var(--leather-dark) !important;
+      }
+
+      /* ============================================================
+         FOOTER STYLING
+         ============================================================ */
+      footer {
+        background: linear-gradient(135deg, #3d2817 0%, #5d4e37 100%);
+      }
+
+      footer h6 {
+        color: var(--leather-accent);
+        font-weight: 700;
+        letter-spacing: 0.5px;
+      }
+
+      footer a:hover {
+        color: var(--leather-accent) !important;
+        transform: translateX(4px);
+        transition: all 0.2s ease;
+      }
+
+      .hover-text-light:hover {
+        color: white !important;
+      }
+
+      .hover-lift {
+        transition: all 0.2s ease;
+      }
+
+      .hover-lift:hover {
+        transform: translateY(-2px);
+        background-color: rgba(255, 255, 255, 0.2) !important;
+      }
+
+      footer hr {
+        border-color: rgba(255, 255, 255, 0.1);
+      }
+
+      /* Payment badges in footer */
+      footer .img-fluid {
+        filter: brightness(0.9);
+        transition: all 0.2s ease;
+      }
+
+      footer .img-fluid:hover {
+        filter: brightness(1);
+      }
+
+      /* ============================================================
+         FLASH MESSAGES
+         ============================================================ */
+      .alert-success {
+        background-color: rgba(40, 167, 69, 0.1);
+        border-color: #28a745;
+        border-left: 4px solid #28a745;
+      }
+
+      .alert-danger {
+        background-color: rgba(220, 53, 69, 0.1);
+        border-color: #dc3545;
+        border-left: 4px solid #dc3545;
+      }
+
+      /* ============================================================
+         GLOBAL STYLING
+         ============================================================ */
+      main {
+        min-height: calc(100vh - 300px);
+      }
+
+      /* Button hover effects */
+      .btn-primary {
+        background-color: var(--leather-medium);
+        border-color: var(--leather-medium);
+      }
+
+      .btn-primary:hover {
+        background-color: var(--leather-dark);
+        border-color: var(--leather-dark);
+        box-shadow: 0 5px 15px rgba(93, 78, 55, 0.3);
+      }
+
+      .btn-outline-primary {
+        color: var(--leather-medium);
+        border-color: var(--leather-medium);
+      }
+
+      .btn-outline-primary:hover {
+        background-color: var(--leather-medium);
+        border-color: var(--leather-medium);
+      }
+
+      /* Link colors */
+      a {
+        color: var(--leather-medium);
+        transition: color 0.2s ease;
+      }
+
+      a:hover {
+        color: var(--leather-dark);
+      }
+
+      /* Scrollbar styling */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+
+      ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: var(--leather-light);
+        border-radius: 4px;
+      }
+
+      ::-webkit-scrollbar-thumb:hover {
+        background: var(--leather-medium);
+      }
+
+      /* Responsive adjustments */
+      @media (max-width: 768px) {
+        footer .row {
+          text-align: center;
+        }
+
+        footer .text-md-start {
+          text-align: center !important;
+        }
+
+        footer .text-md-end {
+          text-align: center !important;
+        }
+
+        .navbar .input-group {
+          margin: 10px 0;
+        }
       }
     </style>
   </head>
@@ -186,21 +363,116 @@
     </main>
 
     <%# --- Footer --- %>
-    <footer class="bg-light text-center py-4 mt-5 border-top">
+    <footer class="bg-dark text-light py-5 mt-5 border-top border-secondary" style="background: linear-gradient(135deg, #3d2817 0%, #5d4e37 100%) !important;">
       <div class="container">
-        <p class="mb-1 small text-muted">
-          &copy; <%= Time.current.year %> <strong>Tajaone</strong> — Kenya’s Source for Affordable Leather Products.<br>
-          <span class="text-muted">Nairobi, Kenya</span>
-        </p>
-        <p class="mb-1">
-          Email: <a href="mailto:sales@tajaone.app">sales@tajaone.app</a>
-        </p>
-        <nav class="footer-links">
-          <%= link_to "Home", root_path %> |
-          <%= link_to "About Us", about_path %> |
-          <%= link_to "Contact", contact_path %> |
-          <%= link_to "Return Policy", return_policy_path %>
-        </nav>
+        <div class="row g-4 mb-4">
+          <!-- About Section -->
+          <div class="col-md-4 mb-3 mb-md-0">
+            <h6 class="fw-bold mb-3 text-warning" style="color: #d4c5b9 !important;">
+              <i class="bi bi-shop me-2"></i>Tajaone
+            </h6>
+            <p class="small text-muted mb-3">
+              Kenya's trusted online store for high-quality, affordable leather products. Handcrafted with pride in Nairobi.
+            </p>
+            <div class="d-flex gap-2">
+              <a href="https://facebook.com" class="btn btn-sm btn-outline-light rounded-circle p-2 hover-lift" title="Facebook">
+                <i class="bi bi-facebook"></i>
+              </a>
+              <a href="https://twitter.com" class="btn btn-sm btn-outline-light rounded-circle p-2 hover-lift" title="Twitter">
+                <i class="bi bi-twitter"></i>
+              </a>
+              <a href="https://instagram.com" class="btn btn-sm btn-outline-light rounded-circle p-2 hover-lift" title="Instagram">
+                <i class="bi bi-instagram"></i>
+              </a>
+              <a href="https://whatsapp.com" class="btn btn-sm btn-outline-light rounded-circle p-2 hover-lift" title="WhatsApp">
+                <i class="bi bi-whatsapp"></i>
+              </a>
+            </div>
+          </div>
+
+          <!-- Quick Links -->
+          <div class="col-md-2 col-6">
+            <h6 class="fw-bold mb-3" style="color: #d4c5b9;">Quick Links</h6>
+            <ul class="list-unstyled small">
+              <li class="mb-2">
+                <%= link_to "Home", root_path, class: "text-muted text-decoration-none hover-text-light" %>
+              </li>
+              <li class="mb-2">
+                <%= link_to "Products", products_path, class: "text-muted text-decoration-none hover-text-light" %>
+              </li>
+              <li class="mb-2">
+                <%= link_to "About Us", about_path, class: "text-muted text-decoration-none hover-text-light" %>
+              </li>
+              <li class="mb-2">
+                <%= link_to "Contact", contact_path, class: "text-muted text-decoration-none hover-text-light" %>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Policies -->
+          <div class="col-md-2 col-6">
+            <h6 class="fw-bold mb-3" style="color: #d4c5b9;">Policies</h6>
+            <ul class="list-unstyled small">
+              <li class="mb-2">
+                <%= link_to "Return Policy", return_policy_path, class: "text-muted text-decoration-none hover-text-light" %>
+              </li>
+              <li class="mb-2">
+                <a href="#" class="text-muted text-decoration-none hover-text-light">Privacy Policy</a>
+              </li>
+              <li class="mb-2">
+                <a href="#" class="text-muted text-decoration-none hover-text-light">Terms & Conditions</a>
+              </li>
+              <li class="mb-2">
+                <a href="#" class="text-muted text-decoration-none hover-text-light">Shipping Info</a>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Contact Info -->
+          <div class="col-md-4">
+            <h6 class="fw-bold mb-3" style="color: #d4c5b9;">Contact Us</h6>
+            <ul class="list-unstyled small">
+              <li class="mb-2">
+                <i class="bi bi-envelope me-2" style="color: #d4c5b9;"></i>
+                <a href="mailto:sales@tajaone.app" class="text-muted text-decoration-none hover-text-light">
+                  sales@tajaone.app
+                </a>
+              </li>
+              <li class="mb-2">
+                <i class="bi bi-telephone me-2" style="color: #d4c5b9;"></i>
+                <a href="tel:+254726565342" class="text-muted text-decoration-none hover-text-light">
+                  +254 726 565 342
+                </a>
+              </li>
+              <li class="mb-2">
+                <i class="bi bi-geo-alt me-2" style="color: #d4c5b9;"></i>
+                <span class="text-muted">Nairobi, Kenya</span>
+              </li>
+              <li class="mb-2">
+                <i class="bi bi-clock me-2" style="color: #d4c5b9;"></i>
+                <span class="text-muted">Mon - Fri: 9AM - 6PM</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <hr class="border-secondary opacity-25 my-4">
+
+        <!-- Bottom Footer -->
+        <div class="row align-items-center">
+          <div class="col-md-6 text-center text-md-start">
+            <p class="mb-0 small text-muted">
+              &copy; <%= Time.current.year %> <span class="fw-bold" style="color: #d4c5b9;">Tajaone</span> — Kenya's Source for Affordable Leather Products.
+            </p>
+          </div>
+          <div class="col-md-6 text-center text-md-end mt-3 mt-md-0">
+            <div class="d-flex gap-2 justify-content-center justify-content-md-end flex-wrap">
+              <img src="https://img.shields.io/badge/M--PESA-Accepted-blue" alt="M-PESA" class="img-fluid" style="height: 20px;">
+              <img src="https://img.shields.io/badge/PayPal-Accepted-009cde" alt="PayPal" class="img-fluid" style="height: 20px;">
+              <img src="https://img.shields.io/badge/Secure-SSL-green" alt="SSL" class="img-fluid" style="height: 20px;">
+            </div>
+          </div>
+        </div>
       </div>
     </footer>
   </body>
