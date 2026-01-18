@@ -1,20 +1,84 @@
-      <nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top shadow-sm" role="navigation">
-        <div class="container-fluid px-0">
-          <a class="navbar-brand px-3 fw-bold text-primary" href="<%= root_path %>" aria-label="Tajaone Home">Tajaone</a>
+      <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top shadow-sm border-bottom" role="navigation">
+        <div class="container-fluid px-2">
+          <!-- Brand -->
+          <a class="navbar-brand fw-bold text-primary" href="<%= root_path %>" aria-label="Tajaone Home">
+            Tajaone
+          </a>
 
-          <div class="ms-auto me-3" id="cart-badge">
-            <%= render "layouts/cart_badge" %>
+          <!-- Search Bar (visible on desktop) -->
+          <div class="d-none d-lg-flex flex-grow-1 mx-3">
+            <form action="<%= products_path %>" method="get" class="d-flex w-100" role="search">
+              <div class="input-group input-group-sm shadow-sm">
+                <span class="input-group-text bg-white border-0 ps-3 text-muted">
+                  <i class="bi bi-search"></i>
+                </span>
+                <input type="text" name="query" class="form-control border-0 bg-white shadow-none"
+                       placeholder="Search leather bags, shoes..." value="<%= params[:query] %>" 
+                       aria-label="Search products">
+              </div>
+            </form>
           </div>
 
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                  aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-          </button>
+          <!-- Cart Badge & Toggle -->
+          <div class="d-flex align-items-center gap-2 ms-auto">
+            <div id="cart-badge">
+              <%= render "layouts/cart_badge" %>
+            </div>
 
-          <div class="collapse navbar-collapse px-3 text-start" id="navbarNav">
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+          </div>
+
+          <!-- Navbar Collapse -->
+          <div class="collapse navbar-collapse" id="navbarNav">
+            <!-- Search Bar (visible on mobile) -->
+            <div class="d-lg-none w-100 mt-3 mb-3">
+              <form action="<%= products_path %>" method="get" class="d-flex" role="search">
+                <div class="input-group input-group-sm shadow-sm">
+                  <span class="input-group-text bg-white border-0 ps-3 text-muted">
+                    <i class="bi bi-search"></i>
+                  </span>
+                  <input type="text" name="query" class="form-control border-0 bg-white shadow-none"
+                         placeholder="Search..." value="<%= params[:query] %>" 
+                         aria-label="Search products">
+                </div>
+              </form>
+            </div>
+
+            <!-- Navigation Links -->
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
               <li class="nav-item">
                 <%= link_to "Products", products_path, class: "nav-link", aria: { label: "Browse Leather Products" } %>
+              </li>
+
+              <!-- Categories Dropdown -->
+              <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="categoriesDropdown" role="button"
+                   data-bs-toggle="dropdown" aria-expanded="false">
+                  <i class="bi bi-grid-3x3-gap"></i> Categories
+                </a>
+                <ul class="dropdown-menu shadow border-0" aria-labelledby="categoriesDropdown">
+                  <% Category.where(parent_id: nil).includes(:subcategories).each do |category| %>
+                    <li>
+                      <a class="dropdown-item" href="<%= products_path(category: category.slug) %>">
+                        <%= category_icon(category.name) %>
+                        <span class="ms-2"><%= category.name %></span>
+                      </a>
+                    </li>
+                    <% if category.subcategories.any? %>
+                      <li><hr class="dropdown-divider"></li>
+                      <% category.subcategories.each do |sub| %>
+                        <li>
+                          <a class="dropdown-item ps-5" href="<%= products_path(category: category.slug, subcategory: sub.slug) %>">
+                            <%= sub.name %>
+                          </a>
+                        </li>
+                      <% end %>
+                    <% end %>
+                  <% end %>
+                </ul>
               </li>
             </ul>
 

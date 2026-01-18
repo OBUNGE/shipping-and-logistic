@@ -24,37 +24,10 @@
     </div>
   </section>
 
-  <div class="sticky-top bg-light pt-2 pb-3 mb-2" style="top: 60px; z-index: 1020;">
-    <div class="container-fluid">
-      <div class="row align-items-center g-2">
-        
-        <div class="col-lg-8 overflow-auto d-flex align-items-center gap-2 pb-2" style="white-space: nowrap; scrollbar-width: none;">
-          <% Category.where(parent_id: nil).each do |category| %>
-            <%= link_to products_path(category: category.slug),
-                class: "category-pill px-3 py-1 rounded-pill border bg-white text-decoration-none small fw-semibold #{'active-pill' if params[:category] == category.slug}" do %>
-              <%= category_icon(category.name) %> <span class="ms-1"><%= category.name %></span>
-            <% end %>
-          <% end %>
-        </div>
-
-        <div class="col-lg-4">
-          <form action="<%= products_path %>" method="get" class="d-flex" role="search">
-            <div class="input-group input-group-sm bg-white rounded-pill shadow-sm border">
-              <span class="input-group-text bg-transparent border-0 ps-3 text-muted"><i class="bi bi-search"></i></span>
-              <input type="text" name="query" class="form-control border-0 bg-transparent shadow-none"
-                     placeholder="Search..." value="<%= params[:query] %>" aria-label="Search products">
-            </div>
-          </form>
-        </div>
-
-      </div>
-    </div>
-  </div>
-
   <div class="row">
     <aside class="col-lg-2 mb-4 d-none d-lg-block">
       <div class="accordion rounded-3 border-0 bg-transparent" id="categoryAccordion" style="top: 140px; position: sticky;">
-        <h6 class="text-uppercase text-muted small fw-bold mb-3 px-2">Categories</h6>
+        <h6 class="text-uppercase text-muted small fw-bold mb-3 px-2">Refine by Category</h6>
         <% Category.where(parent_id: nil).includes(:subcategories).each_with_index do |category, idx| %>
           <div class="accordion-item border-0 bg-transparent mb-1">
             <h2 class="accordion-header" id="heading-<%= idx %>">
@@ -118,7 +91,7 @@
                 <div class="mb-2">
                   <% if product.discount.present? %>
                     <span class="text-danger fw-bold"><%= display_price(product.discounted_price) %></span>
-                    <small class="text-muted text-decoration-line-through ms-1"><%= display_price(product.price) %></small>
+                    <del class="text-muted ms-1"><%= display_price(product.price) %></del>
                   <% else %>
                     <span class="text-dark fw-bold"><%= display_price(product.price) %></span>
                   <% end %>
@@ -157,14 +130,6 @@
   .hover-lift { transition: transform 0.2s, box-shadow 0.2s; }
   .hover-lift:hover { transform: translateY(-4px); box-shadow: 0 10px 20px rgba(0,0,0,0.08) !important; }
 
-  /* Category Pills */
-  .category-pill { color: #555; transition: all 0.2s; border-color: #eee !important; }
-  .category-pill:hover, .category-pill.active-pill { background-color: #212529 !important; color: #fff !important; border-color: #212529 !important; }
-
   /* Hover Links */
   .hover-primary:hover { color: #0d6efd !important; text-decoration: underline !important; }
-
-  /* Hide scrollbar for category row */
-  .overflow-auto::-webkit-scrollbar { display: none; }
-  .overflow-auto { -ms-overflow-style: none; scrollbar-width: none; }
 </style>
