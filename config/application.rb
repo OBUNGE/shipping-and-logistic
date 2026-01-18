@@ -6,13 +6,14 @@ require "rails/all"
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
 
-module 
+module Tajaone   # ✅ Your app namespace must be a constant
   class Application < Rails::Application
     config.load_defaults 8.0
 
     # ✅ Use MiniMagick for ActiveStorage variants
     config.active_storage.variant_processor = :mini_magick
 
+    # Autoload lib/ but ignore assets and tasks
     config.autoload_lib(ignore: %w[assets tasks])
   end
 end
