@@ -93,23 +93,9 @@
 
     <style>
       /* ============================================================
-         EARTHY LEATHER THEME COLORS
+         USING EXISTING COLOR SCHEME FROM application.css.erb
          ============================================================ */
-      :root {
-        --leather-dark: #3d2817;
-        --leather-medium: #5d4e37;
-        --leather-light: #8b6f47;
-        --leather-accent: #d4c5b9;
-        --leather-tan: #c9b8a3;
-      }
-
-      body {
-        background-color: #fafaf8;
-      }
-
-      /* ============================================================
-         NAVBAR STYLING
-         ============================================================ */
+      
       .navbar.sticky-top { z-index: 3000 !important; }
       .dropdown-menu { z-index: 3100 !important; }
       .navbar-collapse { text-align: left !important; }
@@ -118,7 +104,7 @@
       .navbar {
         backdrop-filter: blur(10px);
         background-color: rgba(255, 255, 255, 0.95) !important;
-        border-bottom: 2px solid rgba(141, 111, 71, 0.1);
+        border-bottom: 2px solid rgba(139, 69, 19, 0.1);
       }
 
       /* Search bar in navbar */
@@ -130,8 +116,8 @@
       }
 
       .navbar .input-group:focus-within {
-        border-color: var(--leather-light) !important;
-        box-shadow: 0 0 0 3px rgba(139, 111, 71, 0.1);
+        border-color: #8B4513 !important;
+        box-shadow: 0 0 0 3px rgba(139, 69, 19, 0.1);
       }
 
       .navbar .form-control {
@@ -165,15 +151,15 @@
       }
 
       .dropdown-item:hover {
-        background-color: rgba(139, 111, 71, 0.1) !important;
-        color: var(--leather-medium) !important;
+        background-color: rgba(139, 69, 19, 0.08) !important;
+        color: #8B4513 !important;
         padding-left: 20px !important;
       }
 
       .dropdown-divider {
         margin: 4px 0 !important;
         opacity: 0.5;
-        border-color: var(--leather-light);
+        border-color: #8B4513;
       }
 
       /* Nav link styling */
@@ -186,37 +172,37 @@
       }
 
       .navbar-nav .nav-link:hover {
-        color: var(--leather-medium) !important;
-        background-color: rgba(139, 111, 71, 0.05);
+        color: #8B4513 !important;
+        background-color: rgba(139, 69, 19, 0.05);
       }
 
       /* Brand styling */
       .navbar-brand {
         font-size: 1.5rem !important;
         letter-spacing: -0.5px;
-        color: var(--leather-medium) !important;
+        color: #8B4513 !important;
         font-weight: 700;
       }
 
       .navbar-brand:hover {
-        color: var(--leather-dark) !important;
+        color: #6F370F !important;
       }
 
       /* ============================================================
-         FOOTER STYLING
+         FOOTER STYLING - Using existing brown color scheme
          ============================================================ */
       footer {
-        background: linear-gradient(135deg, #3d2817 0%, #5d4e37 100%);
+        background: linear-gradient(135deg, #6F370F 0%, #8B4513 100%);
       }
 
       footer h6 {
-        color: var(--leather-accent);
+        color: #DEB887;
         font-weight: 700;
         letter-spacing: 0.5px;
       }
 
       footer a:hover {
-        color: var(--leather-accent) !important;
+        color: #DEB887 !important;
         transform: translateX(4px);
         transition: all 0.2s ease;
       }
@@ -270,36 +256,36 @@
         min-height: calc(100vh - 300px);
       }
 
-      /* Button hover effects */
+      /* Button hover effects - using existing brown color */
       .btn-primary {
-        background-color: var(--leather-medium);
-        border-color: var(--leather-medium);
+        background-color: #8B4513;
+        border-color: #8B4513;
       }
 
       .btn-primary:hover {
-        background-color: var(--leather-dark);
-        border-color: var(--leather-dark);
-        box-shadow: 0 5px 15px rgba(93, 78, 55, 0.3);
+        background-color: #6F370F;
+        border-color: #6F370F;
+        box-shadow: 0 5px 15px rgba(139, 69, 19, 0.3);
       }
 
       .btn-outline-primary {
-        color: var(--leather-medium);
-        border-color: var(--leather-medium);
+        color: #8B4513;
+        border-color: #8B4513;
       }
 
       .btn-outline-primary:hover {
-        background-color: var(--leather-medium);
-        border-color: var(--leather-medium);
+        background-color: #8B4513;
+        border-color: #8B4513;
       }
 
       /* Link colors */
       a {
-        color: var(--leather-medium);
+        color: #8B4513;
         transition: color 0.2s ease;
       }
 
       a:hover {
-        color: var(--leather-dark);
+        color: #6F370F;
       }
 
       /* Scrollbar styling */
@@ -313,12 +299,12 @@
       }
 
       ::-webkit-scrollbar-thumb {
-        background: var(--leather-light);
+        background: #8B4513;
         border-radius: 4px;
       }
 
       ::-webkit-scrollbar-thumb:hover {
-        background: var(--leather-medium);
+        background: #6F370F;
       }
 
       /* Responsive adjustments */
@@ -363,12 +349,12 @@
     </main>
 
     <%# --- Footer --- %>
-    <footer class="bg-dark text-light py-5 mt-5 border-top border-secondary" style="background: linear-gradient(135deg, #3d2817 0%, #5d4e37 100%) !important;">
+    <footer class="bg-dark text-light py-5 mt-5 border-top border-secondary" style="background: linear-gradient(135deg, #6F370F 0%, #8B4513 100%) !important;">
       <div class="container">
         <div class="row g-4 mb-4">
           <!-- About Section -->
           <div class="col-md-4 mb-3 mb-md-0">
-            <h6 class="fw-bold mb-3 text-warning" style="color: #d4c5b9 !important;">
+            <h6 class="fw-bold mb-3 text-warning" style="color: #DEB887 !important;">
               <i class="bi bi-shop me-2"></i>Tajaone
             </h6>
             <p class="small text-muted mb-3">
@@ -392,7 +378,7 @@
 
           <!-- Quick Links -->
           <div class="col-md-2 col-6">
-            <h6 class="fw-bold mb-3" style="color: #d4c5b9;">Quick Links</h6>
+            <h6 class="fw-bold mb-3" style="color: #DEB887;">Quick Links</h6>
             <ul class="list-unstyled small">
               <li class="mb-2">
                 <%= link_to "Home", root_path, class: "text-muted text-decoration-none hover-text-light" %>
@@ -411,7 +397,7 @@
 
           <!-- Policies -->
           <div class="col-md-2 col-6">
-            <h6 class="fw-bold mb-3" style="color: #d4c5b9;">Policies</h6>
+            <h6 class="fw-bold mb-3" style="color: #DEB887;">Policies</h6>
             <ul class="list-unstyled small">
               <li class="mb-2">
                 <%= link_to "Return Policy", return_policy_path, class: "text-muted text-decoration-none hover-text-light" %>
@@ -430,26 +416,26 @@
 
           <!-- Contact Info -->
           <div class="col-md-4">
-            <h6 class="fw-bold mb-3" style="color: #d4c5b9;">Contact Us</h6>
+            <h6 class="fw-bold mb-3" style="color: #DEB887;">Contact Us</h6>
             <ul class="list-unstyled small">
               <li class="mb-2">
-                <i class="bi bi-envelope me-2" style="color: #d4c5b9;"></i>
+                <i class="bi bi-envelope me-2" style="color: #DEB887;"></i>
                 <a href="mailto:sales@tajaone.app" class="text-muted text-decoration-none hover-text-light">
                   sales@tajaone.app
                 </a>
               </li>
               <li class="mb-2">
-                <i class="bi bi-telephone me-2" style="color: #d4c5b9;"></i>
+                <i class="bi bi-telephone me-2" style="color: #DEB887;"></i>
                 <a href="tel:+254726565342" class="text-muted text-decoration-none hover-text-light">
                   +254 726 565 342
                 </a>
               </li>
               <li class="mb-2">
-                <i class="bi bi-geo-alt me-2" style="color: #d4c5b9;"></i>
+                <i class="bi bi-geo-alt me-2" style="color: #DEB887;"></i>
                 <span class="text-muted">Nairobi, Kenya</span>
               </li>
               <li class="mb-2">
-                <i class="bi bi-clock me-2" style="color: #d4c5b9;"></i>
+                <i class="bi bi-clock me-2" style="color: #DEB887;"></i>
                 <span class="text-muted">Mon - Fri: 9AM - 6PM</span>
               </li>
             </ul>
@@ -462,7 +448,7 @@
         <div class="row align-items-center">
           <div class="col-md-6 text-center text-md-start">
             <p class="mb-0 small text-muted">
-              &copy; <%= Time.current.year %> <span class="fw-bold" style="color: #d4c5b9;">Tajaone</span> — Kenya's Source for Affordable Leather Products.
+              &copy; <%= Time.current.year %> <span class="fw-bold" style="color: #DEB887;">Tajaone</span> — Kenya's Source for Affordable Leather Products.
             </p>
           </div>
           <div class="col-md-6 text-center text-md-end mt-3 mt-md-0">

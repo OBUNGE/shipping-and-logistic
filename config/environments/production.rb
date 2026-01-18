@@ -76,6 +76,10 @@ Rails.application.configure do
 
   # ✅ Active Storage: serve via proxy (for Supabase)
   config.active_storage.resolve_model_to_route = :rails_storage_proxy
+
+  # ✅ Timezone configuration (critical for receipts & dashboard)
+  config.time_zone = 'Nairobi'
+  config.active_record.default_timezone = :utc
 end
 
 # ✅ Ensure URL helpers (like *_url) generate full URLs
@@ -84,5 +88,11 @@ Rails.application.routes.default_url_options[:protocol] = "https"
 
 
 # config/environments/development.rb
+Rails.application.configure do
+  # ✅ Match Nairobi timezone locally too
+  config.time_zone = 'Nairobi'
+  config.active_record.default_timezone = :utc
+end
+
 Rails.application.routes.default_url_options[:host] = "localhost:3000"
 Rails.application.routes.default_url_options[:protocol] = "http"
