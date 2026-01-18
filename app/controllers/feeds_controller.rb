@@ -1,8 +1,6 @@
 require "csv"
 
 class FeedsController < ApplicationController
-  skip_before_action :authenticate_user!, only: [:feed, :google_merchant, :json_feed]
-  
   # CSV feed for merchants (Google Merchant Center, Facebook Catalog, etc.)
   def feed
     @products = Product.where(published: true).includes(:category)
