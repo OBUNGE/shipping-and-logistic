@@ -3,7 +3,7 @@
   <channel>
     <title>Tajaone - Leather Products Kenya</title>
     <link>https://tajaone.app</link>
-    <description>High-quality, affordable leather bags, shoes & accessories in Kenya</description>
+    <description>High-quality, affordable leather bags, shoes &amp; accessories in Kenya</description>
     <language>en-us</language>
     <lastBuildDate><%= Time.current.to_fs(:rfc822) %></lastBuildDate>
 
@@ -11,37 +11,36 @@
       <item>
         <!-- Required Fields -->
         <g:id><%= product.id %></g:id>
-        <title><%= CGI.escapeHTML(product.title) %></title>
-        <description><%= CGI.escapeHTML(truncate(product.description, length: 5000)) %></description>
-        <g:price><%= product.price %> KES</g:price>
-        <link><%= product_url(product, host: "tajaone.app", protocol: "https") %></link>
-        <g:image_link><%= product.image_url %></g:image_link>
-        <g:availability><%= product.stock > 0 ? 'in stock' : 'out of stock' %></g:availability>
+        <title><%= CGI.escapeHTML(product.title.to_s) %></title>
+        <description><%= CGI.escapeHTML(truncate(product.description.to_s, length: 5000)) %></description>
+        <g:price><%= product.price.to_i %></g:price>
+        <link><%= product_url(product, protocol: "https") %></link>
+        <g:image_link><%= product.image_url.to_s %></g:image_link>
+        <g:availability><%= product.stock.to_i > 0 ? 'in stock' : 'out of stock' %></g:availability>
         
         <!-- Recommended Fields -->
         <g:condition>new</g:condition>
         <g:brand>Tajaone</g:brand>
-        <g:product_type><%= CGI.escapeHTML(product.category&.name || 'Leather Goods') %></g:product_type>
+        <g:product_type><%= CGI.escapeHTML((product.category&.name || 'Leather Goods').to_s) %></g:product_type>
         <g:google_product_category>Apparel &amp; Accessories &gt; Bags &amp; Cases</g:google_product_category>
         
         <!-- Additional Images -->
-        <% if product.gallery_image_urls.present? %>
+        <% if product.gallery_image_urls&.any? %>
           <% product.gallery_image_urls.first(10).each do |url| %>
             <g:additional_image_link><%= url %></g:additional_image_link>
           <% end %>
         <% end %>
         
         <!-- Optional Fields -->
-        <% if product.weight.present? %>
+        <% if product.weight.present? && product.weight > 0 %>
           <g:shipping_weight><%= product.weight %> kg</g:shipping_weight>
         <% end %>
         
-        <% if product.discount.present? && product.discount.percentage > 0 %>
-          <g:sale_price><%= (product.price * (1 - product.discount.percentage / 100)).round(2) %> KES</g:sale_price>
+        <% if product.discount&.percentage.to_i > 0 %>
+          <g:sale_price><%= (product.price * (1 - product.discount.percentage / 100.0)).round(2) %></g:sale_price>
         <% end %>
         
         <g:mpn><%= product.id %></g:mpn>
-        <g:gtin></g:gtin>
       </item>
     <% end %>
   </channel>

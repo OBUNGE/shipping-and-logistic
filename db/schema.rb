@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_26_055608) do
+ActiveRecord::Schema[8.0].define(version: 2026_01_19_161934) do
   create_schema "auth"
   create_schema "extensions"
   create_schema "graphql"
@@ -187,6 +187,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_26_055608) do
     t.string "payment_method"
     t.decimal "subtotal", precision: 12, scale: 2, default: "0.0", null: false
     t.decimal "shipping_total", precision: 12, scale: 2, default: "0.0", null: false
+    t.string "guest_token"
   end
 
   create_table "payments", force: :cascade do |t|
@@ -241,6 +242,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_26_055608) do
     t.string "slug"
     t.jsonb "gallery_image_urls", default: []
     t.decimal "weight", precision: 8, scale: 2, default: "0.0", null: false
+    t.boolean "published"
     t.index ["category_id"], name: "index_products_on_category_id"
     t.index ["seller_id"], name: "index_products_on_seller_id"
     t.index ["slug"], name: "index_products_on_slug", unique: true
