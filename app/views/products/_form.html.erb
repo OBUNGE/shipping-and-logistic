@@ -61,6 +61,41 @@
           { class: "form-select form-select-sm", id: "subcategory-select", data: { current: @product.subcategory_id } } %>
   </div>
 
+  <!-- 🏷️ Google Merchant Attributes -->
+  <div class="row g-2 mb-3">
+    <div class="col-md-6">
+      <%= form.label :color, "Color", class: "form-label small" %>
+      <%= form.text_field :color,
+            class: "form-control form-control-sm",
+            placeholder: "e.g. Brown, Black, Red" %>
+    </div>
+
+    <div class="col-md-6">
+      <%= form.label :size, "Size", class: "form-label small" %>
+      <%= form.text_field :size,
+            class: "form-control form-control-sm",
+            placeholder: "e.g. One Size, Medium, Large" %>
+    </div>
+  </div>
+
+  <div class="row g-2 mb-3">
+    <div class="col-md-6">
+      <%= form.label :age_group, "Age Group", class: "form-label small" %>
+      <%= form.select :age_group,
+            ["Adult", "Teen", "Kids", "Infant"],
+            { prompt: "Select age group" },
+            { class: "form-select form-select-sm" } %>
+    </div>
+
+    <div class="col-md-6">
+      <%= form.label :gender, "Gender", class: "form-label small" %>
+      <%= form.select :gender,
+            ["Unisex", "Male", "Female"],
+            { prompt: "Select gender" },
+            { class: "form-select form-select-sm" } %>
+    </div>
+  </div>
+
   <!-- ⚖️ Shipping attributes -->
   <div class="row g-2 mb-3">
     <div class="col-md-4">

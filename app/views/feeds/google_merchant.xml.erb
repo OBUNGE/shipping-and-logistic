@@ -45,6 +45,11 @@
           <g:gender>unisex</g:gender>
         <% end %>
         
+        <!-- Size (if applicable) -->
+        <% if product.try(:size).present? %>
+          <g:size><%= CGI.escapeHTML(product.size.to_s) %></g:size>
+        <% end %>
+        
         <!-- Additional Images -->
         <% if product.gallery_image_urls&.any? %>
           <% product.gallery_image_urls.first(10).each do |url| %>

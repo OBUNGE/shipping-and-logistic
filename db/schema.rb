@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_01_19_161934) do
+ActiveRecord::Schema[8.0].define(version: 2026_01_19_202838) do
   create_schema "auth"
   create_schema "extensions"
   create_schema "graphql"
@@ -243,6 +243,10 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_19_161934) do
     t.jsonb "gallery_image_urls", default: []
     t.decimal "weight", precision: 8, scale: 2, default: "0.0", null: false
     t.boolean "published"
+    t.string "color"
+    t.string "age_group"
+    t.string "gender"
+    t.string "size"
     t.index ["category_id"], name: "index_products_on_category_id"
     t.index ["seller_id"], name: "index_products_on_seller_id"
     t.index ["slug"], name: "index_products_on_slug", unique: true
