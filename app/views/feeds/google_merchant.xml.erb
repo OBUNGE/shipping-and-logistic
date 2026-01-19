@@ -13,7 +13,7 @@
         <g:id><%= product.id %></g:id>
         <title><%= CGI.escapeHTML(product.title.to_s) %></title>
         <description><%= CGI.escapeHTML(truncate(product.description.to_s, length: 5000)) %></description>
-        <g:price><%= product.price.to_i %></g:price>
+        <g:price><%= product.price.to_i %> <%= product.currency || 'KES' %></g:price>
         <link><%= product_url(product, protocol: "https") %></link>
         <g:image_link><%= product.image_url.to_s %></g:image_link>
         <g:availability><%= product.stock.to_i > 0 ? 'in stock' : 'out of stock' %></g:availability>
@@ -37,7 +37,7 @@
         <% end %>
         
         <% if product.discount&.percentage.to_i > 0 %>
-          <g:sale_price><%= (product.price * (1 - product.discount.percentage / 100.0)).round(2) %></g:sale_price>
+          <g:sale_price><%= (product.price * (1 - product.discount.percentage / 100.0)).round(2) %> <%= product.currency || 'KES' %></g:sale_price>
         <% end %>
         
         <g:mpn><%= product.id %></g:mpn>
