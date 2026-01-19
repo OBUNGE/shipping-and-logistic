@@ -24,6 +24,27 @@
         <g:product_type><%= CGI.escapeHTML((product.category&.name || 'Leather Goods').to_s) %></g:product_type>
         <g:google_product_category>Apparel &amp; Accessories &gt; Bags &amp; Cases</g:google_product_category>
         
+        <!-- Color (required for apparel) -->
+        <% if product.try(:color).present? %>
+          <g:color><%= CGI.escapeHTML(product.color.to_s) %></g:color>
+        <% else %>
+          <g:color>Brown</g:color>
+        <% end %>
+        
+        <!-- Age Group -->
+        <% if product.try(:age_group).present? %>
+          <g:age_group><%= CGI.escapeHTML(product.age_group.to_s) %></g:age_group>
+        <% else %>
+          <g:age_group>adult</g:age_group>
+        <% end %>
+        
+        <!-- Gender -->
+        <% if product.try(:gender).present? %>
+          <g:gender><%= CGI.escapeHTML(product.gender.to_s) %></g:gender>
+        <% else %>
+          <g:gender>unisex</g:gender>
+        <% end %>
+        
         <!-- Additional Images -->
         <% if product.gallery_image_urls&.any? %>
           <% product.gallery_image_urls.first(10).each do |url| %>
@@ -31,11 +52,27 @@
           <% end %>
         <% end %>
         
-        <!-- Optional Fields -->
+        <!-- Shipping (Required) -->
+        <g:shipping>
+          <g:country>KE</g:country>
+          <% if product.shipping_cost.to_f > 0 %>
+            <g:price><%= product.shipping_cost.to_i %> <%= product.currency || 'KES' %></g:price>
+          <% else %>
+            <g:price>0 <%= product.currency || 'KES' %></g:price>
+          <% end %>
+          <% if product.estimated_delivery_range.present? %>
+            <g:transit_time_label><%= CGI.escapeHTML(product.estimated_delivery_range) %></g:transit_time_label>
+          <% else %>
+            <g:transit_time_label>2-5 business days</g:transit_time_label>
+          <% end %>
+        </g:shipping>
+        
+        <!-- Weight -->
         <% if product.weight.present? && product.weight > 0 %>
           <g:shipping_weight><%= product.weight %> kg</g:shipping_weight>
         <% end %>
         
+        <!-- Sale Price (if discount exists) -->
         <% if product.discount&.percentage.to_i > 0 %>
           <g:sale_price><%= (product.price * (1 - product.discount.percentage / 100.0)).round(2) %> <%= product.currency || 'KES' %></g:sale_price>
         <% end %>
