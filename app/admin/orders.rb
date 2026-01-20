@@ -16,9 +16,7 @@ ActiveAdmin.register Order do
     column("Total") { |order| number_to_currency(order.total) }
     column :status
     column("Provider") do |order|
-      provider_label = order.provider.to_s
-      provider_style = provider_label == "pod" ? :warning : :ok
-      status_tag(provider_label, provider_style)
+      status_tag(order.provider.upcase)
     end
     column :created_at
 
