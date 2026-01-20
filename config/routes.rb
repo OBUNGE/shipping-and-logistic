@@ -1,7 +1,4 @@
 Rails.application.routes.draw do
-  # === Sitemap ===
-  get "sitemap.xml", to: "sitemaps#index", defaults: { format: :xml }
-
   # === Devise / ActiveAdmin ===
   devise_for :admin_users, ActiveAdmin::Devise.config
   ActiveAdmin.routes(self)

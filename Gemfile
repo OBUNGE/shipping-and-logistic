@@ -23,6 +23,9 @@ gem "ruby-vips"
 # For environment variables (API keys)
 gem 'dotenv-rails', groups: [:development, :test, :production]
 
+# For sitemap generation
+gem 'sitemap_generator'
+
 
 # For money formatting
 gem 'money-rails'
