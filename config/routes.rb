@@ -130,9 +130,6 @@ Rails.application.routes.draw do
   get "contact",       to: "pages#contact"
   get "return-policy", to: "pages#return_policy"
 
-  # === Sitemap ===
-  get "sitemap.xml", to: redirect("/sitemaps/sitemap.xml.gz")
-
   # === ActiveStorage ===
   mount ActiveStorage::Engine => "/rails/active_storage"
 
