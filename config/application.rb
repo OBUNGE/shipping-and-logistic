@@ -13,6 +13,9 @@ module Tajaone   # ✅ Your app namespace must be a constant
     # ✅ Use MiniMagick for ActiveStorage variants
     config.active_storage.variant_processor = :mini_magick
 
+    # Set the application timezone to match your local time
+    config.time_zone = 'Africa/Nairobi'  # Adjust this to your timezone
+
     # Autoload lib/ but ignore assets and tasks
     config.autoload_lib(ignore: %w[assets tasks])
   end
