@@ -1,19 +1,30 @@
-# Set the host name for URL creation
+# config/sitemap.rb
 SitemapGenerator::Sitemap.default_host = 'https://tajaone.app'
+SitemapGenerator::Sitemap.create_index = true  # useful if you grow large
 
-# Pick a standard host for the RAILS_ENV
 SitemapGenerator::Sitemap.create do
-  # Homepage
+  # Static pages
   add root_path, changefreq: 'weekly', priority: 1.0
+  add about_path, changefreq: 'monthly', priority: 0.7
+  add contact_path, changefreq: 'monthly', priority: 0.7
+  add return_policy_path, changefreq: 'monthly', priority: 0.6
 
-  # Products index
+  # Products
   add products_path, changefreq: 'weekly', priority: 0.9
-
-  # Individual products
   Product.find_each do |product|
-    add product_path(product), lastmod: product.updated_at, changefreq: 'monthly', priority: 0.8
+    add product_path(product),
+        lastmod: product.updated_at,
+        changefreq: 'monthly',
+        priority: 0.8
   end
-end
 
-# Ping search engines
-SitemapGenerator::Sitemap.ping_search_engines if Rails.env.production?
+  # Categories
+  Category.find_each do |category|
+    add category_path(category),
+        lastmod: category.updated_at,
+        changefreq: 'weekly',
+        priority: 0.7
+  end
+
+
+end
