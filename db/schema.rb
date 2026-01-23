@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_01_19_202838) do
+ActiveRecord::Schema[8.0].define(version: 2026_01_23_171140) do
   create_schema "auth"
   create_schema "extensions"
   create_schema "graphql"
@@ -247,6 +247,9 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_19_202838) do
     t.string "age_group"
     t.string "gender"
     t.string "size"
+    t.decimal "cost_price", precision: 10, scale: 2, comment: "What you paid for the product"
+    t.decimal "profit_margin_percent", precision: 5, scale: 2, comment: "Target profit margin %"
+    t.string "price_ending", comment: "Psychological pricing ending (99, 95, 90, 00)"
     t.index ["category_id"], name: "index_products_on_category_id"
     t.index ["seller_id"], name: "index_products_on_seller_id"
     t.index ["slug"], name: "index_products_on_slug", unique: true

@@ -365,21 +365,20 @@
     </div>
   </section>
 
-  <section class="row mt-5">
-    <div class="col-12">
-      <div class="border rounded-4 p-4 p-lg-5 bg-white shadow-sm">
-        <div class="d-flex align-items-center justify-content-between mb-4 border-bottom pb-3">
-           <h2 class="h4 fw-bold mb-0">Customer Reviews</h2>
-           <div class="text-end">
-             <%= render_stars(@product.average_rating) %>
-             <div class="small text-muted"><%= @product.reviews.count %> global ratings</div>
-           </div>
+  <section class="mt-5">
+    <div class="border rounded-4 p-4 p-lg-5 bg-white shadow-sm">
+      <div class="d-flex align-items-center justify-content-between mb-4 border-bottom pb-3">
+        <h2 class="h4 fw-bold mb-0">Customer Reviews</h2>
+        <div class="text-end">
+          <%= render_stars(@product.average_rating) %>
+          <div class="small text-muted"><%= @product.reviews.count %> global ratings</div>
         </div>
+      </div>
 
-        <% if @product.reviews.any? %>
-          <div class="row">
-            <% @reviews.each do |review| %>
-              <div class="col-md-6 mb-4">
+      <% if @product.reviews.any? %>
+        <div class="row g-4">
+          <% @reviews.each do |review| %>
+            <div class="col-md-6">
                 <div class="border rounded-3 p-3 h-100 bg-light position-relative">
                   <div class="d-flex justify-content-between align-items-start">
                     <div>
@@ -411,26 +410,26 @@
                   </div>
                 </div>
               </div>
-            <% end %>
-          </div>
-          <%= paginate @reviews %>
-        <% else %>
-          <div class="text-center py-5">
-             <i class="bi bi-chat-square-text display-4 text-muted mb-3 d-block"></i>
-             <p class="text-muted">No reviews yet. Be the first to share your thoughts!</p>
-          </div>
-        <% end %>
-
-        <div class="mt-4 p-4 bg-light rounded-3">
-           <h5 class="fw-bold mb-3">Write a Review</h5>
-           <%= render partial: "reviews/form", locals: { product: @product, review: Review.new } %>
+            </div>
+          <% end %>
         </div>
+        <%= paginate @reviews %>
+      <% else %>
+        <div class="text-center py-5">
+          <i class="bi bi-chat-square-text display-4 text-muted mb-3 d-block"></i>
+          <p class="text-muted">No reviews yet. Be the first to share your thoughts!</p>
+        </div>
+      <% end %>
+
+      <div class="mt-4 p-4 bg-light rounded-3">
+        <h5 class="fw-bold mb-3">Write a Review</h5>
+        <%= render partial: "reviews/form", locals: { product: @product, review: Review.new } %>
       </div>
     </div>
   </section>
 
   <section class="mt-5">
-    <h3 class="fw-bold mb-4">Related Products</h3>
+    <h2 class="h4 fw-bold mb-4">Related Products</h2>
     <div class="row row-cols-2 row-cols-md-4 g-4">
       <% Product.where.not(id: @product.id).limit(4).each do |related| %>
         <div class="col">

@@ -20,13 +20,33 @@
 
 .star-rating .star {
   font-size: 1.5rem;
-  color: #ccc;
   cursor: pointer;
+  transition: transform 0.2s ease, filter 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem;
 }
 
-.star-rating input[type="radio"]:checked ~ label i,
-.star-rating label:hover i {
+.star-rating .star:hover {
+  transform: scale(1.15);
+  filter: drop-shadow(0 0 4px rgba(245, 197, 24, 0.5));
+}
+
+.star-rating .star i {
+  transition: all 0.2s ease;
+}
+
+.star-rating .star i.bi-star {
+  color: #ccc;
+}
+
+.star-rating .star i.bi-star-fill {
   color: #f5c518; /* gold */
+}
+
+.star-rating input[type="radio"]:checked ~ label i {
+  color: #f5c518;
 }
 /* ===========================
    Product Gallery & Thumbnails

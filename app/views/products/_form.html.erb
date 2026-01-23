@@ -117,39 +117,100 @@
   </div>
 
   <!-- 💰 Pricing -->
-  <div class="row g-2 mb-3">
-    <div class="col-md-6">
-      <%= form.label :price, "Base Price (KES)", class: "form-label small" %>
-      <%= form.number_field :price,
-            step: 1,
-            class: "form-control form-control-sm",
-            id: "product_price",
-            placeholder: "e.g. 1200",
-            required: true %>
-      <small class="text-muted">
-        Stored in KES — buyers will see <%= display_price(1200) %> (default KES, converts to USD if selected).
-      </small>
+  <div class="border rounded-3 p-3 mb-3 bg-light">
+    <h6 class="fw-bold mb-3">💰 Pricing & Profit</h6>
+    
+    <!-- Cost Price (What you paid) -->
+    <div class="row g-2 mb-3">
+      <div class="col-md-6">
+        <%= form.label :cost_price, "Cost Price (KES) - What you paid", class: "form-label small" %>
+        <%= form.number_field :cost_price,
+              step: 1,
+              class: "form-control form-control-sm",
+              id: "product_cost_price",
+              placeholder: "e.g. 500" %>
+        <small class="text-muted">Your buying/wholesale price per unit</small>
+      </div>
+
+      <div class="col-md-6">
+        <%= form.label :price, "Selling Price (KES) - What customers pay", class: "form-label small" %>
+        <%= form.number_field :price,
+              step: 1,
+              class: "form-control form-control-sm",
+              id: "product_price",
+              placeholder: "e.g. 1200",
+              required: true %>
+        <small class="text-muted">Final retail price customers see</small>
+      </div>
     </div>
 
-    <div class="col-md-6">
-      <%= form.label :shipping_cost, "Legacy Shipping Cost (optional)", class: "form-label small" %>
-      <%= form.number_field :shipping_cost,
-            step: 1,
-            class: "form-control form-control-sm",
-            id: "product_shipping_cost",
-            placeholder: "e.g. 300" %>
-      <small class="text-muted">
-        Optional per‑item fee. If weight is set, calculator will prefer weight‑based shipping.
-      </small>
+    <!-- Profit Margin Display -->
+    <div class="row g-2 mb-3">
+      <div class="col-md-6">
+        <label class="form-label small fw-bold">Profit Per Unit</label>
+        <div class="alert alert-success py-2 px-3 mb-0">
+          <strong id="profit-amount">KES 0</strong>
+          <small class="d-block text-muted">(<span id="profit-percent">0</span>% margin)</small>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <%= form.label :profit_margin_percent, "Target Profit Margin %", class: "form-label small" %>
+        <%= form.number_field :profit_margin_percent,
+              step: 0.1,
+              min: 0,
+              class: "form-control form-control-sm",
+              id: "product_margin_percent",
+              placeholder: "e.g. 50" %>
+        <small class="text-muted">Desired profit % (auto-calculated if cost price is set)</small>
+      </div>
+    </div>
+
+    <!-- Psychological Pricing -->
+    <div class="row g-2 mb-3">
+      <div class="col-md-6">
+        <%= form.label :price_ending, "Psychological Pricing (optional)", class: "form-label small" %>
+        <%= form.select :price_ending,
+              [
+                ["No (normal pricing)", ""],
+                ["Charm pricing (.99)", "99"],
+                ["Just below (.95)", "95"],
+                ["Round (.90)", "90"],
+                ["Premium (.00)", "00"]
+              ],
+              { prompt: "Select price ending" },
+              { class: "form-select form-select-sm" } %>
+        <small class="text-muted">Make price appear cheaper (e.g., 1299 instead of 1300)</small>
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label small fw-bold">Preview with Pricing</label>
+        <div class="alert alert-info py-2 px-3 mb-0">
+          <strong id="price-preview"><%= display_price(@product.price || 0) %></strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- Shipping -->
+    <div class="row g-2">
+      <div class="col-md-6">
+        <%= form.label :shipping_cost, "Legacy Shipping Cost (optional)", class: "form-label small" %>
+        <%= form.number_field :shipping_cost,
+              step: 1,
+              class: "form-control form-control-sm",
+              id: "product_shipping_cost",
+              placeholder: "e.g. 300" %>
+        <small class="text-muted">Optional per-item fee. If weight is set, calculator will prefer weight-based shipping.</small>
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label small fw-bold">Total Cost to Customer</label>
+        <div class="alert alert-primary py-2 px-3 mb-0">
+          <strong id="total-cost"><%= display_price((@product.price || 0) + (@product.shipping_cost || 0)) %></strong>
+        </div>
+      </div>
     </div>
   </div>
-
-  <p class="text-primary small mb-3">
-    💵 Total Cost:
-    <span id="total-cost">
-      <%= display_price((@product.price || 0) + (@product.shipping_cost || 0)) %>
-    </span>
-  </p>
 
   <!-- 📦 Stock -->
   <div class="row g-2 mb-3">
@@ -322,9 +383,8 @@
 </div>
 <% end %>
 
-
-
 <!-- closes form_with -->
+
 <!-- 💸 Discount Section (outside the form) -->
 <% if @product.persisted? %>
   <hr>

@@ -28,6 +28,59 @@ function updateSubtotal() {
   }
 }
 
+// ============================================================
+// PRICING & PROFIT CALCULATIONS
+// ============================================================
+
+function calculateMargin() {
+  const costPrice = parseFloat(document.getElementById('product_cost_price')?.value) || 0;
+  const sellingPrice = parseFloat(document.getElementById('product_price')?.value) || 0;
+  const shippingCost = parseFloat(document.getElementById('product_shipping_cost')?.value) || 0;
+  const priceEndingSelect = document.querySelector('[name="product[price_ending]"]');
+  const priceEnding = priceEndingSelect?.value || '';
+  
+  // Calculate profit
+  const profit = sellingPrice - costPrice;
+  const profitPercent = costPrice > 0 ? ((profit / costPrice) * 100).toFixed(1) : 0;
+  
+  // Update profit display
+  const profitAmountEl = document.getElementById('profit-amount');
+  const profitPercentEl = document.getElementById('profit-percent');
+  
+  if (profitAmountEl) {
+    profitAmountEl.textContent = `KES ${profit.toLocaleString()}`;
+  }
+  if (profitPercentEl) {
+    profitPercentEl.textContent = profitPercent;
+  }
+  
+  // Update total cost with shipping
+  const totalCost = sellingPrice + shippingCost;
+  const totalCostEl = document.getElementById('total-cost');
+  if (totalCostEl) {
+    totalCostEl.textContent = `KES ${totalCost.toLocaleString()}`;
+  }
+  
+  // Update price preview with psychological pricing
+  updatePricePreview(sellingPrice, priceEnding);
+}
+
+function updatePricePreview(basePrice, ending) {
+  const pricePreviewEl = document.getElementById('price-preview');
+  if (!pricePreviewEl) return;
+  
+  let displayPrice = basePrice;
+  
+  if (ending && ending !== '') {
+    // Remove last 2 digits and add psychological ending
+    // e.g., 1200 with "99" ending → 1199
+    const baseWithoutEnding = Math.floor(basePrice / 100) * 100;
+    displayPrice = baseWithoutEnding + parseInt(ending);
+  }
+  
+  pricePreviewEl.textContent = `KES ${displayPrice.toLocaleString()}`;
+}
+
 // Consolidated Click Handler (attached once, never duplicated)
 document.addEventListener("click", (e) => {
   // Quantity +/- buttons
@@ -157,6 +210,13 @@ document.addEventListener("input", (e) => {
   if (e.target.classList.contains("variant-qty")) {
     updateSubtotal();
   }
+  
+  // Real-time pricing calculations
+  if (e.target.id === "product_cost_price" || 
+      e.target.id === "product_price" || 
+      e.target.id === "product_shipping_cost") {
+    calculateMargin();
+  }
 });
 
 // Consolidated Change Handler (attached once, never duplicated)
@@ -166,6 +226,11 @@ document.addEventListener("change", (e) => {
   }
   if (e.target.matches("input[type='file'][name*='[image]']")) {
     previewVariantImage(e);
+  }
+  
+  // Pricing dropdown change
+  if (e.target.matches('[name="product[price_ending]"]')) {
+    calculateMargin();
   }
 });
 
@@ -199,27 +264,9 @@ document.addEventListener("turbo:load", () => {
     document.body.appendChild(banner);
   }
 
-  // -----------------------------
-  // 1. Price + Shipping Total
-  // -----------------------------
-  const priceField = document.getElementById("product_price");
-  const shippingField = document.getElementById("product_shipping_cost");
-  const totalCostSpan = document.getElementById("total-cost");
-
-  const updateTotal = () => {
-    if (!priceField || !shippingField || !totalCostSpan) return;
-    const price = parseFloat(priceField.value) || 0;
-    const shipping = parseFloat(shippingField.value) || 0;
-    totalCostSpan.textContent = `KES ${(price + shipping).toFixed(2)}`;
-  };
-
-  if (priceField) priceField.addEventListener("input", updateTotal);
-  if (shippingField) shippingField.addEventListener("input", updateTotal);
-  updateTotal(); 
-
-  // -----------------------------
+  // --------------------------
   // 2. Main Image Preview
-  // -----------------------------
+  // --------------------------
   window.previewMainImage = function(event) {
     const output = document.getElementById("main-image-preview");
     const file = event.target.files[0];
@@ -234,9 +281,9 @@ document.addEventListener("turbo:load", () => {
     }
   };
 
-  // -----------------------------
+  // --------------------------
   // 3. Gallery Preview + Drag/Drop
-  // -----------------------------
+  // --------------------------
   const galleryPreview = document.getElementById("gallery-preview");
   const galleryInputs = document.getElementById("gallery-inputs");
 
@@ -280,9 +327,9 @@ document.addEventListener("turbo:load", () => {
     galleryInputs.appendChild(input);
   };
 
-  // -----------------------------
+  // --------------------------
   // 4. Category → Subcategory AJAX
-  // -----------------------------
+  // --------------------------
   const categorySelect = document.getElementById("category-select");
   const subcategorySelect = document.getElementById("subcategory-select");
 
@@ -304,8 +351,6 @@ document.addEventListener("turbo:load", () => {
   }
 
   // === Quantity & Subtotal Logic ===
-  // (Now handled by delegated event listeners defined outside turbo:load)
-  
   // Initial calculation on page load
   updateSubtotal();
 
@@ -313,6 +358,11 @@ document.addEventListener("turbo:load", () => {
   document.querySelectorAll("select[name*='[name]']").forEach(typeSelect => {
     updateValueOptions(typeSelect);
   });
+
+  // =============================
+  // Initialize Pricing Calculations
+  // =============================
+  calculateMargin();
 });
 
 // ============================================================

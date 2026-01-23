@@ -33,4 +33,29 @@ module ApplicationHelper
       number_to_currency(price, unit: "KES ")
     end
   end
+
+  # 💰 Display price with psychological pricing applied
+  def display_price_with_psychology(product)
+    base_price = product.price.to_f
+    return display_price(base_price) unless product.price_ending.present?
+
+    # Remove last 2 digits and apply psychological ending
+    # e.g., 1200 with "99" ending → 1199
+    base_without_ending = (base_price / 100).floor * 100
+    psychological_price = base_without_ending + product.price_ending.to_i
+    
+    display_price(psychological_price)
+  end
+
+  # 📊 Calculate profit for product
+  def calculate_profit(product)
+    return nil unless product.cost_price&.positive?
+    (product.price.to_f - product.cost_price.to_f).round(2)
+  end
+
+  # 📊 Calculate profit percentage
+  def calculate_profit_percent(product)
+    return nil unless product.cost_price&.positive?
+    ((product.price.to_f - product.cost_price.to_f) / product.cost_price.to_f * 100).round(2)
+  end
 end

@@ -26,5 +26,12 @@ SitemapGenerator::Sitemap.create do
         priority: 0.7
   end
 
+  # Sellers
+  User.where("roles @> ARRAY[?]::character varying[]", 'seller').find_each do |seller|
+    add seller_path(seller),
+        lastmod: seller.updated_at,
+        changefreq: 'weekly',
+        priority: 0.7
+  end
 
 end
