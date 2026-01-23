@@ -1,108 +1,167 @@
-<h2 class="fs-4 fw-semibold mb-4">👤 My Account</h2>
-
-<ul class="nav nav-tabs" id="accountTabs" role="tablist">
-  <li class="nav-item" role="presentation">
-    <button class="nav-link active" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile"
-            type="button" role="tab" aria-controls="profile" aria-selected="true">
-      Profile
-    </button>
-  </li>
-  <li class="nav-item" role="presentation">
-    <button class="nav-link" id="storefront-tab" data-bs-toggle="tab" data-bs-target="#storefront"
-            type="button" role="tab" aria-controls="storefront" aria-selected="false">
-      Storefront
-    </button>
-  </li>
-  <li class="nav-item" role="presentation">
-    <button class="nav-link" id="security-tab" data-bs-toggle="tab" data-bs-target="#security"
-            type="button" role="tab" aria-controls="security" aria-selected="false">
-      Security
-    </button>
-  </li>
-</ul>
-
-<div class="tab-content mt-3" id="accountTabsContent">
-  <!-- Profile Tab -->
-  <div class="tab-pane fade show active" id="profile" role="tabpanel" aria-labelledby="profile-tab">
-    <%= form_with model: @user, url: account_path, method: :patch, local: true do |f| %>
-      <div class="mb-3">
-        <%= f.label :name, class: "form-label fw-semibold" %>
-        <%= f.text_field :name, class: "form-control" %>
-      </div>
-
-      <div class="mb-3">
-        <%= f.label :email, class: "form-label fw-semibold" %>
-        <%= f.email_field :email, class: "form-control" %>
-      </div>
-
-      <div class="mb-3">
-        <%= f.label :phone, class: "form-label fw-semibold" %>
-        <%= f.text_field :phone, class: "form-control" %>
-      </div>
-
-      <div class="mb-3">
-        <%= f.label :country, class: "form-label fw-semibold" %>
-        <%= f.select :country,
-              options_for_select([
-                ["Kenya", "Kenya"],
-                ["United States", "United States"],
-                ["United Kingdom", "United Kingdom"],
-                ["Nigeria", "Nigeria"],
-                ["South Africa", "South Africa"]
-              ], selected: @user.country),
-              { prompt: "Select your country" },
-              class: "form-select" %>
-      </div>
-
-      <div class="mb-3">
-        <%= f.label :roles, "Roles", class: "form-label fw-semibold" %>
-        <%= f.select :roles,
-              options_for_select([["Buyer", "buyer"], ["Seller", "seller"]], selected: @user.roles),
-              {}, multiple: true, class: "form-select" %>
-        <small class="text-muted">You can choose one or both roles</small>
-      </div>
-
-      <%= f.submit "Save Profile", class: "btn btn-primary" %>
-    <% end %>
+<div class="container py-5">
+  <!-- Header -->
+  <div class="mb-5">
+    <h1 class="h2 fw-bold mb-2">👤 Account Settings</h1>
+    <p class="text-muted">Manage your profile, storefront, and security preferences</p>
   </div>
 
-  <!-- Storefront Tab -->
-  <div class="tab-pane fade" id="storefront" role="tabpanel" aria-labelledby="storefront-tab">
-    <%= render "sellers/form", seller: @user %>
-  </div>
+  <div class="row g-4">
+    <!-- Profile Card -->
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
+        <div class="card-header bg-gradient-primary border-0 py-4 px-4">
+          <h5 class="card-title mb-0 fw-bold text-white d-flex align-items-center gap-2">
+            <i class="bi bi-person-circle"></i> Profile Information
+          </h5>
+        </div>
+        <div class="card-body p-4">
+          <%= form_with model: @user, url: account_path, method: :patch, local: true, class: "account-form" do |f| %>
+            <div class="mb-3">
+              <%= f.label :name, "Full Name", class: "form-label small fw-semibold text-uppercase text-muted" %>
+              <%= f.text_field :name, class: "form-control form-control-lg rounded-3 border-0 bg-light", placeholder: "Your full name" %>
+            </div>
 
-  <!-- Security Tab -->
-  <div class="tab-pane fade" id="security" role="tabpanel" aria-labelledby="security-tab">
-    <%= form_with model: @user, url: account_path, method: :patch, local: true do |f| %>
-      <div class="mb-3">
-        <%= f.label :password, class: "form-label fw-semibold" %>
-        <em class="text-muted small">(leave blank if you don't want to change it)</em>
-        <%= f.password_field :password, class: "form-control" %>
+            <div class="mb-3">
+              <%= f.label :email, "Email Address", class: "form-label small fw-semibold text-uppercase text-muted" %>
+              <%= f.email_field :email, class: "form-control form-control-lg rounded-3 border-0 bg-light", placeholder: "your@email.com" %>
+              <small class="text-muted d-block mt-1">Used for login and notifications</small>
+            </div>
+
+            <div class="mb-3">
+              <%= f.label :phone, "Phone Number", class: "form-label small fw-semibold text-uppercase text-muted" %>
+              <%= f.text_field :phone, class: "form-control form-control-lg rounded-3 border-0 bg-light", placeholder: "+254 700 000 000" %>
+            </div>
+
+            <div class="mb-4">
+              <%= f.label :country, "Country", class: "form-label small fw-semibold text-uppercase text-muted" %>
+              <%= f.select :country,
+                    options_for_select([
+                      ["Kenya", "Kenya"],
+                      ["United States", "United States"],
+                      ["United Kingdom", "United Kingdom"],
+                      ["Nigeria", "Nigeria"],
+                      ["South Africa", "South Africa"]
+                    ], selected: @user.country),
+                    { prompt: "Select your country" },
+                    class: "form-select form-select-lg rounded-3 border-0 bg-light" %>
+            </div>
+
+            <%= f.submit "Save Changes", class: "btn btn-primary btn-lg w-100 rounded-3 fw-semibold shadow-sm" %>
+          <% end %>
+        </div>
       </div>
+    </div>
 
-      <div class="mb-3">
-        <%= f.label :password_confirmation, class: "form-label fw-semibold" %>
-        <%= f.password_field :password_confirmation, class: "form-control" %>
+    <!-- Roles Card -->
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
+        <div class="card-header bg-gradient-success border-0 py-4 px-4">
+          <h5 class="card-title mb-0 fw-bold text-white d-flex align-items-center gap-2">
+            <i class="bi bi-briefcase"></i> Account Roles
+          </h5>
+        </div>
+        <div class="card-body p-4">
+          <%= form_with model: @user, url: account_path, method: :patch, local: true, class: "account-form" do |f| %>
+            <div class="mb-3">
+              <label class="form-label small fw-semibold text-uppercase text-muted">Your Roles</label>
+              <p class="text-muted small mb-3">Choose what you'd like to do on Tajaone</p>
+
+              <div class="role-options">
+                <div class="form-check mb-3">
+                  <%= f.check_box :roles, { multiple: true, include_hidden: false }, "buyer", "buyer", id: "role_buyer", class: "form-check-input" %>
+                  <label class="form-check-label" for="role_buyer">
+                    <span class="fw-semibold d-block">🛍️ Buyer</span>
+                    <span class="text-muted small">Purchase products from sellers</span>
+                  </label>
+                </div>
+
+                <div class="form-check">
+                  <%= f.check_box :roles, { multiple: true, include_hidden: false }, "seller", "seller", id: "role_seller", class: "form-check-input" %>
+                  <label class="form-check-label" for="role_seller">
+                    <span class="fw-semibold d-block">🏪 Seller</span>
+                    <span class="text-muted small">Sell your products to customers</span>
+                  </label>
+                </div>
+              </div>
+
+              <%= f.submit "Update Roles", class: "btn btn-success btn-lg w-100 rounded-3 fw-semibold shadow-sm mt-4" %>
+            </div>
+          <% end %>
+        </div>
       </div>
+    </div>
 
-      <div class="mb-3">
-        <%= f.label :current_password, class: "form-label fw-semibold" %>
-        <em class="text-muted small">(we need your current password to confirm changes)</em>
-        <%= f.password_field :current_password, class: "form-control" %>
+    <!-- Storefront Card -->
+    <div class="col-lg-12">
+      <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="card-header bg-gradient-info border-0 py-4 px-4">
+          <h5 class="card-title mb-0 fw-bold text-white d-flex align-items-center gap-2">
+            <i class="bi bi-shop"></i> Storefront Settings
+          </h5>
+        </div>
+        <div class="card-body p-4">
+          <%= render "sellers/form", seller: @user %>
+        </div>
       </div>
+    </div>
 
-      <%= f.submit "Update Password", class: "btn btn-warning" %>
-    <% end %>
+    <!-- Security Card -->
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
+        <div class="card-header bg-gradient-warning border-0 py-4 px-4">
+          <h5 class="card-title mb-0 fw-bold text-white d-flex align-items-center gap-2">
+            <i class="bi bi-shield-lock"></i> Password & Security
+          </h5>
+        </div>
+        <div class="card-body p-4">
+          <%= form_with model: @user, url: account_path, method: :patch, local: true, class: "account-form" do |f| %>
+            <p class="text-muted small mb-4">Keep your account secure with a strong password</p>
+
+            <div class="mb-3">
+              <%= f.label :password, "New Password", class: "form-label small fw-semibold text-uppercase text-muted" %>
+              <%= f.password_field :password, class: "form-control form-control-lg rounded-3 border-0 bg-light", placeholder: "Enter new password" %>
+              <small class="text-muted d-block mt-1">Leave blank to keep current password</small>
+            </div>
+
+            <div class="mb-3">
+              <%= f.label :password_confirmation, "Confirm Password", class: "form-label small fw-semibold text-uppercase text-muted" %>
+              <%= f.password_field :password_confirmation, class: "form-control form-control-lg rounded-3 border-0 bg-light", placeholder: "Confirm new password" %>
+            </div>
+
+            <div class="mb-4">
+              <%= f.label :current_password, "Current Password", class: "form-label small fw-semibold text-uppercase text-muted" %>
+              <%= f.password_field :current_password, class: "form-control form-control-lg rounded-3 border-0 bg-light", placeholder: "Enter current password" %>
+              <small class="text-muted d-block mt-1">Required to confirm changes</small>
+            </div>
+
+            <%= f.submit "Update Password", class: "btn btn-warning btn-lg w-100 rounded-3 fw-semibold shadow-sm" %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Danger Zone Card -->
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden border-danger">
+        <div class="card-header bg-gradient-danger border-0 py-4 px-4">
+          <h5 class="card-title mb-0 fw-bold text-white d-flex align-items-center gap-2">
+            <i class="bi bi-exclamation-triangle"></i> Danger Zone
+          </h5>
+        </div>
+        <div class="card-body p-4">
+          <p class="text-muted small mb-4">This action cannot be undone. Please be certain.</p>
+          
+          <div class="alert alert-danger rounded-3 border-0 small mb-4" role="alert">
+            <strong>⚠️ Warning:</strong> Deleting your account will permanently remove all your data, including products, orders, and messages.
+          </div>
+
+          <%= button_to "Delete My Account",
+                        user_registration_path,
+                        data: { confirm: "Are you absolutely sure? This cannot be undone.", turbo_confirm: "Are you absolutely sure? This cannot be undone." },
+                        method: :delete,
+                        class: "btn btn-danger btn-lg w-100 rounded-3 fw-semibold shadow-sm" %>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
-
-<hr class="my-4">
-
-<!-- Cancel Account -->
-<h3 class="fs-5 fw-bold text-danger">❌ Cancel my account</h3>
-<p class="small text-muted">Unhappy? You can permanently delete your account.</p>
-<%= button_to "Cancel my account",
-              user_registration_path,
-              data: { confirm: "Are you sure?", turbo_confirm: "Are you sure?" },
-              method: :delete,
-              class: "btn btn-outline-danger btn-sm" %>

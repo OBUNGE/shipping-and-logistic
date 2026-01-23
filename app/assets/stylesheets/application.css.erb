@@ -609,3 +609,104 @@ form h2 {
   background-color: #8B4513 !important;
   color: #fff !important;
 }
+
+/* ===========================
+   Account Page Styles
+   =========================== */
+
+.bg-gradient-primary {
+  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%) !important;
+}
+
+.bg-gradient-success {
+  background: linear-gradient(135deg, #198754 0%, #146c43 100%) !important;
+}
+
+.bg-gradient-info {
+  background: linear-gradient(135deg, #0dcaf0 0%, #0aa2c0 100%) !important;
+}
+
+.bg-gradient-warning {
+  background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%) !important;
+}
+
+.bg-gradient-danger {
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important;
+}
+
+/* Account Page Specific */
+.account-form .form-control,
+.account-form .form-select {
+  border: none !important;
+  background-color: #f8f9fa !important;
+  padding: 0.75rem 1rem !important;
+  transition: all 0.3s ease !important;
+}
+
+.account-form .form-control:focus,
+.account-form .form-select:focus {
+  background-color: #fff !important;
+  border: 2px solid #007bff !important;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.15) !important;
+}
+
+.role-options .form-check {
+  padding: 1rem;
+  border: 2px solid #e9ecef;
+  border-radius: 0.75rem;
+  transition: all 0.3s ease;
+  background-color: #f8f9fa;
+}
+
+.role-options .form-check:hover {
+  border-color: #007bff;
+  background-color: #f0f7ff;
+}
+
+.role-options .form-check-input {
+  width: 1.5rem;
+  height: 1.5rem;
+  margin-top: 0.25rem;
+  cursor: pointer;
+}
+
+.role-options .form-check-input:checked {
+  background-color: #007bff;
+  border-color: #007bff;
+}
+
+.role-options .form-check-label {
+  cursor: pointer;
+  margin-left: 0.5rem;
+}
+
+.card {
+  transition: all 0.3s ease !important;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
+}
+
+.btn-lg {
+  padding: 0.75rem 1.5rem !important;
+  font-size: 0.95rem !important;
+  letter-spacing: 0.5px;
+}
+
+.form-control-lg,
+.form-select-lg {
+  font-size: 0.95rem !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .card {
+    margin-bottom: 1rem;
+  }
+  
+  .btn-lg {
+    padding: 0.65rem 1.25rem !important;
+  }
+}
