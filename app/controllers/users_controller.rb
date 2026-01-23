@@ -60,7 +60,8 @@ end
       :store_name,
       :store_description,
       :store_logo_url,
-      :store_banner_url
+      :store_banner_url,
+      roles: []
     )
   end
 end
