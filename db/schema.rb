@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_01_23_171140) do
+ActiveRecord::Schema[8.0].define(version: 2026_01_25_120000) do
   create_schema "auth"
   create_schema "extensions"
   create_schema "graphql"
@@ -25,6 +25,16 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_23_171140) do
   enable_extension "extensions.pgcrypto"
   enable_extension "extensions.uuid-ossp"
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "action_text_rich_texts", force: :cascade do |t|
+    t.string "name", null: false
+    t.text "body"
+    t.string "record_type", null: false
+    t.bigint "record_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["record_type", "record_id", "name"], name: "index_action_text_rich_texts_uniqueness", unique: true
+  end
 
   create_table "active_admin_comments", force: :cascade do |t|
     t.string "namespace"

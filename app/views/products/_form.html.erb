@@ -35,12 +35,25 @@
   </div>
 
   <div class="mb-3">
-    <%= form.label :description, class: "form-label small" %>
-    <%= form.text_area :description,
-          class: "form-control form-control-sm",
-          rows: 3,
-          placeholder: "Describe the product",
+    <%= form.label :description, class: "form-label small fw-bold" %>
+    
+    <div class="alert alert-light border border-secondary p-2 mb-2">
+      <small class="text-muted">
+        <strong>📝 Formatting Tips:</strong><br>
+        • Click <strong>B</strong> button for bold text<br>
+        • Click <strong>•</strong> button for bullet points<br>
+        • Use the toolbar buttons to format your description<br>
+      </small>
+    </div>
+
+    <%= form.rich_text_area :description,
+          class: "form-control",
+          placeholder: "e.g. **Premium Quality Honey** - Fresh from local farms - No additives",
           required: true %>
+    
+    <small class="text-muted d-block mt-2">
+      Create a professional product description with rich formatting!
+    </small>
   </div>
 
   <!-- 🏷️ Category -->

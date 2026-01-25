@@ -357,9 +357,13 @@
       </div> </div> </div> <section class="row mt-5">
     <div class="col-12">
       <div class="border rounded-4 p-4 p-lg-5 bg-white shadow-sm">
-        <h2 class="h4 fw-bold mb-4 border-bottom pb-3">Product Description</h2>
-        <div class="text-muted lh-lg">
-          <%= @product.description.presence || "No description provided." %>
+        <h2 class="h4 fw-bold mb-4 border-bottom pb-3">📝 Product Description</h2>
+        <div class="text-dark lh-lg product-description" style="font-size: 1rem;">
+          <% if @product.description.blank? %>
+            <p class="text-muted">No description provided.</p>
+          <% else %>
+            <%= @product.description %>
+          <% end %>
         </div>
       </div>
     </div>
