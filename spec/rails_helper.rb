@@ -8,31 +8,6 @@ abort("The Rails environment is running in production mode!") if Rails.env.produ
 # that will avoid rails generators crashing because migrations haven't been run yet
 # return unless Rails.env.test?
 require 'rspec/rails'
-require 'capybara/rspec'
-
-require "selenium/webdriver"
-require "tmpdir"
-
-require "selenium/webdriver"
-require "tmpdir"
-
-Capybara.register_driver :selenium_chrome_headless do |app|
-  options = Selenium::WebDriver::Chrome::Options.new
-  options.add_argument("--headless=new")
-  options.add_argument("--disable-gpu")
-  options.add_argument("--no-sandbox")
-  options.add_argument("--disable-dev-shm-usage")
-  options.add_argument("--window-size=1400,1400")
-  options.add_argument("--user-data-dir=#{Dir.mktmpdir("chrome-profile")}") # ✅ guaranteed unique and writable
-
-  Capybara::Selenium::Driver.new(app, browser: :chrome, options: options)
-end
-
-
-Capybara.javascript_driver = :selenium_chrome_headless
-Capybara.default_max_wait_time = 5
-
-
 # Add additional requires below this line. Rails is not loaded until this point!
 
 # Requires supporting ruby files with custom matchers and macros, etc, in
@@ -48,7 +23,7 @@ Capybara.default_max_wait_time = 5
 # directory. Alternatively, in the individual `*_spec.rb` files, manually
 # require only the support files necessary.
 #
- Rails.root.glob('spec/support/**/*.rb').sort_by(&:to_s).each { |f| require f }
+# Rails.root.glob('spec/support/**/*.rb').sort_by(&:to_s).each { |f| require f }
 
 # Ensures that the test database schema matches the current schema file.
 # If there are pending migrations it will invoke `db:test:prepare` to
@@ -64,9 +39,6 @@ RSpec.configure do |config|
   config.fixture_paths = [
     Rails.root.join('spec/fixtures')
   ]
-  config.include Devise::Test::IntegrationHelpers, type: :system
-config.include FactoryBot::Syntax::Methods
-
 
   # If you're not using ActiveRecord, or you'd prefer not to run each of your
   # examples within a transaction, remove the following line or assign false

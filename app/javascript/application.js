@@ -9,3 +9,6 @@ import "./product_form"
 Turbo.config.drive.progressBarDelay = 0
 Turbo.config.debug = true
  
+
+import "trix"
+import "@rails/actiontext"

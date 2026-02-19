@@ -11,3 +11,5 @@
 //= link star_rating.js
 //= link controllers/shipping_controller.js
 //= link checkout.js
+//= link actiontext.css
+
