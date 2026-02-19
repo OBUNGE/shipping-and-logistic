@@ -2,12 +2,13 @@ require "httparty"
 require "base64"
 
 class MpesaGateway
-  DARAJA_BASE_URL = "https://sandbox.safaricom.co.ke"
-  OAUTH_URL       = "#{DARAJA_BASE_URL}/oauth/v1/generate?grant_type=client_credentials"
-  STK_PUSH_URL    = "#{DARAJA_BASE_URL}/mpesa/stkpush/v1/processrequest"
+  BASE_URLS = {
+    sandbox:    "https://sandbox.safaricom.co.ke",
+    production: "https://api.safaricom.co.ke"
+  }.freeze
 
-  MAX_RETRIES     = 3
-  RETRY_DELAY     = 5.seconds
+  MAX_RETRIES  = 3
+  RETRY_DELAY  = 5.seconds
 
   def initialize(order:, phone_number:, amount:, account_reference:, description:, callback_url:)
     @order             = order
@@ -47,7 +48,7 @@ class MpesaGateway
       Rails.logger.info("📦 STK Push Payload: #{payload.inspect}")
 
       response = HTTParty.post(
-        STK_PUSH_URL,
+        stk_push_url,
         headers: {
           "Authorization" => "Bearer #{token}",
           "Content-Type"  => "application/json"
@@ -58,7 +59,6 @@ class MpesaGateway
       parsed = JSON.parse(response.body) rescue {}
       Rails.logger.info("📬 STK Push Response: #{parsed.inspect}")
 
-      # Return parsed response + HTTP status
       parsed.merge("http_status" => response.code)
 
     rescue => e
@@ -77,7 +77,6 @@ class MpesaGateway
 
   private
 
-  # ✅ Always return KES since your app now stores currency in KES
   def amount_kes(override_amount)
     override_amount.presence || @order.total
   end
@@ -85,7 +84,7 @@ class MpesaGateway
   def fetch_token
     auth = Base64.strict_encode64("#{consumer_key}:#{consumer_secret}")
     response = HTTParty.get(
-      OAUTH_URL,
+      oauth_url,
       headers: { "Authorization" => "Basic #{auth}" }
     )
     JSON.parse(response.body)["access_token"] rescue nil
@@ -105,5 +104,21 @@ class MpesaGateway
 
   def passkey
     ENV["MPESA_PASSKEY"]
+  end
+
+  def environment
+    ENV.fetch("MPESA_ENV", "sandbox").to_sym
+  end
+
+  def base_url
+    BASE_URLS[environment]
+  end
+
+  def oauth_url
+    "#{base_url}/oauth/v1/generate?grant_type=client_credentials"
+  end
+
+  def stk_push_url
+    "#{base_url}/mpesa/stkpush/v1/processrequest"
   end
 end
