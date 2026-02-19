@@ -2,12 +2,13 @@
 <%# --- 1. Content for application.html.erb layout (SEO + Social Sharing) --- %>
 <%# ------------------------------------------------------------------------------------------------ %>
 <% content_for :title, "#{@product.title} | Buy Online - Tajaone" %>
-<% content_for :meta_description, truncate(strip_tags(@product.description), length: 155) %>
+<% content_for :meta_description, truncate(strip_tags(@product.description.to_s), length: 155) %>
+
 <% content_for :canonical, product_url(@product) %>
 
 <%# --- OPEN GRAPH (Facebook, LinkedIn, WhatsApp, Pinterest) --- %>
 <% content_for :og_title, @product.title %>
-<% content_for :og_description, truncate(strip_tags(@product.description), length: 200) %>
+<% content_for :og_description, truncate(strip_tags(@product.description.to_s), length: 200) %>
 <% content_for :og_image, @product.image_url %>
 <% content_for :og_type, "product" %>
 <% content_for :og_url, product_url(@product) %>
@@ -29,7 +30,7 @@
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:site" content="@tajaone" /> <%# Replace with your actual handle %>
   <meta name="twitter:title" content="<%= @product.title %>" />
-  <meta name="twitter:description" content="<%= truncate(strip_tags(@product.description), length: 200) %>" />
+  <meta name="twitter:description" content="<%= truncate(strip_tags(@product.description.to_s), length: 200) %>" />
   <meta name="twitter:image" content="<%= @product.image_url %>" />
 
   <%# Pinterest Rich Pin Data (uses OG + Product meta) %>
@@ -50,7 +51,7 @@
     "image": [
       <%= raw image_json %>
     ],
-    "description": "<%= j strip_tags(@product.description) %>",
+    "description": "<%= j strip_tags(@product.description.to_s) %>",
     "sku": "<%= @product.id %>",
     "brand": {
       "@type": "Brand",
