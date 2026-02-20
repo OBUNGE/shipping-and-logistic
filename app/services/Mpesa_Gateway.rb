@@ -34,7 +34,7 @@ class MpesaGateway
         BusinessShortCode: shortcode,
         Password:          password,
         Timestamp:         timestamp,
-        TransactionType: "CustomerBuyGoodsOnline",
+        TransactionType: "CustomerPayBillOnline",
         Amount:            @amount.to_i,
         PartyA:            @phone_number,
         PartyB:            shortcode,
