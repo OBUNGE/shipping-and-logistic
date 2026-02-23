@@ -1,6 +1,6 @@
 //= link_tree ../images
 
-//= link active_admin.css
+//= link active_admin.scss
 //= link active_admin.js
 //= link application.css
 //= link controllers/application.js
@@ -12,4 +12,4 @@
 //= link controllers/shipping_controller.js
 //= link checkout.js
 //= link actiontext.css
-
+//= link shipments.css
