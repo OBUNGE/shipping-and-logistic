@@ -2,6 +2,7 @@ source "https://rubygems.org"
 source "https://rails-assets.org" do
   gem "rails-assets-bootstrap", "~> 5.2.3"
 end
+gem "dotenv-rails", groups: [:development, :test, :production]
 
 
 # Authentication and Authorization

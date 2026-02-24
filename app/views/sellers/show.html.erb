@@ -82,8 +82,8 @@
             <%= link_to product.title, product_path(product), class: "text-decoration-none link-hover" %>
           </h2>
 
-          <% if product.discount.present? && product.discount.percentage.to_f > 0 %>
-            <% discounted_price = product.price * (1 - product.discount.percentage / 100.0) %>
+          <% if product.discount&.active? && product.discount.percentage.to_f > 0 %>
+            <% discounted_price = product.discounted_price %>
             <p class="card-text fw-semibold mb-1">
               <span class="text-muted text-decoration-line-through me-2">
                 <%= display_price(product.price) %>

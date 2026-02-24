@@ -89,12 +89,12 @@
                 </h6>
 
                 <div class="mb-2">
-                  <% if product.discount.present? %>
-                    <span class="text-danger fw-bold"><%= display_price(product.discounted_price) %></span>
-                    <del class="text-muted ms-1"><%= display_price(product.price) %></del>
-                  <% else %>
-                    <span class="text-dark fw-bold"><%= display_price(product.price) %></span>
-                  <% end %>
+                  <% if product.discount&.active? %>
+                      <span class="text-danger fw-bold"><%= display_price(product.discounted_price) %></span>
+                      <del class="text-muted ms-1"><%= display_price(product.price) %></del>
+                    <% else %>
+                      <span class="text-dark fw-bold"><%= display_price(product.price) %></span>
+                    <% end %>
                 </div>
 
                 <div class="mt-auto d-flex gap-2 position-relative" style="z-index: 2;">
