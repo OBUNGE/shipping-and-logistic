@@ -98,8 +98,8 @@
                   </div>
                 <% end %>
               <% end %>
-              <% if product.discount.present? %>
-                <span class="badge bg-danger position-absolute top-0 start-0 m-2">-<%= product.discount.percentage %>%</span>
+              <% if product.discount&.active? %>
+                <span class="discount-badge top-left">-<%= product.discount.percentage %>%</span>
               <% end %>
             </div>
 
@@ -108,7 +108,13 @@
                 <%= link_to product.title, product_path(product), class: "text-dark text-decoration-none" %>
               </h6>
               <div class="d-flex justify-content-between align-items-center mt-2">
-                <span class="fw-bold text-primary">KES <%= number_with_delimiter(product.price.to_i) %></span>
+                <% if product.discount&.active? %>
+                  <% converted = ExchangeRateService.new.convert_to_kes(product.discounted_price) %>
+                  <span class="fw-bold text-primary">KES <%= number_with_delimiter(converted.to_i) %></span>
+                  <small class="text-muted text-decoration-line-through">KES <%= number_with_delimiter(product.price.to_i) %></small>
+                <% else %>
+                  <span class="fw-bold text-primary">KES <%= number_with_delimiter(product.price.to_i) %></span>
+                <% end %>
                 <% if product.shipping_cost == 0 %>
                   <span class="badge bg-success bg-opacity-10 text-success border border-success">Free Shipping</span>
                 <% end %>

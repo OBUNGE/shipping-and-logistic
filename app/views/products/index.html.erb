@@ -76,10 +76,8 @@
                   <% end %>
                 <% end %>
 
-                <% if product.discount.present? && product.discount.percentage.to_f > 0 %>
-                  <span class="badge bg-danger position-absolute top-0 end-0 m-2 shadow-sm rounded-pill px-2">
-                    -<%= product.discount.percentage.to_i %>%
-                  </span>
+                <% if product.discount&.active? && product.discount.percentage.to_f > 0 %>
+                  <span class="discount-badge top-right">-<%= product.discount.percentage.to_i %>%</span>
                 <% end %>
               </div>
 

@@ -244,7 +244,7 @@
                   <h2 class="fw-bold text-danger mb-0 display-6"><%= number_to_currency(discounted_kes, unit: "KES ") %></h2>
                   <span class="text-muted text-decoration-line-through"><%= number_to_currency(price_in_kes, unit: "KES ") %></span>
                </div>
-               <span class="badge bg-danger mt-1"><%= @product.discount.percentage %>% OFF</span>
+               <span class="discount-badge"> <%= @product.discount.percentage %>% OFF</span>
             <% else %>
                <h2 class="fw-bold text-primary mb-0 display-6"><%= number_to_currency(price_in_kes, unit: "KES ") %></h2>
             <% end %>

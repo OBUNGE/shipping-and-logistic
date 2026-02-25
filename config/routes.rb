@@ -91,7 +91,7 @@ Rails.application.routes.draw do
     get :subcategories, on: :member
   end
 
-  resources :discounts, only: [:new, :create, :edit, :update, :destroy]
+  resources :discounts, only: [:new, :create, :show, :edit, :update, :destroy]
   resources :product_images, only: [:destroy]
 
   # Categories

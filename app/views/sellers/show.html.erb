@@ -64,7 +64,7 @@
 <section class="row" aria-label="Product Listings">
   <% @products.each do |product| %>
     <article class="col-6 col-sm-4 col-md-3 col-lg-5th mb-3">
-      <div class="card h-100 shadow-sm">
+      <div class="card h-100 shadow-sm position-relative">
         <% if product.image_url.present? %>
           <%= image_tag product.image_url,
               class: "card-img-top",
@@ -92,7 +92,7 @@
                 <%= display_price(discounted_price) %>
               </span>
             </p>
-            <span class="badge bg-success">-<%= product.discount.percentage.to_i %>% Off</span>
+            <span class="discount-badge top-left">-<%= product.discount.percentage.to_i %>% Off</span>
           <% else %>
             <p class="card-text fw-semibold">
               <%= display_price(product.price) %>
