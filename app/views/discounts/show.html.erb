@@ -1,0 +1,20 @@
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h4 class="card-title">Discount for: <%= link_to @discount.product.title, product_path(@discount.product) %></h4>
+          <p class="mb-1">Percentage: <strong><%= @discount.percentage %>%</strong></p>
+          <p class="mb-1">Active: <%= @discount.active? ? 'Yes' : 'No' %></p>
+          <p class="mb-1">Starts: <%= @discount.starts_at&.to_s(:long) || '—' %></p>
+          <p class="mb-3">Expires: <%= @discount.expires_at&.to_s(:long) || '—' %></p>
+
+          <div class="d-flex gap-2">
+            <%= link_to 'Edit Discount', edit_discount_path(@discount), class: 'btn btn-outline-primary' %>
+            <%= link_to 'Back to Product', edit_product_path(@discount.product), class: 'btn btn-outline-secondary' %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
