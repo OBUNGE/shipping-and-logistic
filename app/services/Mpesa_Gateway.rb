@@ -31,13 +31,13 @@ class MpesaGateway
       password  = Base64.strict_encode64("#{shortcode}#{passkey}#{timestamp}")
 
       payload = {
-        BusinessShortCode: shortcode,
+        BusinessShortCode: shortcode,             # 9959648
         Password:          password,
         Timestamp:         timestamp,
-        TransactionType: "CustomerPayBillOnline",
+        TransactionType:   "CustomerBuyGoodsOnline", # Till requires BuyGoods
         Amount:            @amount.to_i,
-        PartyA:            @phone_number,
-        PartyB:            shortcode,
+        PartyA:            @phone_number,         # customer’s phone
+        PartyB:            till_number,           # 8856366
         PhoneNumber:       @phone_number,
         CallBackURL:       @callback_url,
         AccountReference:  @account_reference,
@@ -99,7 +99,11 @@ class MpesaGateway
   end
 
   def shortcode
-    ENV["MPESA_SHORTCODE"]
+    ENV["MPESA_SHORTCODE"] || "9959648"
+  end
+
+  def till_number
+    ENV["MPESA_TILL_NUMBER"] || "8856366"
   end
 
   def passkey
