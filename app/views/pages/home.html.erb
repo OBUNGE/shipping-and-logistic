@@ -109,9 +109,10 @@
               </h6>
               <div class="d-flex justify-content-between align-items-center mt-2">
                 <% if product.discount&.active? %>
-                  <% converted = ExchangeRateService.new.convert_to_kes(product.discounted_price) %>
-                  <span class="fw-bold text-primary">KES <%= number_with_delimiter(converted.to_i) %></span>
-                  <small class="text-muted text-decoration-line-through">KES <%= number_with_delimiter(product.price.to_i) %></small>
+                    <% discounted_kes = ExchangeRateService.convert(product.discounted_price, from: product.currency, to: "KES") rescue product.discounted_price.to_i %>
+                    <% price_kes = ExchangeRateService.convert(product.price, from: product.currency, to: "KES") rescue product.price.to_i %>
+                    <span class="fw-bold text-primary">KES <%= number_with_delimiter(discounted_kes.to_i) %></span>
+                    <small class="text-muted text-decoration-line-through">KES <%= number_with_delimiter(price_kes.to_i) %></small>
                 <% else %>
                   <span class="fw-bold text-primary">KES <%= number_with_delimiter(product.price.to_i) %></span>
                 <% end %>
