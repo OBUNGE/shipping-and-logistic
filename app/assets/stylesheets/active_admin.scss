@@ -16,3 +16,6 @@
 //
 //   .status_tag { background: #6090DB; }
 // --- Variable overrides (must come before imports) ---
+
+// Mobile-focused overrides for ActiveAdmin (large tap targets, clearer flash)
+@import "active_admin_mobile";

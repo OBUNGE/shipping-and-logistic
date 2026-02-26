@@ -57,6 +57,19 @@ ActiveAdmin.register Order do
       row :created_at
       row :updated_at
     end
+    panel "Quick Actions" do
+      div class: "admin-stk-panel" do
+        if order.provider.to_s == "pod" && order.status == "pending"
+          span do
+            button_to "Send STK Push (M-PESA)", mpesa_stk_push_admin_order_path(order), method: :post, class: "admin-stk-button"
+          end
+        else
+          div class: "admin-stk-hint" do
+            text_node "No Pay-on-Delivery action available for this order."
+          end
+        end
+      end
+    end
 
     panel "Order Items" do
       table_for order.order_items do
@@ -97,6 +110,43 @@ ActiveAdmin.register Order do
   end
 
   # === Custom Member Action for POD ===
+  # Admin header button (visible on show page)
+  action_item :mpesa_stk_push, only: :show do
+    if resource.provider.to_s == "pod" && resource.status == "pending"
+      button_to "Send STK Push (M-PESA)", mpesa_stk_push_admin_order_path(resource), method: :post, class: "admin-stk-button"
+    end
+  end
+
+  # Member action that triggers an M-PESA STK Push via MpesaGateway
+  member_action :mpesa_stk_push, method: :post do
+    phone = resource.buyer&.phone.presence || resource.buyer&.phone_number.presence
+
+    unless phone.present?
+      redirect_to resource_path, alert: "No buyer phone number available for STK Push." and return
+    end
+
+    callback = Rails.application.routes.url_helpers.mpesa_callback_url(order_id: resource.id, host: ENV["APP_HOST"] || "tajaone.app")
+
+    gateway = MpesaGateway.new(
+      order: resource,
+      phone_number: phone,
+      amount: resource.total,
+      account_reference: "Order#{resource.id}",
+      description: "Pay on Delivery - Order ##{resource.id}",
+      callback_url: callback
+    )
+
+    result = gateway.initiate
+
+    if result.is_a?(Hash) && (result["ResponseCode"].to_s == "0" || result["ResponseCode"] == 0)
+      resource.update(mpesa_checkout_id: result["CheckoutRequestID"]) if result["CheckoutRequestID"].present?
+      redirect_to resource_path, notice: "STK Push sent — awaiting customer confirmation."
+    else
+      error_msg = (result["errorMessage"] || result["ResponseDescription"] || result["error"] || result["message"] || result["error_message"]) || "Unknown error"
+      redirect_to resource_path, alert: "STK Push failed: #{error_msg}"
+    end
+  end
+
   member_action :mark_as_paid, method: :put do
     resource.update!(status: :paid)
     redirect_to resource_path, notice: "Order marked as paid (cash collected)."
