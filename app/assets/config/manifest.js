@@ -13,8 +13,7 @@
 //= link checkout.js
 //= link actiontext.css
 //= link shipments.css
-
-
+//= link active_admin_mobile.css
 
 
 
