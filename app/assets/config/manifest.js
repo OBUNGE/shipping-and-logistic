@@ -13,7 +13,7 @@
 //= link checkout.js
 //= link actiontext.css
 //= link shipments.css
-//= link shipments.js
+
 
 
 
