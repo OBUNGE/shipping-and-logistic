@@ -1,14 +1,15 @@
 <div id="<%= dom_id(f.object) %>"
      class="border p-3 mb-2 bg-light rounded variant-block"
      data-saved-value="<%= f.object.value %>"
-     data-key="<%= (f.object.id || Time.now.to_i) %>">
+     data-key="<%= (f.object.id || Time.now.to_i) %>"
+     data-category="<%= @product.category.name %>">
 
   <div class="row g-2">
     <!-- Variant Type -->
     <div class="col-md-4">
       <%= f.label :name, "Type", class: "form-label small" %>
       <%= f.select :name,
-            ["Color","Size","Storage","Material","Packaging"],
+            ["Color","Size","Material","Finish","Packaging"],
             { selected: f.object.name },
             class: "form-select form-select-sm variant-type",
             required: true %>
@@ -19,11 +20,20 @@
       <%= f.label :value, "Option", class: "form-label small" %>
       <%= f.select :value,
             case f.object.name
-            when "Color"     then ["Black","Blue","Red","Green","White"]
-            when "Size"      then ["XS","S","M","L","XL","XXL"]
-            when "Storage"   then ["64GB","128GB","256GB","512GB","1TB"]
-            when "Material"  then ["Cotton","Leather","Polyester","Plastic","Metal","Wood"]
-            when "Packaging" then ["Box","Bag","Sachet","Envelope","Bottle","Jar"]
+            when "Color"     then ["Black","Brown","Tan","Cognac","Navy","White"]
+            when "Size"
+              if @product.category.name == "Men’s Leather Shoes" || @product.category.name == "Women’s Leather Shoes"
+                ["38","39","40","41","42","43","44"] # EU shoe sizes
+              elsif @product.category.name == "Leather Bags"
+                ["Small","Medium","Large"]
+              elsif @product.category.name == "Leather Accessories"
+                ["XS","S","M","L","XL"] # belts/straps
+              else
+                ["XS","S","M","L","XL"]
+              end
+            when "Material"  then ["Full-Grain Leather","Top-Grain Leather","Suede","Patent Leather"]
+            when "Finish"    then ["Matte","Glossy","Textured"]
+            when "Packaging" then ["Dust Bag","Gift Box","Eco Pouch"]
             else []
             end,
             { selected: f.object.value },
@@ -59,7 +69,7 @@
   <!-- 🎨 Variant Images (only for Color) -->
   <div class="mt-2 color-image-actions <%= 'd-none' unless f.object.name == 'Color' %>">
     <div id="variant_<%= f.object.id || f.object.object_id %>_images"
-     class="variant-images-wrapper">
+         class="variant-images-wrapper">
       <%= f.fields_for :variant_images do |image_fields| %>
         <%= render "variant_image_fields", f: image_fields %>
       <% end %>

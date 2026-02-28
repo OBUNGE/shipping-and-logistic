@@ -370,11 +370,13 @@ document.addEventListener("turbo:load", () => {
 // ============================================================
 
 const typeOptions = {
-  Color: ["Black","Blue","Red","Green","White"],
-  Size: ["XS","S","M","L","XL","XXL"],
-  Storage: ["64GB","128GB","256GB","512GB","1TB"],
-  Material: ["Cotton","Leather","Polyester","Plastic","Metal","Wood"],
-  Packaging: ["Box","Bag","Sachet","Envelope","Bottle","Jar"]
+  Color: ["Black", "Brown", "Tan", "Cognac", "Navy", "White"],
+  BagSize: ["Small", "Medium", "Large"],
+  ShoeSize: ["38", "39", "40", "41", "42", "43", "44"], // EU sizes
+  BeltSize: ["XS", "S", "M", "L", "XL"],
+  Material: ["Full-Grain Leather", "Top-Grain Leather", "Suede", "Patent Leather"],
+  Finish: ["Matte", "Glossy", "Textured"],
+  Packaging: ["Dust Bag", "Gift Box", "Eco Pouch"]
 };
 
 function updateValueOptions(typeSelect) {
