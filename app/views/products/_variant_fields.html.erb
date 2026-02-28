@@ -1,15 +1,14 @@
 <div id="<%= dom_id(f.object) %>"
      class="border p-3 mb-2 bg-light rounded variant-block"
      data-saved-value="<%= f.object.value %>"
-     data-key="<%= (f.object.id || Time.now.to_i) %>"
-     data-category="<%= @product.category.name %>">
+     data-key="<%= (f.object.id || Time.now.to_i) %>">
 
   <div class="row g-2">
     <!-- Variant Type -->
     <div class="col-md-4">
       <%= f.label :name, "Type", class: "form-label small" %>
       <%= f.select :name,
-            ["Color","Size","Material","Finish","Packaging"],
+            ["Color","BagSize","ShoeSize","BeltSize","Material","Finish","Packaging"],
             { selected: f.object.name },
             class: "form-select form-select-sm variant-type",
             required: true %>
@@ -21,16 +20,9 @@
       <%= f.select :value,
             case f.object.name
             when "Color"     then ["Black","Brown","Tan","Cognac","Navy","White"]
-            when "Size"
-              if @product.category.name == "Men’s Leather Shoes" || @product.category.name == "Women’s Leather Shoes"
-                ["38","39","40","41","42","43","44"] # EU shoe sizes
-              elsif @product.category.name == "Leather Bags"
-                ["Small","Medium","Large"]
-              elsif @product.category.name == "Leather Accessories"
-                ["XS","S","M","L","XL"] # belts/straps
-              else
-                ["XS","S","M","L","XL"]
-              end
+            when "BagSize"   then ["Small","Medium","Large"]
+            when "ShoeSize"  then ["38","39","40","41","42","43","44"] # EU shoe sizes
+            when "BeltSize"  then ["XS","S","M","L","XL"]
             when "Material"  then ["Full-Grain Leather","Top-Grain Leather","Suede","Patent Leather"]
             when "Finish"    then ["Matte","Glossy","Textured"]
             when "Packaging" then ["Dust Bag","Gift Box","Eco Pouch"]
