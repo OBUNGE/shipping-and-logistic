@@ -1,7 +1,6 @@
 # Clear existing categories
 Category.destroy_all
 
-
 # Define categories and subcategories for leather-focused ecommerce
 categories = {
   "Leather Bags" => [
@@ -32,6 +31,12 @@ categories = {
     "Leather Décor",
     "Leather Storage Items",
     "Leather Furniture Accents"
+  ],
+  "Clothing" => [
+    "Leather Jackets",
+    "Leather Coats",
+    "Leather Pants",
+    "Leather Skirts"
   ],
   "Sale & Discounts" => [
     "Clearance Bags",
