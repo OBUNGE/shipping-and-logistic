@@ -32,11 +32,34 @@ categories = {
     "Leather Storage Items",
     "Leather Furniture Accents"
   ],
-  "Clothing" => [
+  "Men’s Leather Apparel" => [
     "Leather Jackets",
     "Leather Coats",
     "Leather Pants",
-    "Leather Skirts"
+    "Leather Vests"
+  ],
+  "Women’s Leather Apparel" => [
+    "Leather Jackets",
+    "Leather Coats",
+    "Leather Skirts",
+    "Leather Dresses"
+  ],
+  "Unisex Leather Apparel" => [
+    "Leather Jackets",
+    "Leather Coats",
+    "Leather Vests"
+  ],
+  "Kids’ Leather Apparel" => [
+    "Leather Jackets",
+    "Leather Coats",
+    "Leather Shoes",
+    "Leather Accessories"
+  ],
+  "Seasonal Leather Apparel" => [
+    "Summer Leather Apparel",
+    "Winter Leather Apparel",
+    "Spring Leather Apparel",
+    "Autumn Leather Apparel"
   ],
   "Sale & Discounts" => [
     "Clearance Bags",
