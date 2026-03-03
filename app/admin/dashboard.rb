@@ -1,19 +1,20 @@
 ActiveAdmin.register_page "Dashboard" do
   content title: "Admin Dashboard" do
 
-    # Date filter form
-    form action: admin_dashboard_path, method: :get do |f|
-      div do
+    # Date filter form with mobile-friendly classes
+    form action: admin_dashboard_path, method: :get, class: "admin-stk-form" do |f|
+      div class: "admin-stk-panel" do
         label "Start Date"
         input type: :date, name: "start_date", value: params[:start_date]
       end
-      div do
+      div class: "admin-stk-panel" do
         label "End Date"
         input type: :date, name: "end_date", value: params[:end_date]
       end
-      div do
-        input type: :submit, value: "Filter", class: "btn btn-primary"
+      div class: "admin-stk-panel" do
+        input type: :submit, value: "Filter", class: "admin-stk-button"
       end
+      para "Choose a date range to filter results", class: "admin-stk-hint"
     end
 
     # Apply date filter
@@ -54,7 +55,6 @@ ActiveAdmin.register_page "Dashboard" do
     columns do
       column do
         panel "Orders Per Seller" do
-          # ✅ FIX: use active_role instead of role
           sellers = User.where(active_role: "seller")
           bar_chart sellers.map { |s|
             [s.email, s.orders_as_seller.where(created_at: start_date.beginning_of_day..end_date.end_of_day).sum(:total)]
