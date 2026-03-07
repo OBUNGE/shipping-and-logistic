@@ -20,7 +20,6 @@ ActiveAdmin.register Order do
     end
     column :created_at
 
-    # ✅ Disable defaults and add only the links you want
     actions defaults: false do |order|
       links = []
       links << link_to("View", resource_path(order), class: "member_link")
@@ -30,7 +29,7 @@ ActiveAdmin.register Order do
         links << link_to("Mark as Paid",
                          mark_as_paid_admin_order_path(order),
                          method: :put,
-                         class: "member_link")
+                         class: "member_link admin-stk-button")
       end
 
       safe_join(links, " ")
@@ -38,7 +37,7 @@ ActiveAdmin.register Order do
   end
 
   # === Filters ===
-  filter :buyer, collection: -> { User.all }   # dropdown instead of free-text
+  filter :buyer, collection: -> { User.all }
   filter :seller, collection: -> { User.all }
   filter :status, as: :select, collection: Order.statuses.keys
   filter :provider, as: :select, collection: [ "mpesa", "paypal", "paystack", "pod" ]
@@ -57,11 +56,15 @@ ActiveAdmin.register Order do
       row :created_at
       row :updated_at
     end
+
     panel "Quick Actions" do
       div class: "admin-stk-panel" do
         if order.provider.to_s == "pod" && order.status == "pending"
           span do
-            button_to "Send STK Push (M-PESA)", mpesa_stk_push_admin_order_path(order), method: :post, class: "admin-stk-button"
+            button_to "Send STK Push (M-PESA)",
+                      mpesa_stk_push_admin_order_path(order),
+                      method: :post,
+                      class: "admin-stk-button"
           end
         else
           div class: "admin-stk-hint" do
@@ -98,26 +101,34 @@ ActiveAdmin.register Order do
   end
 
   # === Form ===
-  form do |f|
-    f.inputs "Order Details" do
-      f.input :buyer, collection: User.all
-      f.input :seller, collection: User.all
-      f.input :status, as: :select, collection: Order.statuses.keys
-      f.input :provider, as: :select, collection: [ "mpesa", "paypal", "paystack", "pod" ]
-      f.input :total, min: 0.01  # prevents Formtastic error
+  form html: { class: "admin-stk-form" } do |f|
+    div class: "admin-stk-panel" do
+      f.inputs "Order Details" do
+        f.input :buyer, collection: User.all
+        f.input :seller, collection: User.all
+        f.input :status, as: :select, collection: Order.statuses.keys
+        f.input :provider, as: :select, collection: [ "mpesa", "paypal", "paystack", "pod" ]
+        f.input :total, min: 0.01
+      end
     end
-    f.actions
+    div class: "admin-stk-panel" do
+      f.actions do
+        f.action :submit, label: "Save Order", button_html: { class: "admin-stk-button" }
+      end
+    end
+    para "Fill in order details carefully", class: "admin-stk-hint"
   end
 
   # === Custom Member Action for POD ===
-  # Admin header button (visible on show page)
   action_item :mpesa_stk_push, only: :show do
     if resource.provider.to_s == "pod" && resource.status == "pending"
-      button_to "Send STK Push (M-PESA)", mpesa_stk_push_admin_order_path(resource), method: :post, class: "admin-stk-button"
+      button_to "Send STK Push (M-PESA)",
+                mpesa_stk_push_admin_order_path(resource),
+                method: :post,
+                class: "admin-stk-button"
     end
   end
 
-  # Member action that triggers an M-PESA STK Push via MpesaGateway
   member_action :mpesa_stk_push, method: :post do
     phone = resource.buyer&.phone.presence || resource.buyer&.phone_number.presence
 
@@ -125,7 +136,10 @@ ActiveAdmin.register Order do
       redirect_to resource_path, alert: "No buyer phone number available for STK Push." and return
     end
 
-    callback = Rails.application.routes.url_helpers.mpesa_callback_url(order_id: resource.id, host: ENV["APP_HOST"] || "tajaone.app")
+    callback = Rails.application.routes.url_helpers.mpesa_callback_url(
+      order_id: resource.id,
+      host: ENV["APP_HOST"] || "tajaone.app"
+    )
 
     gateway = MpesaGateway.new(
       order: resource,

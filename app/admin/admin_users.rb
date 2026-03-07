@@ -16,13 +16,19 @@ ActiveAdmin.register AdminUser do
   filter :sign_in_count
   filter :created_at
 
-  form do |f|
-    f.inputs do
-      f.input :email
-      f.input :password
-      f.input :password_confirmation
+  form html: { class: "admin-stk-form" } do |f|
+    div class: "admin-stk-panel" do
+      f.inputs do
+        f.input :email
+        f.input :password
+        f.input :password_confirmation
+      end
     end
-    f.actions
+    div class: "admin-stk-panel" do
+      f.actions do
+        f.action :submit, label: "Save Admin User", button_html: { class: "admin-stk-button" }
+      end
+    end
+    para "Enter credentials carefully", class: "admin-stk-hint"
   end
-
 end
