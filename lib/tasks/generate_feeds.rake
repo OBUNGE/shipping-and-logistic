@@ -18,33 +18,33 @@ namespace :feeds do
 
       products.each do |product|
         csv << [
-          product.slug || product.id, # use slug to match pixel content_id
+          product.slug || product.id,
           product.title,
           product.description&.to_plain_text.presence || "Premium leather goods from TajaOne",
-          "#{product.price.to_f.round(2)} #{product.currency}", # numeric + currency
+          "#{product.price.to_f.round(2)} #{product.currency || 'KES'}",
           "new",
           Rails.application.routes.url_helpers.product_url(product, protocol: "https", host: "tajaone.app"),
-          product.stock.to_i > 0 ? "in stock" : "out of stock", # corrected values
+          product.stock.to_i > 0 ? "in stock" : "out of stock",
           product.image_url.to_s,
           (product.gallery_image_urls&.join("|") || ""),
-          "TajaOne", # required brand
-          product.category || "Leather Goods", # product_type
+          "TajaOne",
+          product.category.try(:name) || "Leather Goods",   # ✅ clean category name
           product.color || "Leather",
-          product.weight.to_f > 0 ? "#{product.weight} kg" : "",
+          product.weight.to_f > 0 ? "#{product.weight} kg" : "1 kg", # ✅ fallback weight
           product.age_group || "adult",
           product.gender || "unisex",
-          "Leather"
+          "Leather" # ✅ hard-coded material
         ]
       end
     end
 
     puts "✓ CSV feed saved to #{csv_file}"
 
-    # Generate XML for Google Merchant (Option 2: assigns)
+    # Generate XML for Google Merchant
     xml_file = Rails.root.join("public", "google_merchant.xml")
     xml_content = ApplicationController.renderer.render(
       template: "feeds/google_merchant",
-      assigns: { products: products } # 👈 makes @products available in template
+      assigns: { products: products }
     )
     File.write(xml_file, xml_content)
     puts "✓ XML feed saved to #{xml_file}"
@@ -55,7 +55,7 @@ namespace :feeds do
       {
         id: product.slug || product.id,
         title: product.title,
-        description: product.description&.to_plain_text,
+        description: product.description&.to_plain_text.presence || "Premium leather goods from TajaOne", # ✅ fallback description
         price: product.price.to_f.round(2),
         currency: product.currency || 'KES',
         url: Rails.application.routes.url_helpers.product_url(product, protocol: "https", host: "tajaone.app"),
@@ -63,10 +63,11 @@ namespace :feeds do
         gallery: product.gallery_image_urls || [],
         availability: product.stock.to_i > 0 ? 'in stock' : 'out of stock',
         stock: product.stock,
-        category: product.category,
-        weight: product.weight,
+        category: product.category.try(:name) || "Leather Goods",   # ✅ clean category name
+        weight: product.weight.to_f > 0 ? "#{product.weight} kg" : "1 kg", # ✅ fallback weight
         condition: 'new',
         brand: "TajaOne",
+        material: "Leather", # ✅ added material
         discount: {
           percentage: product.try(:discount)&.percentage,
           expires_at: product.try(:discount)&.expires_at
