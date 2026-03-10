@@ -1,4 +1,4 @@
-# lib/tiktok_events.rb
+# lib/tik_tok_events.rb
 require 'net/http'
 require 'uri'
 require 'json'
@@ -8,7 +8,7 @@ module TikTokEvents
   ACCESS_TOKEN = "0c1037c68912989cf52fd469b5cd8eb5f3f3c0ac"
   API_ENDPOINT = "https://business-api.tiktokglobalshop.com/open_api/v1.3/event/track"
 
-  def self.track_event(event_name, event_id:, event_time:, properties:, context:)
+  def self.track_event(event_name, event_id:, event_time:, properties:, context:, test_event_code: nil)
     uri = URI(API_ENDPOINT)
     http = Net::HTTP.new(uri.host, uri.port)
     http.use_ssl = true
@@ -21,6 +21,7 @@ module TikTokEvents
       properties: properties,
       context: context
     }
+    payload[:test_event_code] = test_event_code if test_event_code # 👈 include test code when testing
 
     request = Net::HTTP::Post.new(uri.path, {
       "Content-Type" => "application/json",
@@ -34,15 +35,15 @@ module TikTokEvents
   end
 
   # ViewContent
-  def self.track_view_content(product, user)
+  def self.track_view_content(product, user, test_event_code: nil)
     track_event(
       "ViewContent",
       event_id: "view_#{product.id}_#{user.id}",
       event_time: Time.now.to_i,
       properties: {
-        value: product.price,
+        value: product.price.to_f,
         currency: "KES",
-        content_id: product.sku,   # ✅ use SKU/catalog ID
+        content_id: product.sku,
         content_type: "product",
         content_name: product.name,
         url: "https://tajaone.app/products/#{product.id}"
@@ -51,20 +52,21 @@ module TikTokEvents
         email: user.email,
         ip: user.current_sign_in_ip,
         user_agent: user.last_user_agent
-      }
+      },
+      test_event_code: test_event_code
     )
   end
 
   # AddToCart
-  def self.track_add_to_cart(cart_item, user)
+  def self.track_add_to_cart(cart_item, user, test_event_code: nil)
     track_event(
       "AddToCart",
       event_id: "cart_#{cart_item.id}_#{user.id}",
       event_time: Time.now.to_i,
       properties: {
-        value: cart_item.price,
+        value: cart_item.price.to_f,
         currency: "KES",
-        content_id: cart_item.product.sku,  # ✅ use SKU/catalog ID
+        content_id: cart_item.product.sku,
         content_type: "product",
         content_name: cart_item.product.name,
         url: "https://tajaone.app/cart"
@@ -73,20 +75,21 @@ module TikTokEvents
         email: user.email,
         ip: user.current_sign_in_ip,
         user_agent: user.last_user_agent
-      }
+      },
+      test_event_code: test_event_code
     )
   end
 
   # InitiateCheckout
-  def self.track_checkout(order, user)
+  def self.track_checkout(order, user, test_event_code: nil)
     track_event(
       "InitiateCheckout",
       event_id: "checkout_#{order.id}_#{user.id}",
       event_time: Time.now.to_i,
       properties: {
-        value: order.total_price,
+        value: order.total_price.to_f,
         currency: "KES",
-        content_id: order.items.map(&:sku).join(","),  # ✅ include all SKUs
+        content_id: order.items.map(&:sku).join(","),
         content_type: "order",
         content_name: "Checkout for Order #{order.id}",
         url: "https://tajaone.app/checkout/#{order.id}"
@@ -95,20 +98,21 @@ module TikTokEvents
         email: user.email,
         ip: user.current_sign_in_ip,
         user_agent: user.last_user_agent
-      }
+      },
+      test_event_code: test_event_code
     )
   end
 
   # Purchase
-  def self.track_purchase(order, user)
+  def self.track_purchase(order, user, test_event_code: nil)
     track_event(
       "Purchase",
       event_id: "order_#{order.id}_#{user.id}",
       event_time: Time.now.to_i,
       properties: {
-        value: order.total_price,
+        value: order.total_price.to_f,
         currency: "KES",
-        content_id: order.items.map(&:sku).join(","),  # ✅ include all SKUs
+        content_id: order.items.map(&:sku).join(","),
         content_type: "order",
         content_name: "Order #{order.id}",
         url: "https://tajaone.app/orders/#{order.id}"
@@ -117,7 +121,8 @@ module TikTokEvents
         email: user.email,
         ip: user.current_sign_in_ip,
         user_agent: user.last_user_agent
-      }
+      },
+      test_event_code: test_event_code
     )
   end
 end
