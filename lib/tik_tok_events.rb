@@ -21,7 +21,7 @@ module TikTokEvents
       properties: properties,
       context: context
     }
-    payload[:test_event_code] = test_event_code if test_event_code # 👈 include test code when testing
+    payload[:test_event_code] = test_event_code if test_event_code
 
     request = Net::HTTP::Post.new(uri.path, {
       "Content-Type" => "application/json",
@@ -42,11 +42,11 @@ module TikTokEvents
       event_time: Time.now.to_i,
       properties: {
         value: product.price.to_f,
-        currency: "KES",
-        content_id: product.sku,
+        currency: product.currency,
+        content_id: product.slug,   # ✅ use slug as content_id
         content_type: "product",
-        content_name: product.name,
-        url: "https://tajaone.app/products/#{product.id}"
+        content_name: product.title,
+        url: "https://tajaone.app/products/#{product.slug}"
       },
       context: {
         email: user.email,
@@ -65,10 +65,10 @@ module TikTokEvents
       event_time: Time.now.to_i,
       properties: {
         value: cart_item.price.to_f,
-        currency: "KES",
-        content_id: cart_item.product.sku,
+        currency: cart_item.product.currency,
+        content_id: cart_item.product.slug,   # ✅ use slug
         content_type: "product",
-        content_name: cart_item.product.name,
+        content_name: cart_item.product.title,
         url: "https://tajaone.app/cart"
       },
       context: {
@@ -89,7 +89,7 @@ module TikTokEvents
       properties: {
         value: order.total_price.to_f,
         currency: "KES",
-        content_id: order.items.map(&:sku).join(","),
+        content_id: order.items.map { |item| item.product.slug }.join(","), # ✅ join slugs
         content_type: "order",
         content_name: "Checkout for Order #{order.id}",
         url: "https://tajaone.app/checkout/#{order.id}"
@@ -112,7 +112,7 @@ module TikTokEvents
       properties: {
         value: order.total_price.to_f,
         currency: "KES",
-        content_id: order.items.map(&:sku).join(","),
+        content_id: order.items.map { |item| item.product.slug }.join(","), # ✅ join slugs
         content_type: "order",
         content_name: "Order #{order.id}",
         url: "https://tajaone.app/orders/#{order.id}"
