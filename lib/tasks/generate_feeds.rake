@@ -33,7 +33,7 @@ namespace :feeds do
           product.weight.to_f > 0 ? "#{product.weight} kg" : "",
           product.age_group || "adult",
           product.gender || "unisex",
-          product.material || "Leather"
+          "Leather"
         ]
       end
     end

@@ -5,7 +5,411 @@
     <link>https://tajaone.app</link>
     <description>High-quality, affordable leather bags, shoes &amp; accessories in Kenya</description>
     <language>en-us</language>
-    <lastBuildDate>Tue, 10 Mar 2026 21:39:12 +0300</lastBuildDate>
+    <lastBuildDate>Tue, 10 Mar 2026 22:13:43 +0300</lastBuildDate>
 
+      <item>
+        <!-- Required Fields -->
+        <g:id>5</g:id>
+        <title>Checkered Leather Handbag – Juan Luisa Edition</title>
+        <description></description>
+        <g:price>3800 KES</g:price>
+        <link>https://tajaone.app:3000/products/checkered-leather-handbag-juan-luisa-edition</link>
+        <g:image_link>https://qmvihqkhbwkcbbnmozkl.supabase.co/storage/v1/object/public/product-images/4f4ee95808b254f5c962acd47325cffa_Checkered+Leather+Handbag.JPG</g:image_link>
+        <g:availability>in stock</g:availability>
+        
+        <!-- Recommended Fields -->
+        <g:condition>new</g:condition>
+        <g:brand>Tajaone</g:brand>
+        <g:product_type>Leather Bags</g:product_type>
+        <g:google_product_category>Apparel &amp; Accessories &gt; Bags &amp; Cases</g:google_product_category>
+        
+        <!-- Color (required for apparel) -->
+          <g:color>Brown</g:color>
+        
+        <!-- Age Group -->
+          <g:age_group>adult</g:age_group>
+        
+        <!-- Gender -->
+          <g:gender>unisex</g:gender>
+        
+        <!-- Size (if applicable) -->
+        
+        <!-- Additional Images -->
+            <g:additional_image_link>https://qmvihqkhbwkcbbnmozkl.supabase.co/storage/v1/object/public/product-images/3adc8652db1645c699123c481876b164_Checkered+Leather+Handbag.png</g:additional_image_link>
+        
+        <!-- Shipping (Required) -->
+        <g:shipping>
+          <g:country>KE</g:country>
+            <g:price>0 KES</g:price>
+            <g:transit_time_label>2-5 business days</g:transit_time_label>
+        </g:shipping>
+        
+        <!-- Weight -->
+        
+        <!-- Sale Price (if discount exists) -->
+        
+        <g:mpn>5</g:mpn>
+      </item>
+      <item>
+        <!-- Required Fields -->
+        <g:id>3</g:id>
+        <title>Urban Explorer Leather Duffel – Rugged Brown Finish</title>
+        <description></description>
+        <g:price>4500 KES</g:price>
+        <link>https://tajaone.app:3000/products/urban-explorer-leather-duffel-rugged-brown-finish</link>
+        <g:image_link>https://qmvihqkhbwkcbbnmozkl.supabase.co/storage/v1/object/public/product-images/0e3dd6a6cdd092ab6f0c53a651219cec_Urban+Explorer+Leather+Duffel.JPG</g:image_link>
+        <g:availability>in stock</g:availability>
+        
+        <!-- Recommended Fields -->
+        <g:condition>new</g:condition>
+        <g:brand>Tajaone</g:brand>
+        <g:product_type>Leather Bags</g:product_type>
+        <g:google_product_category>Apparel &amp; Accessories &gt; Bags &amp; Cases</g:google_product_category>
+        
+        <!-- Color (required for apparel) -->
+          <g:color>Brown</g:color>
+        
+        <!-- Age Group -->
+          <g:age_group>adult</g:age_group>
+        
+        <!-- Gender -->
+          <g:gender>unisex</g:gender>
+        
+        <!-- Size (if applicable) -->
+        
+        <!-- Additional Images -->
+            <g:additional_image_link>https://qmvihqkhbwkcbbnmozkl.supabase.co/storage/v1/object/public/product-images/89a71029b034fce379bf8f8211e26a60_Urban+Explorer+Leather+Duffel.png</g:additional_image_link>
+        
+        <!-- Shipping (Required) -->
+        <g:shipping>
+          <g:country>KE</g:country>
+            <g:price>0 KES</g:price>
+            <g:transit_time_label>2-5 business days</g:transit_time_label>
+        </g:shipping>
+        
+        <!-- Weight -->
+        
+        <!-- Sale Price (if discount exists) -->
+        
+        <g:mpn>3</g:mpn>
+      </item>
+      <item>
+        <!-- Required Fields -->
+        <g:id>7</g:id>
+        <title>Mini Quilted Handbags – Assorted Colors with Tassel Detail</title>
+        <description>&amp;lt;div class=&amp;quot;trix-content&amp;quot;&amp;gt;
+  &amp;lt;div&amp;gt;Step into effortless elegance with this &amp;lt;strong&amp;gt;dark gray quilted handbag&amp;lt;/strong&amp;gt;, designed to elevate any outfit. The upper section features a refined diamond-quilted pattern, contrasted by a smooth lower finish for modern appeal. A gold-toned zipper pull, accented with a decorative chain and matching tassel, adds a touch of glamour.&amp;lt;/div&amp;gt;&amp;lt;div&amp;gt;Crafted with premium materials, this handbag offers durability and style in equal measure. Its versatile size makes it perfect for carrying essentials without compromising on sophistication. Whether paired with casual daytime looks or evening ensembles, this handbag is a statement piece that blends fashion and function seamlessly.&amp;lt;/div&amp;gt;&amp;lt;div&amp;gt;&amp;lt;strong&amp;gt;Highlights:&amp;lt;/strong&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;ul&amp;gt;&amp;lt;li&amp;gt;Quilted upper with smooth lower design&amp;lt;/li&amp;gt;&amp;lt;li&amp;gt;Gold-toned zipper pull with chain &amp;amp;amp; tassel detail&amp;lt;/li&amp;gt;&amp;lt;li&amp;gt;Premium craftsmanship for durability&amp;lt;/li&amp;gt;&amp;lt;li&amp;gt;Spacious yet refined silhouette&amp;lt;/li&amp;gt;&amp;lt;li&amp;gt;Perfect for both everyday wear and special occasions&amp;lt;/li&amp;gt;&amp;lt;/ul&amp;gt;
+&amp;lt;/div&amp;gt;
+</description>
+        <g:price>1000 KES</g:price>
+        <link>https://tajaone.app:3000/products/mini-quilted-handbags-assorted-colors-with-tassel-detail</link>
+        <g:image_link>https://qmvihqkhbwkcbbnmozkl.supabase.co/storage/v1/object/public/product-images/28a0a2d141fe6ba4a589f1a2f8f1997c_Copilot_20251217_184550.png</g:image_link>
+        <g:availability>in stock</g:availability>
+        
+        <!-- Recommended Fields -->
+        <g:condition>new</g:condition>
+        <g:brand>Tajaone</g:brand>
+        <g:product_type>Leather Bags</g:product_type>
+        <g:google_product_category>Apparel &amp; Accessories &gt; Bags &amp; Cases</g:google_product_category>
+        
+        <!-- Color (required for apparel) -->
+          <g:color>Brown</g:color>
+        
+        <!-- Age Group -->
+          <g:age_group>adult</g:age_group>
+        
+        <!-- Gender -->
+          <g:gender>unisex</g:gender>
+        
+        <!-- Size (if applicable) -->
+        
+        <!-- Additional Images -->
+            <g:additional_image_link>https://qmvihqkhbwkcbbnmozkl.supabase.co/storage/v1/object/public/product-images/10d200dd051e0a958b12a6a4cdd61374_Copilot_20251217_184514.png</g:additional_image_link>
+            <g:additional_image_link>https://qmvihqkhbwkcbbnmozkl.supabase.co/storage/v1/object/public/product-images/bcc4739ce1cfaf8f204034f89d8e1bd0_Copilot_20251217_184444.png</g:additional_image_link>
+        
+        <!-- Shipping (Required) -->
+        <g:shipping>
+          <g:country>KE</g:country>
+            <g:price>0 KES</g:price>
+            <g:transit_time_label>5</g:transit_time_label>
+        </g:shipping>
+        
+        <!-- Weight -->
+        
+        <!-- Sale Price (if discount exists) -->
+        
+        <g:mpn>7</g:mpn>
+      </item>
+      <item>
+        <!-- Required Fields -->
+        <g:id>10</g:id>
+        <title>Premium Brown Leather Belt with Textured Diamond Pattern</title>
+        <description>&amp;lt;div class=&amp;quot;trix-content&amp;quot;&amp;gt;
+  &amp;lt;div&amp;gt;Elevate your style with this handcrafted brown leather belt, designed for both durability and elegance. Featuring a distinctive diamond-textured pattern with subtle dotted accents, this belt adds sophistication to any outfit. The sturdy silver buckle and multiple adjustment holes ensure a secure and comfortable fit, while the premium leather guarantees long-lasting wear.&amp;lt;br&amp;gt;&amp;lt;strong&amp;gt;Key Features:&amp;lt;br&amp;gt;&amp;lt;/strong&amp;gt;• Material: 100% genuine leather&amp;lt;br&amp;gt;• Color: Rich brown&amp;lt;br&amp;gt;• Buckle: Polished silver metal&amp;lt;br&amp;gt;• Design: Diamond-textured pattern with dotted detailing&amp;lt;br&amp;gt;• Fit: Adjustable with multiple holes&amp;lt;br&amp;gt;• Width: Standard (approx. 3.5 cm)&amp;lt;br&amp;gt;• Style: Versatile — perfect for casual and formal wear&amp;lt;br&amp;gt;&amp;lt;strong&amp;gt;Care Instructions:&amp;lt;/strong&amp;gt;&amp;lt;br&amp;gt;• Wipe with a soft cloth to remove dust&amp;lt;br&amp;gt;• Avoid prolonged exposure to moisture&amp;lt;br&amp;gt;• Condition occasionally with leather cream&amp;lt;br&amp;gt;&amp;lt;strong&amp;gt;Ideal For:&amp;lt;/strong&amp;gt;&amp;lt;br&amp;gt;• Everyday wear&amp;lt;br&amp;gt;• Business attire&amp;lt;br&amp;gt;• Special occasions&amp;lt;strong&amp;gt;&amp;lt;br&amp;gt;&amp;lt;/strong&amp;gt;&amp;lt;br&amp;gt;&amp;lt;/div&amp;gt;
+&amp;lt;/div&amp;gt;
+</description>
+        <g:price>650 KES</g:price>
+        <link>https://tajaone.app:3000/products/premium-brown-leather-belt-with-textured-diamond-pattern</link>
+        <g:image_link>https://qmvihqkhbwkcbbnmozkl.supabase.co/storage/v1/object/public/product-images/f21193449467b1e43ef42a99133081b9_Brown+leather+belt.png</g:image_link>
+        <g:availability>in stock</g:availability>
+        
+        <!-- Recommended Fields -->
+        <g:condition>new</g:condition>
+        <g:brand>Tajaone</g:brand>
+        <g:product_type>Leather Accessories</g:product_type>
+        <g:google_product_category>Apparel &amp; Accessories &gt; Bags &amp; Cases</g:google_product_category>
+        
+        <!-- Color (required for apparel) -->
+          <g:color>Brown</g:color>
+        
+        <!-- Age Group -->
+          <g:age_group>adult</g:age_group>
+        
+        <!-- Gender -->
+          <g:gender>unisex</g:gender>
+        
+        <!-- Size (if applicable) -->
+        
+        <!-- Additional Images -->
+        
+        <!-- Shipping (Required) -->
+        <g:shipping>
+          <g:country>KE</g:country>
+            <g:price>0 KES</g:price>
+            <g:transit_time_label>3 days</g:transit_time_label>
+        </g:shipping>
+        
+        <!-- Weight -->
+        
+        <!-- Sale Price (if discount exists) -->
+        
+        <g:mpn>10</g:mpn>
+      </item>
+      <item>
+        <!-- Required Fields -->
+        <g:id>9</g:id>
+        <title>Premium Brown Embossed Leather Belt – Silver Buckle</title>
+        <description>&amp;lt;div class=&amp;quot;trix-content&amp;quot;&amp;gt;
+  &amp;lt;div&amp;gt;Elevate your style with this handcrafted brown leather belt, designed for both durability and sophistication. Featuring a textured diamond-embossed pattern along its length, this belt adds a refined touch to any outfit. The polished silver buckle complements the rich brown leather, making it versatile for both casual and formal wear. Perfectly crafted to highlight TAJAONE’s commitment to premium quality and timeless design, this belt is a must-have accessory for the modern wardrobe.&amp;lt;/div&amp;gt;
+&amp;lt;/div&amp;gt;
+</description>
+        <g:price>500 KES</g:price>
+        <link>https://tajaone.app:3000/products/premium-brown-embossed-leather-belt-silver-buckle</link>
+        <g:image_link>https://qmvihqkhbwkcbbnmozkl.supabase.co/storage/v1/object/public/product-images/ed01175969bd100d46b36aa94f5de0e7_Blacl+leather+belt.png</g:image_link>
+        <g:availability>in stock</g:availability>
+        
+        <!-- Recommended Fields -->
+        <g:condition>new</g:condition>
+        <g:brand>Tajaone</g:brand>
+        <g:product_type>Leather Accessories</g:product_type>
+        <g:google_product_category>Apparel &amp; Accessories &gt; Bags &amp; Cases</g:google_product_category>
+        
+        <!-- Color (required for apparel) -->
+          <g:color>Brown</g:color>
+        
+        <!-- Age Group -->
+          <g:age_group>adult</g:age_group>
+        
+        <!-- Gender -->
+          <g:gender>unisex</g:gender>
+        
+        <!-- Size (if applicable) -->
+        
+        <!-- Additional Images -->
+        
+        <!-- Shipping (Required) -->
+        <g:shipping>
+          <g:country>KE</g:country>
+            <g:price>0 KES</g:price>
+            <g:transit_time_label>3</g:transit_time_label>
+        </g:shipping>
+        
+        <!-- Weight -->
+        
+        <!-- Sale Price (if discount exists) -->
+        
+        <g:mpn>9</g:mpn>
+      </item>
+      <item>
+        <!-- Required Fields -->
+        <g:id>6</g:id>
+        <title>Elegant Brown Leather Shoes – Star Detail</title>
+        <description>&amp;lt;div class=&amp;quot;trix-content&amp;quot;&amp;gt;
+  &amp;lt;div&amp;gt;Step into timeless sophistication with these handcrafted men’s dress shoes, designed for the modern gentleman who values both style and quality.&amp;lt;/div&amp;gt;&amp;lt;ul&amp;gt;&amp;lt;li&amp;gt;&amp;lt;strong&amp;gt;Premium Leather Craftsmanship&amp;lt;/strong&amp;gt;: Made from rich brown leather with a subtle gradient finish that deepens at the toe and heel, offering a refined, polished look.&amp;lt;/li&amp;gt;&amp;lt;li&amp;gt;&amp;lt;strong&amp;gt;Distinctive Design&amp;lt;/strong&amp;gt;: Featuring a sleek pointed toe, decorative stitching across the vamp, and a unique star-shaped embellishment for a touch of character.&amp;lt;/li&amp;gt;&amp;lt;li&amp;gt;&amp;lt;strong&amp;gt;Comfort &amp;amp;amp; Fit&amp;lt;/strong&amp;gt;: Built with a smooth interior lining and supportive sole to ensure all-day comfort, whether at the office, formal events, or evening occasions.&amp;lt;/li&amp;gt;&amp;lt;li&amp;gt;&amp;lt;strong&amp;gt;Versatile Elegance&amp;lt;/strong&amp;gt;: Pairs effortlessly with suits, tailored trousers, or smart casual outfits, making it a versatile addition to any wardrobe.&amp;lt;/li&amp;gt;&amp;lt;li&amp;gt;&amp;lt;strong&amp;gt;Handcrafted in Nairobi&amp;lt;/strong&amp;gt;: Proudly made with attention to detail, combining traditional craftsmanship with contemporary style&amp;lt;/li&amp;gt;&amp;lt;/ul&amp;gt;
+&amp;lt;/div&amp;gt;
+</description>
+        <g:price>4500 KES</g:price>
+        <link>https://tajaone.app:3000/products/elegant-brown-leather-shoes-star-detail</link>
+        <g:image_link>https://qmvihqkhbwkcbbnmozkl.supabase.co/storage/v1/object/public/product-images/8c0284ed7cf2cdbe2c7ea85d3a77d3f3_Elegant+Brown+Leather-Shoes+Star+Detail+edited.png</g:image_link>
+        <g:availability>in stock</g:availability>
+        
+        <!-- Recommended Fields -->
+        <g:condition>new</g:condition>
+        <g:brand>Tajaone</g:brand>
+        <g:product_type>Men’s Leather Shoes</g:product_type>
+        <g:google_product_category>Apparel &amp; Accessories &gt; Bags &amp; Cases</g:google_product_category>
+        
+        <!-- Color (required for apparel) -->
+          <g:color>Brown</g:color>
+        
+        <!-- Age Group -->
+          <g:age_group>adult</g:age_group>
+        
+        <!-- Gender -->
+          <g:gender>unisex</g:gender>
+        
+        <!-- Size (if applicable) -->
+        
+        <!-- Additional Images -->
+            <g:additional_image_link>https://qmvihqkhbwkcbbnmozkl.supabase.co/storage/v1/object/public/product-images/038a0005e50c403603432c3d0775aeb6_Elegant+Brown+Leather-Shoes+Star+Detail+edited.png</g:additional_image_link>
+        
+        <!-- Shipping (Required) -->
+        <g:shipping>
+          <g:country>KE</g:country>
+            <g:price>0 KES</g:price>
+            <g:transit_time_label>3 days</g:transit_time_label>
+        </g:shipping>
+        
+        <!-- Weight -->
+        
+        <!-- Sale Price (if discount exists) -->
+        
+        <g:mpn>6</g:mpn>
+      </item>
+      <item>
+        <!-- Required Fields -->
+        <g:id>8</g:id>
+        <title>Classic Leather Wallets – Black &amp;amp; Brown Collection</title>
+        <description>&amp;lt;div class=&amp;quot;trix-content&amp;quot;&amp;gt;
+  &amp;lt;div&amp;gt;Elevate your style and organization with this premium handcrafted leather wallet/menu cover. Designed with meticulous attention to detail, it features:&amp;lt;br&amp;gt;• 	Luxurious dark leather finish – durable, sleek, and timeless.&amp;lt;br&amp;gt;• 	Striking blue edge stitching – adds a modern, artistic flair.&amp;lt;br&amp;gt;• 	Embossed decorative logo – showcasing “WHINO” with ornate design elements for a bold, upscale identity.&amp;lt;br&amp;gt;• 	Multi-purpose use – perfect as a stylish wallet, menu cover, or branding accessory for restaurants, bars, and creative venues.&amp;lt;br&amp;gt;• 	Rustic yet refined aesthetic – complemented by a natural wooden background feel, making it ideal for establishments that blend art, food, and cocktails.&amp;lt;br&amp;gt;This piece is not just functional—it’s a statement of craftsmanship and sophistication. Whether used personally or as part of a business brand, it embodies elegance and durability.&amp;lt;/div&amp;gt;
+&amp;lt;/div&amp;gt;
+</description>
+        <g:price>500 KES</g:price>
+        <link>https://tajaone.app:3000/products/classic-leather-wallets-black-brown-collection</link>
+        <g:image_link>https://qmvihqkhbwkcbbnmozkl.supabase.co/storage/v1/object/public/product-images/a2659087f4591d56005b3bb7c7ee07d6_original+leather+wallets.jpg</g:image_link>
+        <g:availability>in stock</g:availability>
+        
+        <!-- Recommended Fields -->
+        <g:condition>new</g:condition>
+        <g:brand>Tajaone</g:brand>
+        <g:product_type>Leather Accessories</g:product_type>
+        <g:google_product_category>Apparel &amp; Accessories &gt; Bags &amp; Cases</g:google_product_category>
+        
+        <!-- Color (required for apparel) -->
+          <g:color>Brown</g:color>
+        
+        <!-- Age Group -->
+          <g:age_group>adult</g:age_group>
+        
+        <!-- Gender -->
+          <g:gender>unisex</g:gender>
+        
+        <!-- Size (if applicable) -->
+        
+        <!-- Additional Images -->
+            <g:additional_image_link>https://qmvihqkhbwkcbbnmozkl.supabase.co/storage/v1/object/public/product-images/4286a5dc68952d3faa2f3426af8f4152_brown+leather+wallets.jpg</g:additional_image_link>
+        
+        <!-- Shipping (Required) -->
+        <g:shipping>
+          <g:country>KE</g:country>
+            <g:price>0 KES</g:price>
+            <g:transit_time_label>Same-day within Nairobi, 2–5 business days countrywide</g:transit_time_label>
+        </g:shipping>
+        
+        <!-- Weight -->
+        
+        <!-- Sale Price (if discount exists) -->
+          <g:sale_price>450.0 KES</g:sale_price>
+        
+        <g:mpn>8</g:mpn>
+      </item>
+      <item>
+        <!-- Required Fields -->
+        <g:id>2</g:id>
+        <title>Classic Brown Leather Duffel – Full-Grain Kenyan Hide</title>
+        <description></description>
+        <g:price>3500 KES</g:price>
+        <link>https://tajaone.app:3000/products/classic-brown-leather-duffel-full-grain-kenyan-hide</link>
+        <g:image_link>https://qmvihqkhbwkcbbnmozkl.supabase.co/storage/v1/object/public/product-images/9a78f7f84177c08b7fc3ae9c9203489e_Classic+Brown+Leather+Duffe.JPG</g:image_link>
+        <g:availability>in stock</g:availability>
+        
+        <!-- Recommended Fields -->
+        <g:condition>new</g:condition>
+        <g:brand>Tajaone</g:brand>
+        <g:product_type>Leather Bags</g:product_type>
+        <g:google_product_category>Apparel &amp; Accessories &gt; Bags &amp; Cases</g:google_product_category>
+        
+        <!-- Color (required for apparel) -->
+          <g:color>Brown</g:color>
+        
+        <!-- Age Group -->
+          <g:age_group>adult</g:age_group>
+        
+        <!-- Gender -->
+          <g:gender>unisex</g:gender>
+        
+        <!-- Size (if applicable) -->
+        
+        <!-- Additional Images -->
+        
+        <!-- Shipping (Required) -->
+        <g:shipping>
+          <g:country>KE</g:country>
+            <g:price>0 KES</g:price>
+            <g:transit_time_label>2-5 business days</g:transit_time_label>
+        </g:shipping>
+        
+        <!-- Weight -->
+        
+        <!-- Sale Price (if discount exists) -->
+        
+        <g:mpn>2</g:mpn>
+      </item>
+      <item>
+        <!-- Required Fields -->
+        <g:id>4</g:id>
+        <title>Black Leather Keychain – Handstitched with Metal Ring</title>
+        <description>&amp;lt;div class=&amp;quot;trix-content&amp;quot;&amp;gt;
+  &amp;lt;h1&amp;gt;&amp;lt;strong&amp;gt;Black Leather Keychain – Handstitched Key Holder with Durable Metal Ring&amp;lt;/strong&amp;gt;&amp;lt;/h1&amp;gt;&amp;lt;div&amp;gt;Upgrade your everyday carry with this premium black leather keychain, carefully handcrafted for durability, elegance, and long-term use. Designed for those who appreciate minimalist style and quality craftsmanship, this handstitched leather key holder combines genuine leather with a strong stainless steel metal ring for secure key organization.&amp;lt;br&amp;gt;Whether for personal use or as a thoughtful gift, this leather keychain delivers both function and sophistication.&amp;lt;br&amp;gt;&amp;lt;strong&amp;gt;🔑 Product Highlights&amp;lt;/strong&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;ul&amp;gt;&amp;lt;li&amp;gt;Premium Genuine Leather – Made from high-quality black leather for durability and a smooth finish&amp;lt;/li&amp;gt;&amp;lt;li&amp;gt;Handstitched Detailing – Strong reinforced stitching for long-lasting performance&amp;lt;/li&amp;gt;&amp;lt;li&amp;gt;Heavy-Duty Metal Ring – Rust-resistant stainless steel key ring for secure attachment&amp;lt;/li&amp;gt;&amp;lt;li&amp;gt;Minimalist &amp;amp;amp; Elegant Design – Perfect for men and women&amp;lt;/li&amp;gt;&amp;lt;li&amp;gt;Compact &amp;amp;amp; Lightweight – Fits comfortably in your pocket or bag&amp;lt;/li&amp;gt;&amp;lt;li&amp;gt;Perfect Gift Idea – Ideal for birthdays, Father’s Day, corporate gifts, or everyday use&amp;lt;/li&amp;gt;&amp;lt;/ul&amp;gt;&amp;lt;div&amp;gt;&amp;lt;strong&amp;gt;Why Choose This Leather Key Holder?&amp;lt;/strong&amp;gt;&amp;lt;br&amp;gt;Unlike synthetic keychains that wear out quickly, this handmade leather keychain is crafted for strength and style. The reinforced stitching prevents tearing, while the thick leather body maintains its shape over time. The metal key ring holds house keys, car keys, office keys, and more without bending or breaking.&amp;lt;br&amp;gt;This is more than just a keychain — it’s a durable everyday essential.&amp;lt;br&amp;gt;&amp;lt;strong&amp;gt;Product Specifications&amp;lt;/strong&amp;gt;&amp;lt;/div&amp;gt;&amp;lt;ul&amp;gt;&amp;lt;li&amp;gt;Material: Genuine leather&amp;lt;/li&amp;gt;&amp;lt;li&amp;gt;Color: Black&amp;lt;/li&amp;gt;&amp;lt;li&amp;gt;Ring Material: Stainless steel&amp;lt;/li&amp;gt;&amp;lt;li&amp;gt;Style: Handstitched leather key holder&amp;lt;/li&amp;gt;&amp;lt;li&amp;gt;Use: Car keys, house keys, office keys&amp;lt;/li&amp;gt;&amp;lt;li&amp;gt;Gender: Unisex&amp;lt;/li&amp;gt;&amp;lt;/ul&amp;gt;&amp;lt;div&amp;gt;&amp;lt;strong&amp;gt;Ideal For&amp;lt;/strong&amp;gt;&amp;lt;br&amp;gt;Car key organization&amp;lt;br&amp;gt;Everyday carry (EDC) accessories&amp;lt;br&amp;gt;Corporate branded gifts&amp;lt;br&amp;gt;Leather accessory lovers&amp;lt;br&amp;gt;Minimalist lifestyle enthusiasts&amp;lt;br&amp;gt;&amp;lt;strong&amp;gt;Care Instructions&amp;lt;/strong&amp;gt;&amp;lt;br&amp;gt;To maintain the quality of your black leather keychain:&amp;lt;/div&amp;gt;&amp;lt;ul&amp;gt;&amp;lt;li&amp;gt;Avoid prolonged exposure to water&amp;lt;/li&amp;gt;&amp;lt;li&amp;gt;Wipe with a dry or slightly damp cloth&amp;lt;/li&amp;gt;&amp;lt;li&amp;gt;Apply leather conditioner occasionally&amp;lt;/li&amp;gt;&amp;lt;/ul&amp;gt;&amp;lt;div&amp;gt;&amp;lt;strong&amp;gt;Buy a Durable Leather Keychain Today&amp;lt;/strong&amp;gt;&amp;lt;br&amp;gt;If you’re looking for a strong leather key holder with metal ring, this handcrafted black leather keychain is the perfect choice. Stylish, practical, and built to last — it’s designed to keep your keys secure while elevating your everyday style.&amp;lt;br&amp;gt;&amp;lt;strong&amp;gt;&amp;lt;em&amp;gt;Order now and carry your keys with confidence.&amp;lt;/em&amp;gt;&amp;lt;/strong&amp;gt;&amp;lt;/div&amp;gt;
+&amp;lt;/div&amp;gt;
+</description>
+        <g:price>350 KES</g:price>
+        <link>https://tajaone.app:3000/products/black-leather-keychain-handstitched-with-metal-ring</link>
+        <g:image_link>https://qmvihqkhbwkcbbnmozkl.supabase.co/storage/v1/object/public/product-images/7899423e36810a5bbfffca450de3c918_Black+Leather+Keychain.JPG</g:image_link>
+        <g:availability>in stock</g:availability>
+        
+        <!-- Recommended Fields -->
+        <g:condition>new</g:condition>
+        <g:brand>Tajaone</g:brand>
+        <g:product_type>Leather Accessories</g:product_type>
+        <g:google_product_category>Apparel &amp; Accessories &gt; Bags &amp; Cases</g:google_product_category>
+        
+        <!-- Color (required for apparel) -->
+          <g:color>Brown</g:color>
+        
+        <!-- Age Group -->
+          <g:age_group>adult</g:age_group>
+        
+        <!-- Gender -->
+          <g:gender>unisex</g:gender>
+        
+        <!-- Size (if applicable) -->
+        
+        <!-- Additional Images -->
+            <g:additional_image_link>https://qmvihqkhbwkcbbnmozkl.supabase.co/storage/v1/object/public/product-images/f7386f5ad551df1cf5756f66a2a375f0_Black+Leather+Keychain.png</g:additional_image_link>
+        
+        <!-- Shipping (Required) -->
+        <g:shipping>
+          <g:country>KE</g:country>
+            <g:price>0 KES</g:price>
+            <g:transit_time_label>2-5 business days</g:transit_time_label>
+        </g:shipping>
+        
+        <!-- Weight -->
+        
+        <!-- Sale Price (if discount exists) -->
+        
+        <g:mpn>4</g:mpn>
+      </item>
   </channel>
 </rss>
