@@ -6,7 +6,7 @@ require 'json'
 module TikTokEvents
   PIXEL_CODE = "D6NUQKBC77UET383R3KG"
   ACCESS_TOKEN = "0c1037c68912989cf52fd469b5cd8eb5f3f3c0ac"
-  API_ENDPOINT = "https://business-api.tiktokglobalshop.com/open_api/v1.3/event/track/"
+  API_ENDPOINT = "https://business-api.tiktokglobalshop.com/open_api/v1.3/event/track"
 
   def self.track_event(event_name, event_id:, event_time:, properties:, context:)
     uri = URI(API_ENDPOINT)
@@ -42,7 +42,7 @@ module TikTokEvents
       properties: {
         value: product.price,
         currency: "KES",
-        content_id: product.id.to_s,
+        content_id: product.sku,   # ✅ use SKU/catalog ID
         content_type: "product",
         content_name: product.name,
         url: "https://tajaone.app/products/#{product.id}"
@@ -64,7 +64,7 @@ module TikTokEvents
       properties: {
         value: cart_item.price,
         currency: "KES",
-        content_id: cart_item.product.id.to_s,
+        content_id: cart_item.product.sku,  # ✅ use SKU/catalog ID
         content_type: "product",
         content_name: cart_item.product.name,
         url: "https://tajaone.app/cart"
@@ -86,7 +86,7 @@ module TikTokEvents
       properties: {
         value: order.total_price,
         currency: "KES",
-        content_id: order.id.to_s,
+        content_id: order.items.map(&:sku).join(","),  # ✅ include all SKUs
         content_type: "order",
         content_name: "Checkout for Order #{order.id}",
         url: "https://tajaone.app/checkout/#{order.id}"
@@ -108,7 +108,7 @@ module TikTokEvents
       properties: {
         value: order.total_price,
         currency: "KES",
-        content_id: order.id.to_s,
+        content_id: order.items.map(&:sku).join(","),  # ✅ include all SKUs
         content_type: "order",
         content_name: "Order #{order.id}",
         url: "https://tajaone.app/orders/#{order.id}"
