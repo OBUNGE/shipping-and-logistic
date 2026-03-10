@@ -7,8 +7,9 @@ module TikTokEvents
   PIXEL_CODE = "D6NUQKBC77UET383R3KG"
   ACCESS_TOKEN = "0c1037c68912989cf52fd469b5cd8eb5f3f3c0ac"
   API_ENDPOINT = "https://business-api.tiktokglobalshop.com/open_api/v1.3/event/track"
+  TEST_EVENT_CODE = "TEST40962"   # 👈 hard-coded test code
 
-  def self.track_event(event_name, event_id:, event_time:, properties:, context:, test_event_code: nil)
+  def self.track_event(event_name, event_id:, event_time:, properties:, context:)
     uri = URI(API_ENDPOINT)
     http = Net::HTTP.new(uri.host, uri.port)
     http.use_ssl = true
@@ -19,9 +20,9 @@ module TikTokEvents
       event_id: event_id,
       event_time: event_time.to_i,
       properties: properties,
-      context: context
+      context: context,
+      test_event_code: TEST_EVENT_CODE   # 👈 always included
     }
-    payload[:test_event_code] = test_event_code if test_event_code
 
     request = Net::HTTP::Post.new(uri.path, {
       "Content-Type" => "application/json",
@@ -35,7 +36,7 @@ module TikTokEvents
   end
 
   # ViewContent
-  def self.track_view_content(product, user, test_event_code: nil)
+  def self.track_view_content(product, user)
     track_event(
       "ViewContent",
       event_id: "view_#{product.id}_#{user.id}",
@@ -43,7 +44,7 @@ module TikTokEvents
       properties: {
         value: product.price.to_f,
         currency: product.currency,
-        content_id: product.slug,   # ✅ use slug as content_id
+        content_id: product.slug,
         content_type: "product",
         content_name: product.title,
         url: "https://tajaone.app/products/#{product.slug}"
@@ -52,13 +53,12 @@ module TikTokEvents
         email: user.email,
         ip: user.current_sign_in_ip,
         user_agent: user.last_user_agent
-      },
-      test_event_code: test_event_code
+      }
     )
   end
 
   # AddToCart
-  def self.track_add_to_cart(cart_item, user, test_event_code: nil)
+  def self.track_add_to_cart(cart_item, user)
     track_event(
       "AddToCart",
       event_id: "cart_#{cart_item.id}_#{user.id}",
@@ -66,7 +66,7 @@ module TikTokEvents
       properties: {
         value: cart_item.price.to_f,
         currency: cart_item.product.currency,
-        content_id: cart_item.product.slug,   # ✅ use slug
+        content_id: cart_item.product.slug,
         content_type: "product",
         content_name: cart_item.product.title,
         url: "https://tajaone.app/cart"
@@ -75,13 +75,12 @@ module TikTokEvents
         email: user.email,
         ip: user.current_sign_in_ip,
         user_agent: user.last_user_agent
-      },
-      test_event_code: test_event_code
+      }
     )
   end
 
   # InitiateCheckout
-  def self.track_checkout(order, user, test_event_code: nil)
+  def self.track_checkout(order, user)
     track_event(
       "InitiateCheckout",
       event_id: "checkout_#{order.id}_#{user.id}",
@@ -89,7 +88,7 @@ module TikTokEvents
       properties: {
         value: order.total_price.to_f,
         currency: "KES",
-        content_id: order.items.map { |item| item.product.slug }.join(","), # ✅ join slugs
+        content_id: order.items.map { |item| item.product.slug }.join(","),
         content_type: "order",
         content_name: "Checkout for Order #{order.id}",
         url: "https://tajaone.app/checkout/#{order.id}"
@@ -98,13 +97,12 @@ module TikTokEvents
         email: user.email,
         ip: user.current_sign_in_ip,
         user_agent: user.last_user_agent
-      },
-      test_event_code: test_event_code
+      }
     )
   end
 
   # Purchase
-  def self.track_purchase(order, user, test_event_code: nil)
+  def self.track_purchase(order, user)
     track_event(
       "Purchase",
       event_id: "order_#{order.id}_#{user.id}",
@@ -112,7 +110,7 @@ module TikTokEvents
       properties: {
         value: order.total_price.to_f,
         currency: "KES",
-        content_id: order.items.map { |item| item.product.slug }.join(","), # ✅ join slugs
+        content_id: order.items.map { |item| item.product.slug }.join(","),
         content_type: "order",
         content_name: "Order #{order.id}",
         url: "https://tajaone.app/orders/#{order.id}"
@@ -121,8 +119,7 @@ module TikTokEvents
         email: user.email,
         ip: user.current_sign_in_ip,
         user_agent: user.last_user_agent
-      },
-      test_event_code: test_event_code
+      }
     )
   end
 end
