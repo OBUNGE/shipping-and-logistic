@@ -1,0 +1,128 @@
+<div style="padding-bottom: 5rem;">
+  <!-- Header -->
+  <div class="bg-white border-bottom border-dark p-4 sticky-top" style="top: 5rem; z-index: 40;">
+    <h2 class="fs-5 fw-bold">Order Confirmed</h2>
+  </div>
+
+  <!-- Success Message -->
+  <div class="p-4">
+    <div class="text-center mb-4">
+      <div class="fs-1 mb-4">✓</div>
+      <h3 class="fs-3 fw-bold mb-2">Order Placed Successfully!</h3>
+      <p class="text-secondary">Thank you for your purchase</p>
+    </div>
+
+    <!-- Order Details -->
+    <div class="bg-success bg-opacity-10 border border-success p-4 rounded mb-4">
+      <h3 class="fw-bold mb-3">Order Details</h3>
+      
+      <div class="d-flex flex-column gap-3 fs-7">
+        <div class="d-flex justify-content-between pb-2 border-bottom border-success">
+          <span class="text-secondary">Order Number</span>
+          <span class="fw-bold"><%= @order.id %></span>
+        </div>
+
+        <div class="d-flex justify-content-between pb-2 border-bottom border-success">
+          <span class="text-secondary">Order Date</span>
+          <span class="fw-bold"><%= @order.created_at.strftime("%B %d, %Y") %></span>
+        </div>
+
+        <div class="d-flex justify-content-between pb-2 border-bottom border-success">
+          <span class="text-secondary">Status</span>
+          <span class="badge bg-success">
+            <%= @order.status.upcase if @order.respond_to?(:status) %>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Shipping Address -->
+    <div class="bg-info bg-opacity-10 border border-info p-4 rounded mb-4">
+      <h3 class="fw-bold mb-3">Shipping To</h3>
+      
+      <div class="fs-7 d-flex flex-column gap-1">
+        <p class="fw-semibold mb-0"><%= current_user&.name || 'Customer' %></p>
+        <p class="mb-0"><%= @order.address %></p>
+        <p class="mb-0"><%= @order.city %>, <%= @order.zip_code %></p>
+        <p class="text-secondary mb-0"><%= @order.phone %></p>
+      </div>
+    </div>
+
+    <!-- Order Items -->
+    <div class="mb-4">
+      <h3 class="fw-bold mb-3">Order Items</h3>
+      
+      <div class="d-flex flex-column gap-3">
+        <% @order_items.each do |item| %>
+          <div class="d-flex gap-3 p-3 border border-dark rounded">
+            <!-- Item Image -->
+            <div class="flex-shrink-0 bg-light border border-dark rounded d-flex align-items-center justify-content-center overflow-hidden" style="width: 64px; height: 64px;">
+              <% if item.product.image_url.present? %>
+                <%= image_tag item.product.image_url, class: "w-100 h-100", style: "object-fit: cover;" %>
+              <% else %>
+                <span class="fs-6">📷</span>
+              <% end %>
+            </div>
+            
+            <!-- Item Details -->
+            <div class="flex-grow-1">
+              <h4 class="fw-bold fs-7 mb-1"><%= item.product.title %></h4>
+              <p class="fs-7 text-secondary mb-1">Qty: <%= item.quantity %></p>
+              <p class="fw-semibold text-primary">KES <%= number_with_precision(item.unit_price * item.quantity, precision: 2) %></p>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Next Steps -->
+    <div class="bg-warning bg-opacity-10 border border-warning p-4 rounded mb-4">
+      <h3 class="fw-bold mb-2">What's Next?</h3>
+      <ol class="fs-7 d-flex flex-column gap-2 mb-0 ps-3">
+        <li class="d-flex gap-2">
+          <span class="fw-bold text-warning">1.</span>
+          <span>You'll receive an SMS with tracking information shortly</span>
+        </li>
+        <li class="d-flex gap-2">
+          <span class="fw-bold text-warning">2.</span>
+          <span>Your order will be packed and shipped within 24 hours</span>
+        </li>
+        <li class="d-flex gap-2">
+          <span class="fw-bold text-warning">3.</span>
+          <span>Track your package using the tracking number</span>
+        </li>
+      </ol>
+    </div>
+
+    <!-- Support -->
+    <div class="bg-secondary bg-opacity-10 border border-secondary p-4 rounded mb-4">
+      <h3 class="fw-bold mb-2">Need Help?</h3>
+      <p class="fs-7 text-secondary mb-3">Contact our customer support team:</p>
+      <div class="d-flex gap-2">
+        <a href="tel:+254712345678" class="flex-grow-1 btn btn-success btn-sm fw-bold d-flex align-items-center justify-content-center gap-2">
+          <svg class="bi" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M3.654 1.328a.678.678 0 0 0-1.015-.063l-1.5 1.5a.678.678 0 0 0-.063 1.015c.183.227.385.45.6.666.237-.237.461-.461.666-.6.2-.2.512-.525.708-.708l.5-.5a.678.678 0 0 0 .063-1.015l-1.5-1.5zm2.8 6.817c-1.664-1.664-5.633-1.899-7.99 0-1.905 1.905-1.47 4.131.364 5.965 1.834 1.834 4.06 2.269 5.965.364 1.905-1.905 1.664-5.326 0-6.99zm2.12-1.863c2.265-2.265 6.289-2.013 8.205.904 1.915 2.918 1.457 6.409-1.331 9.197-2.788 2.788-6.279 3.246-9.197 1.331-2.917-1.916-3.169-5.94-.904-8.205l2.322 2.322a.678.678 0 0 1-.063 1.015l-1.5 1.5a.678.678 0 1 1-.958-.958l1.041-1.041-2.322-2.322zm1.414-5.27c-.707 0-1.414-.707-1.414-1.414S4.672 0 5.378 0s1.414.707 1.414 1.414-.707 1.414-1.414 1.414z"/>
+          </svg>
+          Call
+        </a>
+        <a href="https://wa.me/254712345678?text=Hi%20Taja%20Shop" class="flex-grow-1 btn btn-success btn-sm fw-bold d-flex align-items-center justify-content-center gap-2">
+          💬 WhatsApp
+        </a>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <a href="<%= mobile_products_path %>" class="btn btn-dark w-100 py-3 fw-bold text-center mb-3">
+      Continue Shopping
+    </a>
+
+    <a href="<%= mobile_home_index_path %>" class="btn btn-outline-dark w-100 py-3 fw-bold text-center mb-3">
+      Back to Home
+    </a>
+
+    <!-- Print Receipt -->
+    <button onclick="window.print()" class="btn btn-outline-dark w-100 py-3 fw-bold text-center">
+      Print Receipt
+    </button>
+  </div>
+</div>

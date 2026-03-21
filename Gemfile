@@ -77,6 +77,9 @@ gem "country_select"
 # Gemfile
 gem 'sib-api-v3-sdk'
 
+# Tailwind CSS for mobile views
+gem "tailwindcss-rails", "~> 2.0"
+
 
 
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"

@@ -3,6 +3,7 @@
 //= link active_admin.scss
 //= link active_admin.js
 //= link application.css
+//= link mobile.css
 //= link controllers/application.js
 //= link controllers/hello_controller.js
 //= link controllers/index.js

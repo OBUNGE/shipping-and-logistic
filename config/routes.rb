@@ -134,6 +134,29 @@ Rails.application.routes.draw do
   get "sitemap.xml",            to: redirect("/sitemaps/sitemap.xml.gz")
   get "sitemaps/:filename",     to: "sitemaps#show"
 
+  # === Mobile App Routes ===
+  namespace :mobile do
+    root to: "home#index"
+    get "home", to: "home#index", as: :home_index
+    
+    # Products routes
+    get "products/categories", to: "products#categories", as: :product_categories
+    resources :products, only: [:index, :show]
+
+    # Cart route
+    resource :cart, only: [:show] do
+      post :add_item
+      delete :remove_item
+    end
+
+    # Orders routes
+    resources :orders, only: [:new, :create] do
+      member do
+        get :confirmation, as: :confirmation
+      end
+    end
+  end
+
   # === ActiveStorage ===
   mount ActiveStorage::Engine => "/rails/active_storage"
 

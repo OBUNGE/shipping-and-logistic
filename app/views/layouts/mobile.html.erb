@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Taja Shop - Mobile</title>
+  
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
+  <%= tag.meta name: "apple-mobile-web-app-capable", content: "yes" %>
+  <%= tag.meta name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" %>
+  
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+  <%= javascript_include_tag "application", "data-turbo-track": "reload", defer: true %>
+  <%= javascript_importmap_tags %>
+  
+  <style>
+    html, body { height: 100%; }
+    body { display: flex; flex-direction: column; background-color: #fff; }
+    main { flex: 1; padding-bottom: 5rem; }
+    .navbar { border-bottom: 2px solid #212529; }
+    .navbar-brand { font-size: 1.25rem !important; font-weight: bold; }
+    .nav-footer { border-top: 2px solid #212529; position: fixed; bottom: 0; left: 0; right: 0; width: 100%; background: white; z-index: 1000; }
+    .nav-footer { display: flex; justify-content: space-around; }
+    .nav-footer a { flex: 1; padding: 0.75rem; display: flex; flex-direction: column; align-items: center; text-align: center; font-size: 0.875rem; font-weight: 600; text-decoration: none; color: #212529; transition: background-color 0.2s; border: none; text-wrap: nowrap; }
+    .nav-footer a:hover { background-color: #f8f9fa; }
+    .nav-footer svg { width: 1.5rem; height: 1.5rem; margin-bottom: 0.25rem; stroke: currentColor; }
+    .cart-badge { position: absolute; top: -8px; right: -8px; background-color: #dc3545; color: white; font-size: 0.625rem; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; }
+  </style>
+</head>
+
+<body>
+  <!-- Mobile Header -->
+  <header class="navbar navbar-light bg-white sticky-top">
+    <div class="container-fluid ps-3 pe-3">
+      <a class="navbar-brand" href="<%= mobile_home_index_path %>">taja shop</a>
+      
+      <div class="d-flex gap-3">
+        <a href="<%= mobile_cart_path %>" class="position-relative text-dark" style="text-decoration: none;">
+          <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+          <span class="cart-badge">0</span>
+        </a>
+        
+        <% if user_signed_in? %>
+          <a href="<%= account_path %>" class="text-dark" style="text-decoration: none;">
+            <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+          </a>
+        <% end %>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main>
+    <%= yield %>
+  </main>
+
+  <!-- Mobile Footer Navigation -->
+  <footer class="nav-footer">
+    <a href="<%= mobile_home_index_path %>" title="Home">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-3m0 0l7-4 7 4M5 9v10a1 1 0 001 1h12a1 1 0 001-1V9m-9 11l4-4m0 0l4 4m-4-4v4" />
+      </svg>
+      <span>Home</span>
+    </a>
+    
+    <a href="<%= mobile_products_path %>" title="Shop">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6z" />
+      </svg>
+      <span>Shop</span>
+    </a>
+    
+    <a href="<%= mobile_product_categories_path %>" title="Categories">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+      </svg>
+      <span>Categories</span>
+    </a>
+    
+    <a href="<%= mobile_cart_path %>" title="Cart">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+      </svg>
+      <span>Cart</span>
+    </a>
+  </footer>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

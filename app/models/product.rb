@@ -59,6 +59,8 @@ class Product < ApplicationRecord
   scope :available, -> { where("stock > 0") }
   scope :recent,    -> { order(created_at: :desc) }
   scope :by_category, ->(category_id) { where(category_id: category_id) }
+  scope :featured,  -> { where(published: true).order(created_at: :desc).limit(6) }
+  scope :published, -> { where(published: true) }
 
   # === Searchable Attributes (Ransack) ===
   def self.ransackable_attributes(_auth_object = nil)
@@ -125,6 +127,10 @@ class Product < ApplicationRecord
   end
 
   # === Pricing & Discounts ===
+  def original_price
+    price
+  end
+
   def discounted_price
     return price unless discount&.active?
     price - (price * discount.percentage / 100.0)

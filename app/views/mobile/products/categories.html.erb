@@ -1,0 +1,31 @@
+<div style="padding-bottom: 5rem;">
+  <!-- Header -->
+  <div class="bg-white border-bottom border-dark p-4 sticky-top" style="top: 5rem; z-index: 40;">
+    <h2 class="fs-5 fw-bold">Browse Categories</h2>
+  </div>
+
+  <!-- Categories Grid -->
+  <div class="p-4">
+    <div class="d-flex flex-column gap-3">
+      <% @categories.each do |category| %>
+        <a href="<%= mobile_products_path(category_id: category.id) %>" class="d-flex align-items-center gap-4 p-4 border border-dark rounded bg-white text-decoration-none text-dark" style="transition: box-shadow 0.3s;">
+          <!-- Category Icon -->
+          <div class="flex-shrink-0 bg-info bg-opacity-25 border border-dark rounded d-flex align-items-center justify-content-center" style="width: 80px; height: 80px; font-size: 1.875rem;">
+            📦
+          </div>
+          
+          <!-- Category Info -->
+          <div class="flex-grow-1">
+            <h3 class="fw-bold fs-6 mb-2"><%= category.name %></h3>
+            <span class="badge bg-secondary">
+              <%= category.products.count %> products
+            </span>
+          </div>
+
+          <!-- Arrow Icon -->
+          <div class="flex-shrink-0 fs-4">→</div>
+        </a>
+      <% end %>
+    </div>
+  </div>
+</div>
